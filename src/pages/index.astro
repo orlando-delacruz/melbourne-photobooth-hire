@@ -11,13 +11,28 @@ const { services, packages } = getContent();
   title="Melbourne Photobooth Hire | Photobooth Hire for Melbourne Events"
   description="Melbourne Photobooth Hire — photobooth experiences for Melbourne events. Structure-only homepage; final copy pending client confirmation."
 >
-  <h1>Melbourne Photobooth Hire</h1>
-  <p>Structure-only homepage. Final copy pending client confirmation.</p>
-  <p>
-    <Button href="/contact" variant="primary">
-      Enquire now
-    </Button>
-  </p>
+  <section class="hero" aria-labelledby="page-title">
+    <h1 id="page-title">Melbourne Photobooth Hire</h1>
+    <p class="lede">[Hero value proposition — pending client confirmation.]</p>
+    <p>
+      <Button href="/contact" variant="primary">
+        Enquire now
+      </Button>
+    </p>
+  </section>
+  <style>
+    .hero {
+      padding-top: var(--space-lg);
+      padding-bottom: var(--space-lg);
+    }
+    .hero h1 {
+      font-size: var(--text-display);
+    }
+    .lede {
+      font-size: var(--text-h3);
+      color: var(--color-text-secondary);
+    }
+  </style>
   <section aria-labelledby="services-heading">
     <SectionHeading title="Services" id="services-heading" />
     <ul>
