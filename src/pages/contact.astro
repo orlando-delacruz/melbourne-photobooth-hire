@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
+import { getContent } from "../lib/content/repository";
+
+const { site } = getContent();
 ---
 
 <BaseLayout
@@ -8,6 +11,10 @@ import InquiryForm from "../components/islands/InquiryForm";
   description="Enquire with Melbourne Photobooth Hire about photobooth hire for your event."
 >
   <h1>Contact</h1>
-  <p>Request information or availability for your event.</p>
+  <p>
+    Reach out with your event date and details — we&apos;ll confirm availability and recommend the
+    perfect booth.
+  </p>
+  <p>{site.serviceAreaStatement}</p>
   <InquiryForm client:visible />
 </BaseLayout>

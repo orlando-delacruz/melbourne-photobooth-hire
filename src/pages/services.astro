@@ -8,13 +8,17 @@ const { services } = getContent();
 
 <BaseLayout
   title="Services | Melbourne Photobooth Hire"
-  description="Photobooth service categories from Melbourne Photobooth Hire. Final descriptions pending client confirmation."
+  description="Premium, roaming and 360 photobooth experiences for Melbourne weddings, birthdays and corporate events."
 >
-  <h1>Services</h1>
+  <h1>Our Booths</h1>
+  <p>Melbourne&apos;s go-to photobooth hire — open-air and roaming setups for any event.</p>
   <ul>
     {services.map((service) => (
       <li>
-        <h2>{service.name}</h2>
+        <h2>
+          {service.name}
+          {service.badge ? ` — ${service.badge}` : ""}
+        </h2>
         <p>{service.summary}</p>
       </li>
     ))}

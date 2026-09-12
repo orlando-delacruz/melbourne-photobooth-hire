@@ -4,19 +4,22 @@ import Button from "../components/Button.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
 
-const { services, packages } = getContent();
+const { services, packages, eventTypes, processSteps, testimonials, faqs, site } = getContent();
 ---
 
 <BaseLayout
   title="Melbourne Photobooth Hire | Photobooth Hire for Melbourne Events"
-  description="Melbourne Photobooth Hire — photobooth experiences for Melbourne events. Structure-only homepage; final copy pending client confirmation."
+  description="Melbourne Photobooth Hire — photobooth experiences for weddings, birthdays and corporate events, with custom prints and instant QR downloads."
 >
   <section class="hero" aria-labelledby="page-title">
-    <h1 id="page-title">Melbourne Photobooth Hire</h1>
-    <p class="lede">[Hero value proposition — pending client confirmation.]</p>
+    <h1 id="page-title">{site.heroHeadline}</h1>
+    <p class="lede">{site.heroSupporting}</p>
     <p>
       <Button href="/contact" variant="primary">
         Enquire now
+      </Button>
+      <Button href="/packages" variant="secondary">
+        View packages
       </Button>
     </p>
   </section>
@@ -34,11 +37,15 @@ const { services, packages } = getContent();
     }
   </style>
   <section aria-labelledby="services-heading">
-    <SectionHeading title="Services" id="services-heading" />
+    <SectionHeading title="Our Booths" id="services-heading" />
+    <p>Melbourne&apos;s go-to photobooth hire — open-air and roaming setups for any event.</p>
     <ul>
       {services.map((service) => (
         <li>
-          <h3>{service.name}</h3>
+          <h3>
+            {service.name}
+            {service.badge ? ` — ${service.badge}` : ""}
+          </h3>
           <p>{service.summary}</p>
         </li>
       ))}
@@ -48,6 +55,14 @@ const { services, packages } = getContent();
         Explore services
       </Button>
     </p>
+  </section>
+  <section aria-labelledby="events-heading">
+    <SectionHeading title="Perfect For" id="events-heading" />
+    <ul>
+      {eventTypes.map((eventType) => (
+        <li>{eventType}</li>
+      ))}
+    </ul>
   </section>
   <section aria-labelledby="packages-heading">
     <SectionHeading title="Packages" id="packages-heading" />
@@ -61,6 +76,46 @@ const { services, packages } = getContent();
     <p>
       <Button href="/packages" variant="secondary">
         View packages
+      </Button>
+    </p>
+  </section>
+  <section aria-labelledby="process-heading">
+    <SectionHeading title="How It Works" id="process-heading" />
+    <ol>
+      {processSteps.map((step) => (
+        <li>
+          <h3>{step.title}</h3>
+          <p>{step.summary}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+  <section aria-labelledby="reviews-heading">
+    <SectionHeading title="Reviews" id="reviews-heading" />
+    <ul>
+      {testimonials.slice(0, 3).map((item) => (
+        <li>
+          <blockquote>{item.quote}</blockquote>
+          <p>
+            {item.name} — {item.eventType}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </section>
+  <section aria-labelledby="faq-heading">
+    <SectionHeading title="FAQ" id="faq-heading" />
+    <ul>
+      {faqs.slice(0, 4).map((faq) => (
+        <li>
+          <h3>{faq.question}</h3>
+          <p>{faq.answer}</p>
+        </li>
+      ))}
+    </ul>
+    <p>
+      <Button href="/faq" variant="secondary">
+        Read FAQ
       </Button>
     </p>
   </section>

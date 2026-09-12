@@ -4,14 +4,18 @@ import Button from "../components/Button.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
 
-const { packages } = getContent();
+const { packages, addOns, bookingPolicies } = getContent();
 ---
 
 <BaseLayout
   title="Packages | Melbourne Photobooth Hire"
-  description="Package options from Melbourne Photobooth Hire. Pricing and inclusions pending client confirmation."
+  description="Starter, Standard and Premium photobooth packages with pricing, inclusions, add-ons and booking policies."
 >
   <h1>Packages</h1>
+  <p>
+    Every booking comes dressed to impress — red carpet and golden bollard entrance setup included
+    as standard, along with full setup and pack-down handled by our team.
+  </p>
   {packages.length === 0 ? (
     <p>
       Package options will be shown here once confirmed. Until then, please enquire for current
@@ -22,7 +26,10 @@ const { packages } = getContent();
       {packages.map((pkg) => (
         <li>
           <article>
-            <h2>{pkg.name}</h2>
+            <h2>
+              {pkg.name}
+              {pkg.badge ? ` — ${pkg.badge}` : ""}
+            </h2>
             <p>{pkg.summary}</p>
             <p>
               {pkg.durationLabel} · {pkg.priceLabel}
@@ -37,6 +44,21 @@ const { packages } = getContent();
       ))}
     </ul>
   )}
+  <SectionHeading title="Add-ons" id="packages-addons" />
+  <ul>
+    {addOns.map((addOn) => (
+      <li>
+        <h2>{addOn.name}</h2>
+        <p>{addOn.detail}</p>
+      </li>
+    ))}
+  </ul>
+  <SectionHeading title="Booking policies" id="packages-policies" />
+  <ul>
+    {bookingPolicies.map((policy) => (
+      <li>{policy}</li>
+    ))}
+  </ul>
   <SectionHeading title="Next step" id="packages-next" />
   <p>
     <Button href="/contact" variant="primary">
