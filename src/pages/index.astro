@@ -2,6 +2,9 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import SectionHeading from "../components/SectionHeading.astro";
+import { getContent } from "../lib/content/repository";
+
+const { services, packages } = getContent();
 ---
 
 <BaseLayout
@@ -15,20 +18,53 @@ import SectionHeading from "../components/SectionHeading.astro";
       Enquire now
     </Button>
   </p>
-  <section aria-labelledby="explore-heading">
-    <SectionHeading title="Explore" id="explore-heading" />
+  <section aria-labelledby="services-heading">
+    <SectionHeading title="Services" id="services-heading" />
+    <ul>
+      {services.map((service) => (
+        <li>
+          <h3>{service.name}</h3>
+          <p>{service.summary}</p>
+        </li>
+      ))}
+    </ul>
     <p>
       <Button href="/services" variant="secondary">
         Explore services
       </Button>
+    </p>
+  </section>
+  <section aria-labelledby="packages-heading">
+    <SectionHeading title="Packages" id="packages-heading" />
+    <ul>
+      {packages.map((pkg) => (
+        <li>
+          {pkg.name} — {pkg.durationLabel} · {pkg.priceLabel}
+        </li>
+      ))}
+    </ul>
+    <p>
       <Button href="/packages" variant="secondary">
         View packages
       </Button>
+    </p>
+  </section>
+  <section aria-labelledby="explore-heading">
+    <SectionHeading title="Explore" id="explore-heading" />
+    <p>
       <Button href="/gallery" variant="secondary">
         View gallery
       </Button>
       <Button href="/faq" variant="secondary">
         Read FAQ
+      </Button>
+    </p>
+  </section>
+  <section aria-labelledby="enquire-heading">
+    <SectionHeading title="Ready to enquire?" id="enquire-heading" />
+    <p>
+      <Button href="/contact" variant="primary">
+        Enquire now
       </Button>
     </p>
   </section>

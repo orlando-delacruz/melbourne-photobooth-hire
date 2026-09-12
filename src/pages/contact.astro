@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import InquiryForm from "../components/islands/InquiryForm";
 ---
 
 <BaseLayout
@@ -7,7 +8,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="Enquire with Melbourne Photobooth Hire about photobooth hire for your event."
 >
   <h1>Contact</h1>
-  <p>
-    The inquiry form will be implemented in a later phase. Final fields pending client confirmation.
-  </p>
+  <p>Request information or availability for your event.</p>
+  <InquiryForm client:visible />
 </BaseLayout>

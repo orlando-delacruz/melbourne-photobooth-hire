@@ -1,5 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import SectionHeading from "../components/SectionHeading.astro";
+import { getContent } from "../lib/content/repository";
+
+const { packages } = getContent();
 ---
 
 <BaseLayout
@@ -7,11 +12,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="Package options from Melbourne Photobooth Hire. Pricing and inclusions pending client confirmation."
 >
   <h1>Packages</h1>
+  {packages.length === 0 ? (
+    <p>
+      Package options will be shown here once confirmed. Until then, please enquire for current
+      options.
+    </p>
+  ) : (
+    <ul>
+      {packages.map((pkg) => (
+        <li>
+          <article>
+            <h2>{pkg.name}</h2>
+            <p>{pkg.summary}</p>
+            <p>
+              {pkg.durationLabel} · {pkg.priceLabel}
+            </p>
+            <ul>
+              {pkg.inclusions.map((inclusion) => (
+                <li>{inclusion}</li>
+              ))}
+            </ul>
+          </article>
+        </li>
+      ))}
+    </ul>
+  )}
+  <SectionHeading title="Next step" id="packages-next" />
   <p>
-    Package options will be shown here once confirmed. Until then, please enquire for current
-    options.
-  </p>
-  <p>
-    <a href="/contact">Enquire now</a>
+    <Button href="/contact" variant="primary">
+      Enquire now
+    </Button>
   </p>
 </BaseLayout>

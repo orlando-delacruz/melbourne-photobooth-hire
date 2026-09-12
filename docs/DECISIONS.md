@@ -251,13 +251,14 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Three decision records exist (DEC-001 through DEC-003). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Four decision records exist (DEC-001 through DEC-004). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status   | Date       |
 | ------- | -------------------------------------------------------- | -------- | ---------- |
 | DEC-001 | Phase 1 Astro skeleton and tooling baseline              | Accepted | 2026-09-12 |
 | DEC-002 | Typecheck, format enforcement, and root CONTEXT glossary | Accepted | 2026-09-12 |
 | DEC-003 | Centralized mock-content seam and styling split          | Accepted | 2026-09-12 |
+| DEC-004 | Inquiry form island with hand-rolled Zod resolver        | Accepted | 2026-09-12 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -303,6 +304,21 @@ Three decision records exist (DEC-001 through DEC-003). Existing selections, req
 - **Related documents:** `docs/ROADMAP.md` (Sections 4–5), `docs/ARCHITECTURE.md` (Sections 6–8), `docs/DESIGN-SYSTEM.md` (Sections 5–10), `docs/DATA-MODEL.md` (Section 5).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Client confirmation of brand colors/fonts, CMS modules/fields, and review URL before Phase 3 wiring.
+
+### DEC-004 — Inquiry form island with hand-rolled Zod resolver
+
+- **ID:** DEC-004
+- **Title:** Inquiry form island with hand-rolled Zod resolver
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** ROADMAP Phase 2 requires client-side validation feedback (RHF + Zod usability layer) with no claim about server enforcement. The field set and required-vs-optional designations are Confirmation Required (REQ-INQ-008 through REQ-INQ-010). `@hookform/resolvers` could not be installed: its peer chain demands Zod v3 while Astro 7 pins Zod v4.
+- **Decision:** Build `InquiryForm` island on `react-hook-form` + `zod` with a ~15-line in-repo Zod→RHF resolver (`src/lib/validation/inquiry.ts`, the single source of validation truth shared with the Phase 4 endpoint). Provisional field set = documented REQ-INQ-008 candidates (name/email/eventDate required; rest optional); provisional option lists = REQ-INQ-009/010 candidates; all marked provisional in code. Valid data resolves to an honest informational state (no fake send, no fake spinner); submitting-state + duplicate-prevention wiring lands with the real Phase 4 send. Packages/gallery/FAQ/homepage now render through `getContent()`; About stays a pending state (no confirmed model).
+- **Alternatives considered:** `@hookform/resolvers` — rejected (unresolvable Zod v3/v4 peer conflict; the mapping is trivial). Minimal name/email/message field set — rejected (full candidate set exercises the real layout/validation surface sooner). Fake submitting delay — rejected (dishonest feedback).
+- **Rationale:** Fewest dependencies, no version fight; capability built without publishing unconfirmed business facts; honest states throughout.
+- **Consequences:** Phase 4 reuses `inquirySchema` server-side and wires the send; client confirmation of fields/options required before production.
+- **Related documents:** `docs/REQUIREMENTS.md` (Sections 9, 23), `docs/ARCHITECTURE.md` (Section 9), `docs/UI-UX.md` (Sections 13–14), `docs/ROADMAP.md` (Phase 2).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of final field set, required-vs-optional, and option lists.
 
 Future records are appended here in ID order with status and date kept current.
 

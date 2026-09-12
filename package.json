@@ -17,7 +17,9 @@
     "lucide-react": "^1.45.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "styled-components": "^6.5.3"
+    "react-hook-form": "^7.88.0",
+    "styled-components": "^6.5.3",
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

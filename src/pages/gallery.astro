@@ -1,5 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import { getContent } from "../lib/content/repository";
+
+const { gallery } = getContent();
 ---
 
 <BaseLayout
@@ -7,8 +11,20 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="Real event imagery from Melbourne Photobooth Hire. Imagery pending client approval."
 >
   <h1>Gallery</h1>
-  <p>No images are available yet.</p>
+  {gallery.length === 0 ? (
+    <p>No images are available yet.</p>
+  ) : (
+    <ul>
+      {gallery.map((item) => (
+        <li>
+          <img src={item.src} alt={item.alt} loading="lazy" />
+        </li>
+      ))}
+    </ul>
+  )}
   <p>
-    <a href="/contact">Enquire now</a>
+    <Button href="/contact" variant="primary">
+      Enquire now
+    </Button>
   </p>
 </BaseLayout>
