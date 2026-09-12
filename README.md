@@ -86,7 +86,7 @@ The following is the project's established technology direction. It does not imp
 - EmailJS handles inquiry email delivery to the client's Gmail.
 - Vercel handles deployment/hosting.
 
-For detailed architectural information, see `docs/ARCHITECTURE.md` when available.
+For detailed architectural information, see `docs/ARCHITECTURE.md`.
 
 ## 6. SEO Focus
 
@@ -126,6 +126,7 @@ Detailed project information is maintained in `docs/`.
 | `docs/SECURITY.md`      | Security requirements and constraints       |
 | `docs/TESTING.md`       | Testing and verification strategy           |
 | `docs/DEVELOPMENT.md`   | Local development workflow and commands     |
+| `docs/ROADMAP.md`       | Development phase order and progression     |
 | `docs/DEPLOYMENT.md`    | Deployment and production procedures        |
 | `docs/DECISIONS.md`     | Important architectural and technical decisions |
 

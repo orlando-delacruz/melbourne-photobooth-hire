@@ -65,7 +65,7 @@ Vercel
            └── Cloudflare Turnstile
 ```
 
-Domain:
+Provisional production domain (pending client confirmation):
 
 ```text
 melbournephotoboothhire.com.au
@@ -110,11 +110,13 @@ Manual production changes should be avoided where the same configuration can be 
 
 ## 5. Domain
 
-The production domain is:
+The provisional production domain (pending client confirmation — see Section 30) is:
 
 ```text
 melbournephotoboothhire.com.au
 ```
+
+This domain must not be treated as client-confirmed production configuration. Canonical URLs, sitemap URLs, metadata, and related production SEO configuration must follow the confirmed production domain once confirmed.
 
 The domain registrar is:
 
@@ -796,6 +798,7 @@ The following should be confirmed during implementation/deployment rather than a
 * final Vercel project
 * final GitHub repository
 * production branch
+* confirmed production domain
 * exact production environment variables
 * final Supabase production project
 * Supabase production policies/RLS

@@ -28,8 +28,8 @@ Out of scope for this document (owned elsewhere):
 - Endpoint behavior and integration boundaries → `docs/API.md`.
 - Security requirements → `docs/SECURITY.md`.
 - Verification strategy → `docs/TESTING.md`.
-- Production deployment procedures → `docs/DEPLOYMENT.md` (future document, not created here).
-- Recorded decisions → `docs/DECISIONS.md` (future document, not created here).
+- Production deployment procedures → `docs/DEPLOYMENT.md`.
+- Recorded decisions → `docs/DECISIONS.md`.
 
 This is a greenfield project at the documentation/specification stage. The stack described in `docs/TECH-STACK.md` and `docs/ARCHITECTURE.md` is the **intended direction**, not a claim that implementation exists. The repository is the authoritative source for what is actually implemented. Nothing in this document authorizes assuming a technology is implemented merely because it is selected.
 
@@ -89,9 +89,10 @@ Working rules:
 | Endpoint behavior, validation principles, integration boundaries | `docs/API.md` |
 | Security requirements and constraints | `docs/SECURITY.md` (governs over this document on security expectations) |
 | Verification strategy | `docs/TESTING.md` |
+| Development phases/order | `docs/ROADMAP.md` |
 | What is actually implemented | The repository (code wins over docs for actual behavior; the discrepancy must be resolved explicitly) |
-| Production procedures | `docs/DEPLOYMENT.md` (future; owns deployment detail) |
-| Recorded decisions | `docs/DECISIONS.md` (future; owns decision records) |
+| Production procedures | `docs/DEPLOYMENT.md` (owns deployment detail) |
+| Recorded decisions | `docs/DECISIONS.md` (owns decision records) |
 
 Rules:
 
@@ -159,6 +160,8 @@ If the task serves no documented requirement and is not an explicitly requested 
 ## 7. Task Decomposition and Implementation Workflow
 
 **Confirmed** (per `AGENTS.md` Section 16). Proportional to task size.
+
+Development phase order and per-phase exit gates are defined in `docs/ROADMAP.md`. The workflow below operates *inside* each roadmap phase: every phase's activities are executed as small inspect → plan → implement → review → verify increments with risk-based regression.
 
 For small, well-defined tasks:
 
@@ -342,7 +345,7 @@ Do not add packages merely because they are convenient. Do not add Next.js, Expr
 
 **Confirmed** (per `docs/TECH-STACK.md` Section 20, `docs/ARCHITECTURE.md` Section 20, `docs/SECURITY.md` Section 8).
 
-- Secrets and sensitive configuration live outside source code in environment-appropriate configuration. Procedures belong in `docs/DEPLOYMENT.md` (future), not here.
+- Secrets and sensitive configuration live outside source code in environment-appropriate configuration. Procedures belong in `docs/DEPLOYMENT.md`, not here.
 - Never hardcode, commit, or expose secrets, private keys, or credentials — in source, Git history, client bundles, logs, errors, or public responses.
 - Client-side source must never contain secrets. Any client-visible configuration is public by design and carries no sensitive material.
 - Do not invent environment variable names, credentials, IDs, keys, URLs, email addresses, or configuration values. None are established by the source documents, and none are defined in this document. Actual names/values are confirmed from the repository and hosting environment only.
@@ -450,8 +453,8 @@ Ownership guide:
 | Visual tokens, components, styling rules | `docs/DESIGN-SYSTEM.md` |
 | Testing strategy | `docs/TESTING.md` |
 | Development workflow (this document) | `docs/DEVELOPMENT.md` |
-| Production procedures | `docs/DEPLOYMENT.md` (future; do not preempt its procedures here) |
-| Important technical decision | `docs/DECISIONS.md` (future; see Section 24) |
+| Production procedures | `docs/DEPLOYMENT.md` (do not preempt its procedures here) |
+| Important technical decision | `docs/DECISIONS.md` (see Section 24) |
 
 Do not modify unrelated documentation without a reason. This task creates only `docs/DEVELOPMENT.md` and does not create `docs/DECISIONS.md`.
 
@@ -459,7 +462,7 @@ Do not modify unrelated documentation without a reason. This task creates only `
 
 ## 24. Decision Tracking and Relationship to `docs/DECISIONS.md`
 
-**Confirmed** (per `AGENTS.md` Section 20). `docs/DECISIONS.md` (future document) will own important architectural and technical decisions. This document does not create it.
+**Confirmed** (per `AGENTS.md` Section 20). `docs/DECISIONS.md` owns important architectural and technical decisions.
 
 Record a decision there (once the document exists) when it:
 
@@ -622,7 +625,7 @@ Do not invent credentials, environment variable names, policies, or configuratio
 
 ## 34. Production/Deployment Boundary
 
-Development ends at verified, reviewable changes in the repository. Production behavior is owned by `docs/DEPLOYMENT.md` (future document).
+Development ends at verified, reviewable changes in the repository. Production behavior is owned by `docs/DEPLOYMENT.md`.
 
 - Detailed deployment procedures (hosting setup, environment configuration, domain/DNS wiring, release steps) belong in `docs/DEPLOYMENT.md`, not in development work or this document. Do not preempt them here.
 - Production-relevant expectations already established and verifiable from development include: production build succeeds; HTTPS serving; correct production domain in canonicals/sitemap/metadata; reachable sitemap and robots.txt with correct public/admin treatment; functioning inquiry delivery with production configuration; no committed or exposed secrets; no placeholder, staging, or **Reference-Only** branding in production output; client-approved review link exactly as supplied.
@@ -667,8 +670,9 @@ This list mirrors `docs/PROJECT.md` (Section 21), `docs/REQUIREMENTS.md` (Sectio
 - `docs/API.md` — API and external service contracts (conceptual behavior and boundaries). Owner of endpoint behavior and integration responsibility boundaries.
 - `docs/SECURITY.md` — security requirements and constraints. Owner of security expectations.
 - `docs/TESTING.md` — testing and verification strategy. Owner of verification expectations.
-- `docs/DEPLOYMENT.md` — future. Owner of deployment and production procedures.
-- `docs/DECISIONS.md` — future. Owner of important architectural and technical decision records.
+- `docs/ROADMAP.md` — development roadmap. Owner of development phase order and progression; the workflow in this document operates inside each roadmap phase.
+- `docs/DEPLOYMENT.md` — Owner of deployment and production procedures.
+- `docs/DECISIONS.md` — Owner of important architectural and technical decision records.
 
 This document (`docs/DEVELOPMENT.md`) owns the development workflow. It duplicates no implementation detail from the documents above; where behavior is concerned, the owning document governs.
 
@@ -692,7 +696,7 @@ This development-workflow document is considered complete when:
 12. It aligns with `docs/API.md` (boundary behavior, no invented endpoints, payloads, or validation rules).
 13. It aligns with `docs/SECURITY.md` (server-side enforcement, secret handling, verification, error discipline, no invented policies or credentials).
 14. It aligns with `docs/TESTING.md` (verification levels, failure-state coverage, risk-based regression, evidence/reporting, no invented tooling or targets).
-15. No unsupported implementation commands, tools, versions, credentials, environment variables, Git conventions, or infrastructure are invented — each is marked **Implementation Decision Required** or deferred to its owning future document.
+15. No unsupported implementation commands, tools, versions, credentials, environment variables, Git conventions, or infrastructure are invented — each is marked **Implementation Decision Required** or deferred to its owning document.
 16. Confirmation-required items remain confirmation-required; assumptions are never silently converted into requirements.
 17. Shot&Prints remains **Reference-Only** throughout.
 18. The ₱15,000 project constraint is preserved (simplicity, maintainability, no scope creep, no overengineering).

@@ -73,9 +73,9 @@ To prevent premature lock-in, responsibility is split as follows:
 | Behavior and experience | `docs/UI-UX.md` |
 | Visual language | `docs/DESIGN-SYSTEM.md` |
 | **Concepts, relationships, and data boundaries** | **This document (`docs/DATA-MODEL.md`)** |
-| Endpoint contracts, validation rule detail, email/verification flows | `docs/API.md` (future) |
-| Auth behavior, authorization rules, RLS policies, secret handling | `docs/SECURITY.md` (future) |
-| Important architectural/technical decisions once made | `docs/DECISIONS.md` (future) |
+| Endpoint contracts, validation rule detail, email/verification flows | `docs/API.md` |
+| Auth behavior, authorization rules, RLS policies, secret handling | `docs/SECURITY.md` |
+| Important architectural/technical decisions once made | `docs/DECISIONS.md` |
 
 This document introduces no endpoint URLs, methods, payloads, response schemas, table definitions, column definitions, policies, or credentials.
 
@@ -409,7 +409,7 @@ This document:
 
 - `docs/DATA-MODEL.md` — database structure and relationships (this document; conceptual level only, no schema).
 
-Future documents (referenced as deferred detail owners, not existing sources):
+Deferred detail owners (not duplicated here):
 
 - `docs/API.md` — API and external service contracts (owns endpoint detail, validation rule detail, email/verification flows).
 - `docs/SECURITY.md` — security requirements and constraints (owns auth behavior, authorization rules, RLS policies, secret handling, spam-verification detail).

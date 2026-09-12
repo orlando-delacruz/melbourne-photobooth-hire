@@ -207,7 +207,7 @@ No technical specifications of any booth hardware or software are defined in thi
 ### 9.1 Model — Must
 
 * REQ-INQ-001 (**Must**): The system MUST implement an **inquiry-based model**, not an online reservation engine.
-* REQ-INQ-002 (**Must**): The required flow MUST be: Customer → Inquiry Form → Validation → EmailJS → Client Gmail.
+* REQ-INQ-002 (**Must**): The required flow MUST be: Customer → Inquiry Form → Validation → EmailJS → Client Gmail. The **Validation** step includes server-side re-validation and server-side Turnstile verification executed through the Astro Server Endpoint before EmailJS delivery, consistent with `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/SECURITY.md`. Client-side validation alone is not sufficient.
 * REQ-INQ-003 (**Must**): The system MUST NOT require real-time availability, calendar reservation, payment processing, checkout, automated reservation allocation, complex CRM, or complex booking management to accept an inquiry.
 
 ### 9.2 Form Access and Usability — Must

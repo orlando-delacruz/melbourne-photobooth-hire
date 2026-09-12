@@ -610,7 +610,7 @@ Errors never expose:
 - Service secrets.
 - Implementation details.
 
-Detailed security and error-handling implementation belongs in `docs/SECURITY.md` and `docs/API.md` (both future documents). UI copy for specific errors belongs in implementation, not here.
+Detailed security and error-handling implementation belongs in `docs/SECURITY.md` and `docs/API.md`. UI copy for specific errors belongs in implementation, not here.
 
 ---
 
@@ -833,7 +833,7 @@ This document does **not** define:
 - Detailed breakpoints.
 - Exact animation durations/easing.
 
-Those belong in `docs/DESIGN-SYSTEM.md` (future document).
+Those belong in `docs/DESIGN-SYSTEM.md`.
 
 The UI/UX document defines **behavior and experience**; the design-system document defines **visual language and reusable UI styling**. Where this document mentions visual concepts (hierarchy, focus visibility, active states, contrast, touch targets), it requires the outcome (perceivable, usable, consistent) and leaves exact values and visual variants to the design system and implementation.
 
@@ -851,17 +851,15 @@ Currently existing documents:
 - `docs/REQUIREMENTS.md` — functional and business requirements (exists).
 - `docs/TECH-STACK.md` — technology choices and technical constraints (exists).
 - `docs/ARCHITECTURE.md` — application architecture and code organization (exists).
-
-Future documents (referenced as deferred detail owners, not existing sources):
-
-- `docs/DESIGN-SYSTEM.md` — visual and component design rules (future; owns exact colors, typography values, spacing tokens, radii, shadows, dimensions, variants, breakpoints, animation values).
-- `docs/DATA-MODEL.md` — database structure and data relationships (future; owns CMS content models, fields, and gallery/inquiry persistence schemas).
-- `docs/API.md` — API and external service contracts (future; owns endpoint contracts, validation rules detail, and email/verification flows).
-- `docs/SECURITY.md` — security requirements and constraints (future; owns auth, authorization, spam-verification, secret handling, and detailed error-handling policy).
-- `docs/TESTING.md` — testing and verification strategy (future).
-- `docs/DEVELOPMENT.md` — local development workflow and commands (future).
-- `docs/DEPLOYMENT.md` — deployment and production procedures (future).
-- `docs/DECISIONS.md` — important architectural and technical decisions (future).
+- `docs/DESIGN-SYSTEM.md` — visual and component design rules (owns exact colors, typography values, spacing tokens, radii, shadows, dimensions, variants, breakpoints, animation values).
+- `docs/DATA-MODEL.md` — database structure and data relationships (owns CMS content models, fields, and gallery/inquiry persistence schemas).
+- `docs/API.md` — API and external service contracts (owns endpoint contracts, validation rules detail, and email/verification flows).
+- `docs/SECURITY.md` — security requirements and constraints (owns auth, authorization, spam-verification, secret handling, and detailed error-handling policy).
+- `docs/TESTING.md` — testing and verification strategy.
+- `docs/DEVELOPMENT.md` — local development workflow and commands.
+- `docs/ROADMAP.md` — development roadmap and phase progression.
+- `docs/DEPLOYMENT.md` — deployment and production procedures.
+- `docs/DECISIONS.md` — important architectural and technical decisions.
 
 This document (`docs/UI-UX.md`) is the UX requirements owner. Visual styling detail is deferred to `docs/DESIGN-SYSTEM.md`; data, API, and security implementation detail is deferred to `docs/DATA-MODEL.md`, `docs/API.md`, and `docs/SECURITY.md` respectively.
 

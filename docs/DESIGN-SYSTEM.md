@@ -795,13 +795,14 @@ Reference or placeholder material — including anything carried forward from Sh
 - `docs/TECH-STACK.md` — technology choices and constraints. Authoritative for selected technologies; this document introduces no new ones.
 - `docs/ARCHITECTURE.md` — application architecture and code organization. Defines Astro-first rendering, React islands, server endpoints, Supabase, CMS, EmailJS, and external-service boundaries.
 - `docs/UI-UX.md` — user experience and interaction requirements. Defines behavior and experience; this document defers to it on all behavior.
-- `docs/DATA-MODEL.md` — future. Owns database structure and data relationships, including CMS content models and any conditional persistence schemas.
-- `docs/API.md` — future. Owns API and external service contracts, including endpoint detail, validation rules detail, and email/verification flows.
-- `docs/SECURITY.md` — future. Owns auth, authorization, spam-verification, secret handling, and detailed error-handling policy.
-- `docs/TESTING.md` — future. Owns testing and verification strategy.
-- `docs/DEVELOPMENT.md` — future. Owns local development workflow and commands.
-- `docs/DEPLOYMENT.md` — future. Owns deployment and production procedures.
-- `docs/DECISIONS.md` — future. Records important architectural and technical decisions, including token additions with project-wide effect.
+- `docs/DATA-MODEL.md` — Owns database structure and data relationships, including CMS content models and any conditional persistence schemas.
+- `docs/API.md` — Owns API and external service contracts, including endpoint detail, validation rules detail, and email/verification flows.
+- `docs/SECURITY.md` — Owns auth, authorization, spam-verification, secret handling, and detailed error-handling policy.
+- `docs/TESTING.md` — Owns testing and verification strategy.
+- `docs/DEVELOPMENT.md` — Owns local development workflow and commands.
+- `docs/ROADMAP.md` — Owns development phase order and progression.
+- `docs/DEPLOYMENT.md` — Owns deployment and production procedures.
+- `docs/DECISIONS.md` — Records important architectural and technical decisions, including token additions with project-wide effect.
 
 Responsibility split:
 

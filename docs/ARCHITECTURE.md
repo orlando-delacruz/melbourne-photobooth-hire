@@ -99,7 +99,7 @@ The architecture is designed to satisfy the requirements in `docs/REQUIREMENTS.m
 * **Maintainability:** small, focused codebase; TypeScript throughout; existing project patterns; reusable abstractions only where they provide clear value; no unnecessary dependencies or services.
 * **Simplicity:** direct data flows; one frontend framework (Astro) plus islands; one backend mechanism (Astro Server Endpoints); one data platform (Supabase); one email direction (EmailJS → Gmail).
 * **Accessibility:** semantic structure, keyboard-usable controls, labelled fields, text-associated errors, meaningful alt text, readable contrast, reduced-motion respect. No formal conformance certification is claimed.
-* **Security:** authenticated admin access, authorization on CMS operations, validation at appropriate boundaries, server-side spam verification where applicable, secrets kept out of source. Detailed rules belong in `SECURITY.md` (future document).
+* **Security:** authenticated admin access, authorization on CMS operations, validation at appropriate boundaries, server-side spam verification where applicable, secrets kept out of source. Detailed rules belong in `SECURITY.md`.
 * **CMS usability:** clear content organization, safe editing, predictable save behavior, clear loading/saving/error states, validation with understandable messages.
 * **Responsive UX:** fully usable public site and practical CMS across mobile, tablet, and desktop viewports.
 * **Reliable inquiry submission:** validated input, spam protection, clear submission-in-progress handling, duplicate-submission prevention, clear success feedback, and clear non-technical error feedback with next-step guidance.
@@ -133,7 +133,7 @@ The architecture is designed to satisfy the requirements in `docs/REQUIREMENTS.m
 * PostgreSQL for structured application/CMS data.
 * Auth for admin authentication.
 * Storage for CMS-managed media.
-* Detailed schemas, policies, and data relationships belong in `DATA-MODEL.md` (future document). None are defined here.
+* Detailed schemas, policies, and data relationships belong in `DATA-MODEL.md`. None are defined here.
 
 ### 3.5 Custom CMS remains scoped
 
@@ -154,7 +154,7 @@ The architecture is designed to satisfy the requirements in `docs/REQUIREMENTS.m
 * Supabase authorization must protect CMS data.
 * Server-side verification must be used where required (in particular, spam-protection verification must not rely on client-side presence alone).
 * Secrets must never be hardcoded, committed, or exposed in client-side source.
-* Detailed security rules belong in `SECURITY.md` (future document).
+* Detailed security rules belong in `SECURITY.md`.
 
 ### 3.8 Avoid overengineering
 
@@ -218,7 +218,7 @@ Boundaries:
 * Customers interact only with the public website. They never interact directly with Supabase CMS data, admin routes, or secrets.
 * The CMS is separated from the public site. Unauthenticated users must not reach CMS functionality.
 * Astro Server Endpoints are the only server-side application boundary. No second backend exists.
-* Detailed endpoint contracts belong in `API.md` (future document). No endpoint URLs, methods, payloads, or response schemas are defined here.
+* Detailed endpoint contracts belong in `API.md`. No endpoint URLs, methods, payloads, or response schemas are defined here.
 
 ---
 
@@ -451,7 +451,7 @@ Architectural boundary:
 
 Do not invent role hierarchies unless required. No roles are defined here.
 
-Detailed policies — including session handling, authorization rules, data-access control, and admin route protection — belong in `SECURITY.md` (future document).
+Detailed policies — including session handling, authorization rules, data-access control, and admin route protection — belong in `SECURITY.md`.
 
 ---
 
@@ -489,7 +489,7 @@ Rules:
 * Secrets and private keys stay server-side (environment configuration) and never appear in client-side source or the repository.
 * Failure responses distinguish user-facing messages (clear, non-technical) from server-side diagnostics (logged, not exposed).
 
-Do not invent endpoint URLs, HTTP methods, payloads, or response schemas here. Those belong in `API.md` (future document).
+Do not invent endpoint URLs, HTTP methods, payloads, or response schemas here. Those belong in `API.md`.
 
 ---
 
@@ -536,7 +536,7 @@ Rules:
 * Verification secrets stay server-side and are never exposed in client-side source.
 * Spam-verification failure produces a clear, non-technical message with next-step guidance, without exposing verification internals.
 
-Detailed implementation, verification flow, key handling, and failure behavior belong in `SECURITY.md` (future document).
+Detailed implementation, verification flow, key handling, and failure behavior belong in `SECURITY.md`.
 
 ---
 
@@ -592,7 +592,7 @@ Constraints:
 
 Architectural boundaries for each external integration. No credentials, IDs, or configuration values are included.
 
-* **Vercel:** hosting and deployment platform. Serves production traffic over HTTPS, supports preview/production environments and production environment configuration. Deployment procedures belong in `DEPLOYMENT.md` (future document).
+* **Vercel:** hosting and deployment platform. Serves production traffic over HTTPS, supports preview/production environments and production environment configuration. Deployment procedures belong in `DEPLOYMENT.md`.
 * **Namecheap:** domain registrar. Responsible for domain registration only; DNS/hosting wiring is a deployment concern.
 * **GitHub:** source control. Repository hosting and version history; deployment integration detail (if any) belongs in `DEPLOYMENT.md`.
 * **EmailJS:** email delivery service for validated inquiries. Boundary is the Astro Server Endpoint, which invokes delivery without exposing sensitive configuration to the browser.
@@ -610,7 +610,7 @@ Architectural boundaries for each external integration. No credentials, IDs, or 
 * Sensitive configuration (including email, spam-protection, Supabase, and deployment settings) must use environment-appropriate configuration without committing secrets to source control.
 * Client-side source must never contain secrets, private keys, or credentials.
 * No actual environment variable names are listed here unless they are already defined in the repository. None are defined in this document.
-* Production configuration (email delivery, CMS access, integrated services) must be set correctly in the hosting environment. Procedures belong in `DEPLOYMENT.md` (future document).
+* Production configuration (email delivery, CMS access, integrated services) must be set correctly in the hosting environment. Procedures belong in `DEPLOYMENT.md`.
 
 ---
 
@@ -635,7 +635,7 @@ High-level behavior (architectural; UI copy belongs in implementation and `UI-UX
 
 ## 22. Security Boundaries
 
-High-level security architecture only. Detailed rules belong in `SECURITY.md` (future document).
+High-level security architecture only. Detailed rules belong in `SECURITY.md`.
 
 * **Authentication:** admin access requires secure authentication via Supabase Auth. Credentials are never hardcoded, committed, or exposed.
 * **Authorization:** authenticated admin actions respect authorization rules; unauthorized CMS access and content modification are prevented. Supabase access control must protect CMS data.
@@ -707,22 +707,21 @@ The following architecture decisions depend on confirmation. None authorizes sco
 
 ## 26. Related Documentation
 
-* `AGENTS.md` — AI-agent development rules (exists).
-* `README.md` — repository orientation (exists).
-* `docs/PROJECT.md` — product and business context (exists).
-* `docs/REQUIREMENTS.md` — functional and business requirements (exists).
-* `docs/TECH-STACK.md` — technology choices and technical constraints (exists).
-* `docs/UI-UX.md` — UX requirements (future document, not yet created).
-* `docs/DESIGN-SYSTEM.md` — visual and component design rules (future document, not yet created).
-* `docs/DATA-MODEL.md` — database structure and relationships (future document, not yet created).
-* `docs/API.md` — API and external service contracts (future document, not yet created).
-* `docs/SECURITY.md` — security requirements and constraints (future document, not yet created).
-* `docs/TESTING.md` — testing and verification strategy (future document, not yet created).
-* `docs/DEVELOPMENT.md` — local development workflow and commands (future document, not yet created).
-* `docs/DEPLOYMENT.md` — deployment and production procedures (future document, not yet created).
-* `docs/DECISIONS.md` — important architectural and technical decisions (future document, not yet created).
-
-Only `AGENTS.md`, `README.md`, `docs/PROJECT.md`, `docs/REQUIREMENTS.md`, and `docs/TECH-STACK.md` exist at the time of writing. All other documents above are future documents and are referenced as deferred detail owners, not as existing sources.
+* `AGENTS.md` — AI-agent development rules.
+* `README.md` — repository orientation.
+* `docs/PROJECT.md` — product and business context.
+* `docs/REQUIREMENTS.md` — functional and business requirements.
+* `docs/TECH-STACK.md` — technology choices and technical constraints.
+* `docs/UI-UX.md` — UX requirements.
+* `docs/DESIGN-SYSTEM.md` — visual and component design rules.
+* `docs/DATA-MODEL.md` — database structure and relationships.
+* `docs/API.md` — API and external service contracts.
+* `docs/SECURITY.md` — security requirements and constraints.
+* `docs/TESTING.md` — testing and verification strategy.
+* `docs/DEVELOPMENT.md` — local development workflow and commands.
+* `docs/ROADMAP.md` — development roadmap and phase progression.
+* `docs/DEPLOYMENT.md` — deployment and production procedures.
+* `docs/DECISIONS.md` — important architectural and technical decisions.
 
 ---
 
@@ -755,5 +754,5 @@ This architecture document is considered complete when:
 23. Performance and scalability guidance (rendering, minimal JS, hydration, media, caching/CDN, simple infrastructure, no numeric guarantees, website-scale growth) is documented.
 24. Non-goals (reservation engine, payments, checkout, CRM, automation, review platform, microservices, separate backend, state-management infrastructure, enterprise CMS) are explicitly excluded.
 25. Conditional/future decisions (persistence, GA4, CMS modules, media access, integrations, backend changes) are documented as requiring confirmation and `DECISIONS.md` entries.
-26. Related documents are referenced with future documents clearly indicated as future.
+26. Related documents are referenced with each document's ownership clearly indicated.
 27. The document introduces no unsupported technical decisions: no invented schemas, endpoints, CMS modules/roles, environment variables, credentials, or unlisted technologies (including Next.js, Express, NestJS, Tailwind, Resend, Nodemailer, Redux, Zustand, queues, microservices).

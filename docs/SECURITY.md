@@ -135,7 +135,7 @@ EmailJS is the Selected delivery service; the client Gmail is the Selected desti
 Per REQ-SEC-001, REQ-SEC-005, REQ-SEC-006, REQ-INQ-019, and the environment boundaries in `docs/TECH-STACK.md` (Section 20) and `docs/ARCHITECTURE.md` (Section 20):
 
 1. **No secrets, private keys, credentials, or sensitive configuration in source code or Git.** This includes history, not just the working tree.
-2. **Production secrets use appropriate environment configuration** provided by the hosting/deployment environment. Procedures belong in `docs/DEPLOYMENT.md` (future document), not here.
+2. **Production secrets use appropriate environment configuration** provided by the hosting/deployment environment. Procedures belong in `docs/DEPLOYMENT.md`, not here.
 3. **No real credentials or environment variable names are documented in this specification.** None are established by the source documents, and none are invented here.
 4. **No exposure through client bundles, logs, errors, or public responses.** Secrets never appear in browser-delivered JavaScript, user-facing messages, server responses to untrusted callers, or diagnostic output visible outside server-side handling.
 5. **Credentials are never hardcoded, committed, or exposed** as a standing rule (`AGENTS.md` development rules; REQ-SEC-001).
@@ -236,7 +236,7 @@ Per REQ-CMS-002 through REQ-CMS-010, REQ-SEC-001 through REQ-SEC-003, and the CM
 3. **HTTPS is required for production** (REQ-DEP-004).
 4. **Namecheap is the domain registrar; domain/DNS security belongs to deployment procedures.** Namecheap's responsibility is registration; DNS/hosting wiring is a deployment concern (`docs/TECH-STACK.md` Section 16; `docs/ARCHITECTURE.md` Section 19).
 5. **GitHub must not contain secrets.** Credentials, keys, and sensitive configuration never appear in the repository or its history (REQ-SEC-001, REQ-SEC-005).
-6. **Detailed deployment procedures belong in `docs/DEPLOYMENT.md`** (future document), not here. Production verification expectations (principal pages render, inquiry delivery functions, SEO files reachable, HTTPS active, no placeholder branding) are stated in REQ-DEP-007 and owned by deployment verification.
+6. **Detailed deployment procedures belong in `docs/DEPLOYMENT.md`**, not here. Production verification expectations (principal pages render, inquiry delivery functions, SEO files reachable, HTTPS active, no placeholder branding) are stated in REQ-DEP-007 and owned by deployment verification.
 
 ---
 
@@ -341,19 +341,17 @@ Currently existing documents:
 - `docs/DESIGN-SYSTEM.md` — visual and component design rules.
 - `docs/DATA-MODEL.md` — database structure and relationships (conceptual level).
 - `docs/API.md` — API and external service contracts (conceptual behavior and boundaries).
+- `docs/TESTING.md` — testing and verification strategy (owns verification that security behavior holds; no security behavior redefined here).
+- `docs/DEVELOPMENT.md` — local development workflow and commands (owns safe local handling of configuration; secrets still never committed).
+- `docs/ROADMAP.md` — development roadmap and phase progression.
+- `docs/DEPLOYMENT.md` — deployment and production procedures (owns production environment setup, HTTPS/domain wiring, and production verification).
+- `docs/DECISIONS.md` — important architectural and technical decisions (records any decision affecting architecture, technology, or security conventions).
 
 This document:
 
 - `docs/SECURITY.md` — security requirements and constraints (this document; principles and boundaries only, no implementation).
 
-Future documents (referenced as deferred detail owners, not existing sources) and their security-adjacent ownership:
-
-- `docs/TESTING.md` — testing and verification strategy (owns verification that security behavior holds; no security behavior redefined here).
-- `docs/DEVELOPMENT.md` — local development workflow and commands (owns safe local handling of configuration; secrets still never committed).
-- `docs/DEPLOYMENT.md` — deployment and production procedures (owns production environment setup, HTTPS/domain wiring, and production verification).
-- `docs/DECISIONS.md` — important architectural and technical decisions (records any future decision affecting architecture, technology, or security conventions).
-
-Future ownership is explicit: endpoint wire detail stays in `docs/API.md`; concepts and conceptual relationships stay in `docs/DATA-MODEL.md`; verification strategy stays in `docs/TESTING.md`; local workflow stays in `docs/DEVELOPMENT.md`; production procedures stay in `docs/DEPLOYMENT.md`; decisions stay in `docs/DECISIONS.md`. This document does not duplicate their implementation detail.
+Deferred detail ownership is explicit: endpoint wire detail stays in `docs/API.md`; concepts and conceptual relationships stay in `docs/DATA-MODEL.md`; verification strategy stays in `docs/TESTING.md`; local workflow stays in `docs/DEVELOPMENT.md`; production procedures stay in `docs/DEPLOYMENT.md`; decisions stay in `docs/DECISIONS.md`. This document does not duplicate their implementation detail.
 
 ---
 
@@ -374,7 +372,7 @@ This security document is considered complete when:
 11. The Confirmation Required matrix covers authentication flow, authorization/role model, RLS policies, inquiry persistence, inquiry fields, retention, storage model and policies, EmailJS configuration, Turnstile configuration, rate limiting/abuse controls, logging policy, CSP/headers, legal/privacy wording, and additional integrations.
 12. Explicit exclusions (no unnecessary infrastructure, custom auth, enterprise RBAC, second backend, review database, CRM model, payment/PCI scope, reservation model, Redis/queues/WAF/microservices without confirmation, invented compliance) are stated.
 13. Shot&Prints is treated as Reference-Only with no carried-over credentials, policies, contact details, or security assumptions.
-14. Related documents are referenced with future ownership (DATA-MODEL, API, TESTING, DEVELOPMENT, DEPLOYMENT, DECISIONS) clearly identified.
+14. Related documents are referenced with deferred ownership (DATA-MODEL, API, TESTING, DEVELOPMENT, DEPLOYMENT, DECISIONS) clearly identified.
 15. The document does not invent credentials, policies, schema, roles, environment variables, or unsupported infrastructure; remains consistent with all ten source documents; keeps conditional requirements explicitly conditional; and does not expand the project scope.
 
 (End of file)

@@ -62,11 +62,12 @@ To prevent premature lock-in and duplication, responsibility is split as follows
 | Visual language | `docs/DESIGN-SYSTEM.md` |
 | Concepts, relationships, and data boundaries | `docs/DATA-MODEL.md` |
 | **Endpoint behavior, request/response principles, validation principles, email/verification responsibility boundaries** | **This document (`docs/API.md`)** |
-| Auth behavior, authorization rules, RLS policies, secret handling, spam-verification detail | `docs/SECURITY.md` (future) |
-| Testing and verification strategy | `docs/TESTING.md` (future) |
-| Local development workflow | `docs/DEVELOPMENT.md` (future) |
-| Deployment and production procedures | `docs/DEPLOYMENT.md` (future) |
-| Important architectural/technical decisions once made | `docs/DECISIONS.md` (future) |
+| Auth behavior, authorization rules, RLS policies, secret handling, spam-verification detail | `docs/SECURITY.md` |
+| Testing and verification strategy | `docs/TESTING.md` |
+| Local development workflow | `docs/DEVELOPMENT.md` |
+| Development phases/order | `docs/ROADMAP.md` |
+| Deployment and production procedures | `docs/DEPLOYMENT.md` |
+| Important architectural/technical decisions once made | `docs/DECISIONS.md` |
 
 This document introduces no endpoint URLs, HTTP methods, payloads, response schemas, status codes, table definitions, column definitions, policies, credentials, or configuration values.
 
@@ -321,7 +322,7 @@ External services are integration boundaries, not application layers. No credent
 - **Client Gmail:** destination mailbox (see Section 10). Business follow-up happens outside the application.
 - **Cloudflare Turnstile:** spam-protection service (see Section 9). Boundary spans the inquiry island (challenge) and the server endpoint (verification). Secrets stay server-side.
 - **Supabase (PostgreSQL, Auth, Storage):** data platform (see Section 13). Boundary is authenticated, authorized server/CMS operations; public callers never reach raw CMS data.
-- **Vercel:** hosting and deployment platform. Serves production traffic over HTTPS and supports production environment configuration. Deployment procedures belong in `docs/DEPLOYMENT.md` (future).
+- **Vercel:** hosting and deployment platform. Serves production traffic over HTTPS and supports production environment configuration. Deployment procedures belong in `docs/DEPLOYMENT.md`.
 - **Namecheap:** domain registrar. Registration only; DNS/hosting wiring is a deployment concern.
 - **GitHub:** source control. Repository hosting and version history.
 - **Google Search Console / Google Business Profile / Google Business Profile review link:** external Google concerns. The website is ready for Search Console verification/monitoring; profile content lives in Google; the review CTA links to the client-supplied review URL (Confirmation Required, REQ-REV-004). No tracking IDs, URLs, or credentials are defined here.
@@ -403,7 +404,7 @@ This document:
 
 - `docs/API.md` — API and external service contracts (this document; conceptual behavior and boundaries only, no wire formats).
 
-Future documents (referenced as deferred detail owners, not existing sources):
+Deferred detail owners (not duplicated here):
 
 - `docs/SECURITY.md` — security requirements and constraints (owns auth behavior, authorization rules, RLS policies, secret handling, spam-verification detail, logging policy).
 - `docs/TESTING.md` — testing and verification strategy.

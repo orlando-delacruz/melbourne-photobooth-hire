@@ -49,7 +49,8 @@ Authority by concern:
 | Security requirements and constraints | `docs/SECURITY.md` |
 | Verification strategy | `docs/TESTING.md` |
 | Development workflow | `docs/DEVELOPMENT.md` |
-| Production procedures | `docs/DEPLOYMENT.md` (future document; not created here) |
+| Development phases/order | `docs/ROADMAP.md` |
+| Production procedures | `docs/DEPLOYMENT.md` |
 | Important decision records | This document (`docs/DECISIONS.md`) |
 
 Rules:
@@ -214,7 +215,7 @@ Tooling and convention choices that are not yet established (for example, test t
 
 Deployment and infrastructure direction (platform responsibilities, environment-handling principles, production verification expectations) may be recorded here at the decision level.
 
-Detailed deployment procedures — setup steps, configuration actions, domain wiring, release actions, and verification runs — belong in the future `docs/DEPLOYMENT.md`, not here. This document is not a deployment manual and `docs/DEPLOYMENT.md` remains a future document.
+Detailed deployment procedures — setup steps, configuration actions, domain wiring, release actions, and verification runs — belong in `docs/DEPLOYMENT.md`, not here. This document is not a deployment manual.
 
 ## 18. Superseding and Reversing Decisions
 
@@ -273,8 +274,8 @@ Conceptual links; each concern is owned by its document (see Section 3):
 - `docs/UI-UX.md` — behavior and experience; `docs/DESIGN-SYSTEM.md` — visual language and reusable styling.
 - `docs/DATA-MODEL.md` — data concepts and boundaries; `docs/API.md` — endpoint and integration responsibility boundaries.
 - `docs/SECURITY.md` — security requirements and constraints; governs security expectations.
-- `docs/TESTING.md` — verification strategy; `docs/DEVELOPMENT.md` — development workflow.
-- `docs/DEPLOYMENT.md` — future owner of deployment and production procedures.
+- `docs/TESTING.md` — verification strategy; `docs/DEVELOPMENT.md` — development workflow; `docs/ROADMAP.md` — development phase progression.
+- `docs/DEPLOYMENT.md` — owner of deployment and production procedures.
 
 ## 23. Scope Exclusions
 
@@ -282,7 +283,7 @@ This document does not become:
 
 - a requirements document (requirements belong in `docs/REQUIREMENTS.md`);
 - an implementation guide (implementation belongs in the repository and its owning docs);
-- a deployment manual (procedures belong in the future `docs/DEPLOYMENT.md`);
+- a deployment manual (procedures belong in `docs/DEPLOYMENT.md`);
 - a testing plan (verification strategy belongs in `docs/TESTING.md`);
 - a business-content source (business facts require client confirmation and belong in confirmed content, not here);
 - a place for speculative architecture (unconfirmed ideas stay **Proposed** or **Revisit Required** with explicit triggers, never presented as direction).
@@ -313,7 +314,7 @@ This document is complete when:
 11. Technology, architecture, security, data/API, testing/development, and deployment handling defer detail to their owning documents and create no new technology choices.
 12. Superseding, evidence, and unresolved-decision rules prevent silent history edits and silent approvals.
 13. The register states it is currently empty and does not invent historical decisions.
-14. Related documentation, scope exclusions, the Shot&Prints Reference-Only boundary, and the future status of `docs/DEPLOYMENT.md` are explicit.
+14. Related documentation, scope exclusions, and the Shot&Prints Reference-Only boundary are explicit.
 15. No invented decisions, confirmations, requirements, technologies, tooling, commands, versions, conventions, variables, credentials, addresses, links, or infrastructure details appear.
 16. The fixed-price scope discipline (simplicity, maintainability, no overengineering) is preserved.
 

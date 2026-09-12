@@ -149,6 +149,7 @@ Use the following documents as project context when relevant:
 - `docs/SECURITY.md` — security requirements and constraints.
 - `docs/TESTING.md` — testing and verification strategy.
 - `docs/DEVELOPMENT.md` — local development workflow and commands.
+- `docs/ROADMAP.md` — development phase order and progression.
 - `docs/DEPLOYMENT.md` — deployment and production procedures.
 - `docs/DECISIONS.md` — important architectural and technical decisions.
 

@@ -684,13 +684,13 @@ This project does not automatically include (**Confirmed** exclusions, mirroring
 - `docs/API.md` — API and external service contracts (conceptual behavior and boundaries).
 - `docs/SECURITY.md` — security requirements and constraints mapped by Section 8.
 
-Future ownership (documents not created by this task):
+Related documents created separately (not by the testing-strategy task), with their testing-adjacent ownership:
 
 - `docs/DEVELOPMENT.md` — development workflow and verification commands.
 - `docs/DEPLOYMENT.md` — production deployment and verification procedures.
 - `docs/DECISIONS.md` — important testing/tooling decisions (for example any future adoption of a test framework, browser tooling, CI, coverage expectations, or infrastructure beyond this strategy).
 
-Those future documents are not created here.
+Those documents are not created here.
 
 ---
 
