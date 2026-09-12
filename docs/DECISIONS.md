@@ -251,13 +251,58 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-No formal decision records have been created yet under the convention in Section 8.
+Three decision records exist (DEC-001 through DEC-003). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
-The register is therefore currently **empty**. Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents are **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+| ID      | Title                                                    | Status   | Date       |
+| ------- | -------------------------------------------------------- | -------- | ---------- |
+| DEC-001 | Phase 1 Astro skeleton and tooling baseline              | Accepted | 2026-09-12 |
+| DEC-002 | Typecheck, format enforcement, and root CONTEXT glossary | Accepted | 2026-09-12 |
+| DEC-003 | Centralized mock-content seam and styling split          | Accepted | 2026-09-12 |
 
-| ID | Title | Status | Date |
-| --- | --- | --- | --- |
-| — | (no records yet) | — | — |
+### DEC-001 — Phase 1 Astro skeleton and tooling baseline
+
+- **ID:** DEC-001
+- **Title:** Phase 1 Astro skeleton and tooling baseline
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** ROADMAP Phase 1 requires a reproducible skeleton (pages resolve, navigation, 404, production build) with no unconfirmed business content. No package manager, config, or source layout existed (docs-only greenfield). REQ-PUB-001 requires Melbourne Photobooth Hire branding throughout; `site`/sitemap canonicals require a client-confirmed domain per DEPLOYMENT.md.
+- **Decision:** Scaffold minimal Astro 7 + strict TypeScript via npm with `dev`/`build`/`preview` scripts; Prettier as formatter; hand-written `BaseLayout` plus structure-only routes (`/`, `/services`, `/packages`, `/gallery`, `/about`, `/faq`, `/contact`, `/privacy`, `/terms`, `/404`) each with unique title/description and one H1; `public/robots.txt` allowing public and disallowing `/admin`; `.gitignore` covering `node_modules/`, `dist/`, `.astro/`, `.env*`. Defer `site`/sitemap integration, React islands, Styled Components, and Supabase wiring to their roadmap phases.
+- **Alternatives considered:** `npm create astro` interactive template — rejected to keep the diff minimal and reviewable with zero business content. Adding sitemap/`site` now — rejected because the production domain is provisional/pending confirmation and must not be baked into canonicals.
+- **Rationale:** Smallest increment meeting the Phase 1 exit gate within the ₱15,000 scope; keeps SEO shells correct without inventing canonicals, content, or config.
+- **Consequences:** `npm install`/`npm run build` reproduce the skeleton; Phase 2 builds UI on these routes; `site`/sitemap/React/CMS work remains explicitly pending.
+- **Related documents:** `docs/ROADMAP.md` (Phase 1), `docs/ARCHITECTURE.md` (Astro-first), `docs/TECH-STACK.md` (Astro/TS), `docs/DEPLOYMENT.md` (domain confirmation).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Confirm production domain before adding `site`/sitemap/canonicals; confirm package validation and form/CMS scope in Phase 2/3 planning.
+
+### DEC-002 — Typecheck, format enforcement, and root CONTEXT glossary
+
+- **ID:** DEC-002
+- **Title:** Typecheck, format enforcement, and root CONTEXT glossary
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** Phase 1 exit needs evidenced hygiene beyond `astro build` (DEVELOPMENT.md Section 19). No check/format commands or shared domain glossary existed.
+- **Decision:** Add `@astrojs/check` with `npm run check`; add `.prettierrc` (prettier-plugin-astro) with `format`/`format:write` scripts and `.prettierignore` for `dist/`, `.astro/`, `node_modules/`, `package-lock.json`, `docs/`, root `*.md`, and `.agents/`. Create root `CONTEXT.md` as the canonical glossary (inquiry/request, service, package, gallery item, FAQ, published content, site settings, admin, CMS, server endpoint, Turnstile evidence, review CTA, testimonial). Decision records stay in this file per project convention, not the skill-default `docs/adr/`.
+- **Alternatives considered:** ESLint suite — rejected as disproportionate tooling for the current scope; can be revisited with evidence of need. `docs/adr/` directory — rejected to avoid a second decision-record system.
+- **Rationale:** Smallest tooling that evidences the Phase 1 gate; glossary prevents terminology drift (e.g. booking vs inquiry) in code and discussion.
+- **Consequences:** `npm run check` and `npm run format` are part of every verification pass; CONTEXT.md terms are binding for new code.
+- **Related documents:** `docs/DEVELOPMENT.md` (Sections 19–20), `docs/TESTING.md` (Section 4.1), `CONTEXT.md`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** None.
+
+### DEC-003 — Centralized mock-content seam and styling split
+
+- **ID:** DEC-003
+- **Title:** Centralized mock-content seam and styling split
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** ROADMAP Sections 4–5 require a centralized mock layer swapped per-surface for Supabase content in Phase 3. TECH-STACK selects Styled Components "across Astro and React UI", but styled-components cannot style `.astro` files directly. First build also exposed a styled-components default-import SSR interop failure (`styled.button is not a function`).
+- **Decision:** `src/lib/content/` owns one small interface (`ContentSource.load()` / `getContent()` accepting an injectable source) with a mock adapter of clearly-marked placeholder data only (empty gallery/FAQs to exercise empty states; `reviewUrl: null` so the review CTA stays absent until confirmed). Styling splits: CSS custom properties in `src/styles/tokens.css` (+ `global.css`) for Astro components, typed styled-components `theme` for React islands only. Island convention: named `styled` import (SSR-safe), minimal serialized props, `client:media` hydration for the mobile nav island.
+- **Alternatives considered:** Per-page fixtures — rejected (flag-day rewrites, violates ROADMAP centralization). styled-components everywhere incl. Astro — impossible; rejected. `client:load` for mobile nav — rejected (ships JS to desktop users who never need it).
+- **Rationale:** One seam = one swap point for Phase 3; split styling honors both the selected stack and Astro's rendering model; `client:media` keeps desktop pages at zero island JS.
+- **Consequences:** Pages/components consume `getContent()` only; Phase 3 adds a Supabase adapter without touching callers; provisional palette label must be lifted on client brand confirmation.
+- **Related documents:** `docs/ROADMAP.md` (Sections 4–5), `docs/ARCHITECTURE.md` (Sections 6–8), `docs/DESIGN-SYSTEM.md` (Sections 5–10), `docs/DATA-MODEL.md` (Section 5).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of brand colors/fonts, CMS modules/fields, and review URL before Phase 3 wiring.
 
 Future records are appended here in ID order with status and date kept current.
 

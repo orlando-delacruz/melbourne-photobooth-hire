@@ -1,0 +1,43 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { getContent } from "../lib/content/repository";
+import { NAV_ITEMS } from "../lib/navigation";
+import "../styles/tokens.css";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const { site } = getContent();
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to main content
+    </a>
+    <Header items={NAV_ITEMS} currentPath={currentPath} brandName={site.brandName} />
+    <main id="main">
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+    <Footer
+      items={NAV_ITEMS}
+      brandName={site.brandName}
+      serviceAreaStatement={site.serviceAreaStatement}
+      reviewUrl={site.reviewUrl}
+    />
+  </body>
+</html>

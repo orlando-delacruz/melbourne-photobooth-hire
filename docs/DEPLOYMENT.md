@@ -273,9 +273,9 @@ No placeholder or development content should remain unintentionally on the live 
 
 ---
 
-## 9. Inquiry / Booking Deployment
+## 9. Inquiry Deployment
 
-The website uses an inquiry-based booking model rather than a complex reservation system.
+The website uses an inquiry-based model rather than a complex reservation system.
 
 The intended production flow is:
 
@@ -283,8 +283,8 @@ The intended production flow is:
 Customer
    │
    ▼
-Booking / Inquiry Form
-   │
+Inquiry Form
+    │
    ▼
 Client-side validation
    │

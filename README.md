@@ -74,8 +74,8 @@ The following is the project's established technology direction. It does not imp
 - Schema.org JSON-LD
 - Google Search Console
 - Google Business Profile
-- Google Analytics 4
-- Google Business Profile review link
+- Google Analytics 4 (conditional only — only if confirmed and appropriate; not mandatory)
+- Google Business Profile review link (requires client confirmation; no placeholder URL)
 
 ## 5. Architecture Overview
 

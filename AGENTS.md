@@ -84,6 +84,10 @@ Preferred architecture:
 * React for interactive components/islands
 * TypeScript
 * Styled Components
+* Lucide React for UI icons
+* Motion for UI animation where genuinely needed
+* React Hook Form for form state handling
+* Zod for input validation
 * Supabase for PostgreSQL, authentication, storage, and CMS functionality
 * Astro Server Endpoints for backend/API functionality
 * EmailJS for email delivery to the client's Gmail
@@ -98,8 +102,8 @@ Relevant Google/SEO services include:
 * Schema.org JSON-LD
 * Google Search Console
 * Google Business Profile
-* Google Analytics 4
-* Google Business Profile review link
+* Google Analytics 4 (conditional only — only if confirmed and appropriate; not mandatory)
+* Google Business Profile review link (requires client confirmation; no placeholder URL)
 
 These technologies are project direction/context and should not be changed casually. Any architectural change should be justified against the project's requirements and documented architecture.
 

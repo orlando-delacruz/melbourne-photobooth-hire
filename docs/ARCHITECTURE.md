@@ -45,15 +45,17 @@ Public Website
          Validation (Zod)
                 │
                 ▼
-       Astro Server Endpoint
-                │
-        ┌───────┴────────┐
-        │                │
-        ▼                ▼
- Cloudflare          EmailJS
- Turnstile               │
-                         ▼
-                    Client Gmail
+        Astro Server Endpoint
+                 │
+                 ▼
+     Cloudflare Turnstile
+      (server verification)
+                 │
+                 ▼
+              EmailJS
+                 │
+                 ▼
+            Client Gmail
 ```
 
 CMS-managed content:

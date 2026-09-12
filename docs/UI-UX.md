@@ -356,6 +356,8 @@ Submission
 Success / Error State
 ```
 
+Validation and Spam Protection are enforced server-side at the Astro Server Endpoint (server re-validation plus Turnstile verification) before EmailJS delivery to the client Gmail; client-side checks are usability only (see `docs/ARCHITECTURE.md` Section 9 and `docs/API.md` Section 5).
+
 ### 13.1 Form purpose and guidance
 
 - The form clearly explains its purpose: requesting information or availability for a photobooth at the customer's event, with follow-up handled by the business. It does not promise instant booking, confirmed availability, or checkout.

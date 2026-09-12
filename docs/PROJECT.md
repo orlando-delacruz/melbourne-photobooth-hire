@@ -245,6 +245,8 @@ Recommended customer flow:
 
 Customer → Inquiry Form → Validation → EmailJS → Client Gmail
 
+Validation includes server-side re-validation and server-side Turnstile verification via the Astro Server Endpoint (see `docs/REQUIREMENTS.md` REQ-INQ-002).
+
 If booking records are explicitly required by the implemented CMS:
 
 Customer → Inquiry Form → Validation → Supabase + EmailJS → CMS record + Client Gmail

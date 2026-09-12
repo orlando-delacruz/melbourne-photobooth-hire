@@ -1,0 +1,57 @@
+---
+import type { NavItem } from "./islands/MobileNav";
+
+interface Props {
+  items: NavItem[];
+  brandName: string;
+  serviceAreaStatement: string;
+  reviewUrl: string | null;
+}
+const { items, brandName, serviceAreaStatement, reviewUrl } = Astro.props;
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-brand">{brandName}</p>
+    <p>{serviceAreaStatement}</p>
+    <nav aria-label="Footer">
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href}>{item.label}</a>
+          </li>
+        ))}
+        <li>
+          <a href="/privacy">Privacy Policy</a>
+        </li>
+        <li>
+          <a href="/terms">Terms &amp; Conditions</a>
+        </li>
+      </ul>
+    </nav>
+    {reviewUrl ? (
+      <p>
+        <a href={reviewUrl}>Leave a Google review</a>
+      </p>
+    ) : null}
+  </div>
+</footer>
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+  .footer-brand {
+    font-weight: 700;
+  }
+  .site-footer nav ul {
+    list-style: none;
+    margin: var(--space-sm) 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+  }
+</style>

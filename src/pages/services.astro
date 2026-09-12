@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import { getContent } from "../lib/content/repository";
+
+const { services } = getContent();
+---
+
+<BaseLayout
+  title="Services | Melbourne Photobooth Hire"
+  description="Photobooth service categories from Melbourne Photobooth Hire. Final descriptions pending client confirmation."
+>
+  <h1>Services</h1>
+  <ul>
+    {services.map((service) => (
+      <li>
+        <h2>{service.name}</h2>
+        <p>{service.summary}</p>
+      </li>
+    ))}
+  </ul>
+  <p>
+    <Button href="/packages" variant="secondary">
+      View packages
+    </Button>
+    <Button href="/contact" variant="primary">
+      Enquire now
+    </Button>
+  </p>
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+interface Props {
+  title: string;
+  lede?: string;
+  id?: string;
+}
+const { title, lede, id } = Astro.props;
+---
+
+<div class="section-heading">
+  <h2 id={id}>{title}</h2>
+  {lede ? <p>{lede}</p> : null}
+</div>
+<style>
+  .section-heading {
+    margin-bottom: var(--space-md);
+  }
+  .section-heading p {
+    color: var(--color-text-secondary);
+    margin-top: var(--space-3xs);
+  }
+</style>

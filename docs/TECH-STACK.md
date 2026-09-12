@@ -207,7 +207,7 @@ Preferred flow (current direction):
 
 Conditional flow (only if inquiry records in the CMS are explicitly required):
 
-`Customer → Inquiry Form → Supabase + EmailJS → CMS Record + Client Gmail`
+`Customer → Inquiry Form → Validation → Supabase + EmailJS → CMS Record + Client Gmail`
 
 The second flow must only be implemented if booking record storage is actually required.
 
@@ -351,7 +351,7 @@ These decisions are recorded so future changes stay explicit. None authorizes sc
 
 * `docs/PROJECT.md` — product and business context.
 * `docs/REQUIREMENTS.md` — functional and business requirements.
-* `docs/ARCHITECTURE.md` — application architecture and code organization (to be created; not part of this task).
+* `docs/ARCHITECTURE.md` — application architecture and code organization.
 * `docs/UI-UX.md` — UX requirements.
 * `docs/DESIGN-SYSTEM.md` — visual and component design rules.
 * `docs/DATA-MODEL.md` — database structure and relationships.
