@@ -1,22 +1,49 @@
 ---
 interface Props {
   title: string;
+  eyebrow?: string;
   lede?: string;
   id?: string;
+  tone?: "light" | "dark";
 }
-const { title, lede, id } = Astro.props;
+const { title, eyebrow, lede, id, tone = "light" } = Astro.props;
 ---
 
-<div class="section-heading">
+<div class:list={["section-heading", `section-heading--${tone}`]}>
+  {eyebrow ? <p class="eyebrow">{eyebrow}</p> : null}
   <h2 id={id}>{title}</h2>
-  {lede ? <p>{lede}</p> : null}
+  {lede ? <p class="lede">{lede}</p> : null}
 </div>
 <style>
   .section-heading {
+    max-width: var(--text-max-width);
     margin-bottom: var(--space-md);
   }
-  .section-heading p {
-    color: var(--color-text-secondary);
-    margin-top: var(--space-3xs);
+  .eyebrow {
+    margin: 0 0 var(--space-3xs);
+    color: var(--color-accent);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+  .section-heading h2 {
+    margin: 0 0 var(--space-2xs);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    line-height: 1.1;
+  }
+  .lede {
+    margin: 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-body);
+    font-weight: 400;
+  }
+  .section-heading--dark .eyebrow {
+    color: var(--color-accent-on-dark);
+  }
+  .section-heading--dark h2 {
+    color: var(--color-on-ink);
+  }
+  .section-heading--dark .lede {
+    color: var(--color-on-ink-secondary);
   }
 </style>

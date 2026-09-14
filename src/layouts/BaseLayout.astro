@@ -3,14 +3,28 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { getContent } from "../lib/content/repository";
 import { NAV_ITEMS } from "../lib/navigation";
+import "@fontsource/fraunces/latin-400.css";
+import "@fontsource/fraunces/latin-400-italic.css";
+import "@fontsource/fraunces/latin-500.css";
+import "@fontsource/fraunces/latin-600.css";
+import "@fontsource/fraunces/latin-600-italic.css";
+import "@fontsource/fraunces/latin-700.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/inter/latin-700.css";
 import "../styles/tokens.css";
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  /** Extra class on <body>, e.g. "page-home" for a full-bleed dark canvas. */
+  bodyClass?: string;
+  /** URL to preload (LCP image), homepage hero background. */
+  preloadImage?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, bodyClass = "", preloadImage } = Astro.props;
 const { site } = getContent();
 const currentPath = Astro.url.pathname;
 ---
@@ -20,11 +34,17 @@ const currentPath = Astro.url.pathname;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#17120c" />
+    <link rel="preconnect" href="https://images.pexels.com" />
+    {preloadImage ? <link rel="preload" as="image" href={preloadImage} /> : null}
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
   </head>
-  <body>
+  <body class={bodyClass}>
     <a class="skip-link" href="#main">
       Skip to main content
     </a>

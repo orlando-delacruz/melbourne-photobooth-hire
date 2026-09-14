@@ -1,39 +1,51 @@
 /* Design tokens for Melbourne Photobooth Hire.
  *
- * PROVISIONAL — color and font values below are proposals requiring client
- * confirmation (see docs/DESIGN-SYSTEM.md Section 5). Structural scales
- * (spacing, type steps, breakpoints, radius, elevation) follow the documented
- * design-system decisions. Use semantic var() references, never hardcode values.
+ * PROVISIONAL — the "event noir" palette (espresso + champagne + ivory) and
+ * Fraunces/Inter font pairing are proposals requiring client confirmation
+ * before they become production brand values (see docs/DESIGN-SYSTEM.md
+ * Sections 5-6, 38). Structural scales (spacing, type steps, breakpoints,
+ * radius, elevation, motion) follow the documented design-system decisions
+ * (Sections 7-12, 29). Use semantic var() references, never hardcode values.
  */
 
 :root {
-  /* Color roles (provisional values) */
-  --color-background: #faf8f5;
+  /* Color roles (provisional proposal — "event noir", photography-led) */
+  --color-ink: #17120c;
+  --color-ink-soft: #4a423a;
+  --color-ink-faint: #71695f;
+  --color-ivory: #f5efe3;
   --color-surface: #ffffff;
+  --color-surface-dark: #211a12;
   --color-elevated: #ffffff;
-  --color-text: #1c1917;
-  --color-text-secondary: #57534e;
-  --color-text-muted: #78716c;
-  --color-primary: #92400e;
-  --color-primary-contrast: #ffffff;
-  --color-border: #e5e0d8;
-  --color-success: #166534;
-  --color-warning: #b45309;
-  --color-error: #b91c1c;
-  --color-focus: #1d4ed8;
+  --color-primary: #17120c;
+  --color-primary-contrast: #f5efe3;
+  --color-accent: #9e7b33;
+  --color-accent-on-dark: #e6ce8a;
+  --color-on-ink: #f3ecdc;
+  --color-on-ink-secondary: #c8bca5;
+  --color-border: #e2d8c6;
+  --color-divider: #ece3d3;
+  --color-ink-border: #3a3128;
+  --color-input-border: #a2947c;
+  --color-scrim: rgba(23, 18, 12, 0.6);
+  --color-scrim-strong: rgba(23, 18, 12, 0.78);
+  --color-success: #1f6e43;
+  --color-warning: #8a5a00;
+  --color-error: #b3261e;
+  --color-focus: #b45309;
+
+  /* Typefaces (provisional proposal — self-hosted) */
+  --font-display: "Fraunces", "Times New Roman", Georgia, serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* Type scale (relative steps) */
-  --text-display: 2.75rem;
+  --text-display: clamp(2.75rem, 6vw, 4.25rem);
   --text-h1: 2rem;
   --text-h2: 1.5rem;
   --text-h3: 1.25rem;
   --text-body: 1rem;
   --text-small: 0.875rem;
   --text-caption: 0.75rem;
-
-  /* Typefaces (provisional: system stack until brand fonts are confirmed) */
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* Spacing ladder */
   --space-3xs: 0.25rem;
@@ -48,6 +60,18 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Elevation (design-system Section 12) */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(23, 18, 12, 0.05), 0 8px 24px rgba(23, 18, 12, 0.06);
+  --elevation-2: 0 4px 12px rgba(23, 18, 12, 0.12), 0 16px 40px rgba(23, 18, 12, 0.18);
+
+  /* Motion (design-system Section 29) */
+  --motion-instant: 0ms;
+  --motion-quick: 160ms;
+  --motion-settled: 320ms;
+  --ease-default: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Layout */
   --content-max-width: 72rem;
@@ -63,7 +87,7 @@
 
 @media (max-width: 639px) {
   :root {
-    --text-display: 2rem;
+    --text-display: clamp(2.25rem, 11vw, 2.75rem);
     --text-h1: 1.625rem;
     --text-h2: 1.25rem;
   }

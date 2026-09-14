@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
+import PageHeader from "../components/PageHeader.astro";
 import { getContent } from "../lib/content/repository";
 
 const { site } = getContent();
@@ -10,11 +11,20 @@ const { site } = getContent();
   title="Contact | Melbourne Photobooth Hire"
   description="Enquire with Melbourne Photobooth Hire about photobooth hire for your event."
 >
-  <h1>Contact</h1>
-  <p>
-    Reach out with your event date and details — we&apos;ll confirm availability and recommend the
-    perfect booth.
-  </p>
-  <p>{site.serviceAreaStatement}</p>
-  <InquiryForm client:visible />
+  <PageHeader
+    title="Contact"
+    eyebrow="Make an enquiry"
+    lede="Reach out with your event date and details — we'll confirm availability and recommend the perfect booth."
+  />
+  <p class="service-area">{site.serviceAreaStatement}</p>
+  <div class="section">
+    <InquiryForm client:visible />
+  </div>
 </BaseLayout>
+
+<style>
+  .service-area {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+</style>

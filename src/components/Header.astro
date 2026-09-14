@@ -20,7 +20,11 @@ const { items, currentPath, brandName } = Astro.props;
       <ul>
         {items.map((item) => (
           <li>
-            <a href={item.href} aria-current={currentPath === item.href ? "page" : undefined}>
+            <a
+              class:list={["nav-link", { "nav-link--current": currentPath === item.href }]}
+              href={item.href}
+              aria-current={currentPath === item.href ? "page" : undefined}
+            >
               {item.label}
             </a>
           </li>
@@ -42,45 +46,80 @@ const { items, currentPath, brandName } = Astro.props;
 </header>
 <style>
   .site-header {
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(23, 18, 12, 0.86);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(230, 206, 138, 0.16);
   }
   .header-inner {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     padding-top: var(--space-xs);
     padding-bottom: var(--space-xs);
   }
   .brand {
-    font-weight: 700;
-    color: var(--color-text);
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--color-on-ink);
     text-decoration: none;
+    letter-spacing: 0.01em;
     margin-right: auto;
   }
   .desktop-nav ul {
     display: flex;
-    gap: var(--space-sm);
+    align-items: center;
+    gap: var(--space-2xs);
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  .desktop-nav a {
-    color: var(--color-text);
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-xs);
+    color: var(--color-on-ink-secondary);
+    font-weight: 500;
+    font-size: var(--text-small);
     text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: color var(--motion-quick) var(--ease-default);
   }
-  .desktop-nav a[aria-current="page"] {
-    font-weight: 700;
+  .nav-link:hover {
+    color: var(--color-on-ink);
+  }
+  .nav-link--current {
+    color: var(--color-on-ink);
+    font-weight: 600;
     text-decoration: underline;
+    text-decoration-color: var(--color-accent-on-dark);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
   }
   .header-cta {
-    background: var(--color-primary);
-    color: var(--color-primary-contrast);
-    border-radius: var(--radius-sm);
-    padding: var(--space-2xs) var(--space-sm);
-    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    background: var(--color-accent-on-dark);
+    color: var(--color-ink);
+    border-radius: var(--radius-pill);
     font-weight: 600;
+    font-size: var(--text-small);
+    text-decoration: none;
     white-space: nowrap;
+    transition:
+      transform var(--motion-quick) var(--ease-default),
+      box-shadow var(--motion-quick) var(--ease-default);
+  }
+  .header-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--elevation-1);
   }
   .mobile-nav {
     display: none;

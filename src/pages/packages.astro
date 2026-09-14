@@ -1,7 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import PageHeader from "../components/PageHeader.astro";
 import SectionHeading from "../components/SectionHeading.astro";
+import Reveal from "../components/islands/Reveal";
 import { getContent } from "../lib/content/repository";
 
 const { packages, addOns, bookingPolicies } = getContent();
@@ -11,58 +14,83 @@ const { packages, addOns, bookingPolicies } = getContent();
   title="Packages | Melbourne Photobooth Hire"
   description="Starter, Standard and Premium photobooth packages with pricing, inclusions, add-ons and booking policies."
 >
-  <h1>Packages</h1>
-  <p>
-    Every booking comes dressed to impress — red carpet and golden bollard entrance setup included
-    as standard, along with full setup and pack-down handled by our team.
-  </p>
+  <PageHeader
+    title="Packages"
+    eyebrow="Simple, all-inclusive options"
+    lede="Every booking comes dressed to impress — red carpet and golden bollard entrance setup included as standard, along with full setup and pack-down by our team."
+  />
   {packages.length === 0 ? (
-    <p>
+    <p class="section">
       Package options will be shown here once confirmed. Until then, please enquire for current
       options.
     </p>
   ) : (
-    <ul>
+    <div class="card-grid section">
       {packages.map((pkg) => (
-        <li>
-          <article>
-            <h2>
-              {pkg.name}
-              {pkg.badge ? ` — ${pkg.badge}` : ""}
-            </h2>
-            <p>{pkg.summary}</p>
-            <p>
-              {pkg.durationLabel} · {pkg.priceLabel}
-            </p>
-            <ul>
-              {pkg.inclusions.map((inclusion) => (
-                <li>{inclusion}</li>
-              ))}
-            </ul>
-          </article>
-        </li>
+        <Reveal client:visible>
+          <Card
+            title={pkg.name}
+            badge={pkg.badge}
+            meta={`${pkg.durationLabel} · ${pkg.priceLabel}`}
+            description={pkg.summary}
+            items={pkg.inclusions}
+            href="/contact"
+            ctaLabel="Enquire now"
+          />
+        </Reveal>
+      ))}
+    </div>
+  )}
+  <section class="section" aria-labelledby="packages-addons">
+    <SectionHeading title="Add-ons" id="packages-addons" eyebrow="Optional extras" />
+    <div class="card-grid">
+      {addOns.map((addOn) => (
+        <Reveal client:visible>
+          <Card title={addOn.name} description={addOn.detail} />
+        </Reveal>
+      ))}
+    </div>
+  </section>
+  <section class="section" aria-labelledby="packages-policies">
+    <SectionHeading title="Booking policies" id="packages-policies" eyebrow="Good to know" />
+    <ul class="policy-list">
+      {bookingPolicies.map((policy) => (
+        <li>{policy}</li>
       ))}
     </ul>
-  )}
-  <SectionHeading title="Add-ons" id="packages-addons" />
-  <ul>
-    {addOns.map((addOn) => (
-      <li>
-        <h2>{addOn.name}</h2>
-        <p>{addOn.detail}</p>
-      </li>
-    ))}
-  </ul>
-  <SectionHeading title="Booking policies" id="packages-policies" />
-  <ul>
-    {bookingPolicies.map((policy) => (
-      <li>{policy}</li>
-    ))}
-  </ul>
-  <SectionHeading title="Next step" id="packages-next" />
-  <p>
-    <Button href="/contact" variant="primary">
-      Enquire now
-    </Button>
-  </p>
+  </section>
+  <section class="section" aria-labelledby="packages-next">
+    <SectionHeading title="Next step" id="packages-next" />
+    <p>
+      <Button href="/contact" variant="primary">
+        Enquire now
+      </Button>
+    </p>
+  </section>
 </BaseLayout>
+
+<style>
+  .policy-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-2xs);
+    max-width: var(--text-max-width);
+  }
+  .policy-list li {
+    padding-left: var(--space-sm);
+    position: relative;
+    color: var(--color-ink-soft);
+  }
+  .policy-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+</style>

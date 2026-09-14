@@ -3,18 +3,23 @@ import "styled-components";
 /**
  * Island theme for styled-components. Mirrors the CSS custom properties in
  * styles/tokens.css so React islands share the same semantic roles.
- * Provisional color values require client confirmation (see tokens.css).
+ * Provisional palette/font values require client confirmation (see tokens.css).
  */
 export const theme = {
   color: {
-    background: "var(--color-background)",
+    background: "var(--color-ivory)",
     surface: "var(--color-surface)",
+    surfaceDark: "var(--color-surface-dark)",
     elevated: "var(--color-elevated)",
-    text: "var(--color-text)",
-    textSecondary: "var(--color-text-secondary)",
+    text: "var(--color-ink)",
+    textSecondary: "var(--color-ink-soft)",
+    textMuted: "var(--color-ink-faint)",
     primary: "var(--color-primary)",
     primaryContrast: "var(--color-primary-contrast)",
+    accent: "var(--color-accent)",
+    accentOnDark: "var(--color-accent-on-dark)",
     border: "var(--color-border)",
+    inputBorder: "var(--color-input-border)",
     success: "var(--color-success)",
     warning: "var(--color-warning)",
     error: "var(--color-error)",
@@ -33,6 +38,17 @@ export const theme = {
     sm: "var(--radius-sm)",
     md: "var(--radius-md)",
     lg: "var(--radius-lg)",
+    pill: "var(--radius-pill)",
+  },
+  elevation: {
+    "0": "var(--elevation-0)",
+    "1": "var(--elevation-1)",
+    "2": "var(--elevation-2)",
+  },
+  motion: {
+    quick: "var(--motion-quick)",
+    settled: "var(--motion-settled)",
+    ease: "var(--ease-default)",
   },
 } as const;
 

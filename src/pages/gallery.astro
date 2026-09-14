@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { getContent } from "../lib/content/repository";
 
 const { gallery } = getContent();
@@ -10,11 +11,23 @@ const { gallery } = getContent();
   title="Gallery | Melbourne Photobooth Hire"
   description="Real event imagery from Melbourne Photobooth Hire. Imagery pending client approval."
 >
-  <h1>Gallery</h1>
+  <PageHeader
+    title="Gallery"
+    eyebrow="Real event moments"
+    lede="Imagery from real events will appear here once client-approved."
+  />
   {gallery.length === 0 ? (
-    <p>No images are available yet.</p>
+    <div class="empty-state section">
+      <p class="empty-title">No images are available yet.</p>
+      <p class="empty-lede">
+        Once client-approved photos are ready, this gallery will showcase real event moments.
+      </p>
+      <Button href="/contact" variant="primary">
+        Enquire now
+      </Button>
+    </div>
   ) : (
-    <ul>
+    <ul class="gallery-grid section">
       {gallery.map((item) => (
         <li>
           <img src={item.src} alt={item.alt} loading="lazy" />
@@ -22,9 +35,38 @@ const { gallery } = getContent();
       ))}
     </ul>
   )}
-  <p>
-    <Button href="/contact" variant="primary">
-      Enquire now
-    </Button>
-  </p>
 </BaseLayout>
+
+<style>
+  .empty-state {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2xs);
+    max-width: var(--text-max-width);
+  }
+  .empty-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 600;
+  }
+  .empty-lede {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-ink-soft);
+  }
+  .gallery-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-sm);
+  }
+  .gallery-grid img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+  }
+</style>

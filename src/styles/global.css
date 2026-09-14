@@ -6,20 +6,45 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
-  background: var(--color-background);
-  color: var(--color-text);
+  overflow-x: clip;
+  background: var(--color-ivory);
+  color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--text-body);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Mobile-tap hygiene: no double-tap zoom delay, no default flash highlight. */
+button,
+[role="button"],
+a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-ivory);
 }
 
 h1,
 h2,
-h3 {
-  line-height: 1.2;
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.15;
   text-wrap: balance;
+  color: var(--color-ink);
 }
 
 h1 {
@@ -34,14 +59,37 @@ h3 {
   font-size: var(--text-h3);
 }
 
-a {
-  color: var(--color-primary);
+p {
+  margin: 0 0 var(--space-sm);
 }
 
-/* Visible keyboard focus everywhere; never color-only (2px outline). */
+a {
+  color: var(--color-ink);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+ul,
+ol {
+  padding-left: 0;
+  margin: 0 0 var(--space-sm);
+}
+
+/* Visible keyboard focus everywhere; never color-only (WCAG 1.4.11). */
 :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+/* Focused elements must clear the sticky header (WCAG 2.4.11). */
+:focus,
+:target {
+  scroll-margin-top: 6rem;
+  scroll-margin-bottom: 4rem;
 }
 
 .container {
@@ -54,23 +102,111 @@ a {
   max-width: var(--text-max-width);
 }
 
+/* Vertical rhythm between page sections. */
+.section {
+  padding-block: var(--space-xl);
+}
+@media (max-width: 639px) {
+  .section {
+    padding-block: var(--space-lg);
+  }
+}
+
+/* Homepage renders on a full-bleed dark canvas ("event noir" gallery wall). */
+body.page-home {
+  background: var(--color-ink);
+  color-scheme: dark;
+}
+/* Match native scrollbars/controls to the dark canvas (root-level). */
+:root:has(body.page-home) {
+  color-scheme: dark;
+}
+body.page-home a {
+  color: var(--color-accent-on-dark);
+}
+
+/* Ivory "print" panels pinned on the dark homepage canvas. */
+.panel-print {
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--elevation-2);
+}
+.panel-print h2,
+.panel-print h3,
+.panel-print h4 {
+  color: var(--color-ink);
+}
+.panel-print p {
+  color: var(--color-ink-soft);
+}
+.panel-print .eyebrow {
+  color: var(--color-accent);
+}
+@media (min-width: 640px) {
+  .panel-print {
+    padding: var(--space-lg);
+  }
+}
+
+/* Reusable card grid — stacks to one column on narrow viewports. */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-sm);
+}
+
+/* Cards sit inside Reveal island wrappers (wrapped in astro-island, which is
+   display: contents). Make the wrapper a stretching column and the card fill
+   it, so cards in a row share equal height. */
+.card-grid .reveal,
+.booths-grid .reveal {
+  display: flex;
+  flex-direction: column;
+}
+.card-grid .card,
+.booths-grid .card {
+  flex: 1 1 auto;
+}
+
 .skip-link {
   position: absolute;
   left: var(--space-sm);
   top: -100%;
+  z-index: 100;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
 }
 
 .skip-link:focus-visible {
   top: var(--space-sm);
-  background: var(--color-surface);
-  padding: var(--space-2xs) var(--space-xs);
+  outline-color: var(--color-accent-on-dark);
+}
+
+/* Reveal islands: keep content visible if JS never runs. */
+html:not(.js) .reveal {
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {
-    animation: none !important;
-    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

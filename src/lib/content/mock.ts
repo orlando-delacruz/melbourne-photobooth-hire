@@ -13,21 +13,42 @@ export const mockContent: SiteContent = {
       id: "premium-photobooth",
       name: "Premium Photobooth",
       badge: "Most Popular",
+      icon: "camera",
+      tagline: "The centrepiece of the room.",
       summary:
-        "Our signature open-air setup combines studio-quality lighting with an open, social experience. Guests can see the magic happening — perfect for weddings, corporate events, and milestone birthdays. Optionally pair it with our 360 Video Booth for a truly unforgettable night.",
+        "An open-air, studio-lit booth that turns any corner of your venue into a photo studio — ideal for weddings, corporate events and milestone birthdays.",
+      highlights: [
+        "Open-air, studio-lit experience",
+        "Ideal for weddings & corporate events",
+        "Pairs with the 360 Video Booth",
+      ],
     },
     {
       id: "roaming-photobooth",
       name: "Roaming Photobooth",
       badge: "Fan Favourite",
+      icon: "users",
+      tagline: "The booth that mingles.",
       summary:
-        "We bring the booth to your guests. Our roaming setup mingles through the crowd, capturing candid, unforgettable moments anywhere in the venue — no backdrop needed, just pure energy.",
+        "A portable booth that moves through the crowd, capturing candid moments wherever your guests are.",
+      highlights: [
+        "Moves through the crowd",
+        "No fixed backdrop needed",
+        "Candid, in-the-moment shots",
+      ],
     },
     {
       id: "360-video-booth",
       name: "360 Video Booth",
+      icon: "video",
+      tagline: "The shot everyone shares.",
       summary:
-        "A 360-degree video experience that captures your event from every angle. Guests step in, strike a pose, and walk away with share-ready slow-motion clips via instant QR download.",
+        "A 360° slow-motion experience — guests strike a pose and share-ready clips land on their phone via QR.",
+      highlights: [
+        "360° slow-motion clips",
+        "Instant QR download",
+        "Share-ready in seconds",
+      ],
     },
   ],
   packages: [
@@ -136,43 +157,10 @@ export const mockContent: SiteContent = {
         "We arrive early, set up quietly, and run the booth all night. You party — guests walk away with prints in hand.",
     },
   ],
-  testimonials: [
-    {
-      id: "sarah-wedding",
-      quote:
-        "The photobooth was the absolute highlight of our wedding reception. Guests are still talking about it weeks later. Everything from booking to pack-down was seamless.",
-      name: "Sarah M.",
-      eventType: "Wedding",
-    },
-    {
-      id: "james-birthday",
-      quote:
-        "Booked the roaming booth for my 30th birthday and it was the best decision. Everyone got involved, the prints were gorgeous, and the attendant was so fun and professional.",
-      name: "James T.",
-      eventType: "Birthday Party",
-    },
-    {
-      id: "amanda-corporate",
-      quote:
-        "The booth at our end-of-year corporate event was a massive hit. The QR download feature meant everyone had their photos instantly. Highly recommend!",
-      name: "Amanda K.",
-      eventType: "Corporate Event",
-    },
-    {
-      id: "melissa-engagement",
-      quote:
-        "Excellent service from start to finish. The custom print template matched our theme perfectly and every single guest took home a print. Will absolutely book again.",
-      name: "Melissa R.",
-      eventType: "Engagement Party",
-    },
-    {
-      id: "daniel-birthday",
-      quote:
-        "Professional, fun, and so easy to work with. The booth looked amazing in our venue and the photo quality was incredible. Our guests absolutely loved it.",
-      name: "Daniel C.",
-      eventType: "Birthday Party",
-    },
-  ],
+  // No verified testimonials yet: stays empty until genuine, approved
+  // customer feedback is confirmed (REQ-REV-007). Optional supporting
+  // content is omitted when absent.
+  testimonials: [],
   bookingPolicies: [
     "20% deposit required to confirm the booking. Balance due on the day.",
     "Deposit is non-refundable. Rescheduling available with notice.",
@@ -245,4 +233,76 @@ export const mockContent: SiteContent = {
     serviceAreaStatement: "Based in Melbourne. A transport fee may apply by event location.",
     reviewUrl: null,
   },
+
+  // ── Homepage provisional content (SAMPLE) ──────────────────────────────
+  // External stock photography (Pexels) and invented stats/quotes exercise
+  // homepage layout only. All marked SAMPLE; replaced via this seam by
+  // client-approved imagery and confirmed content. Never published as fact.
+  heroBackgroundImage: {
+    src: "https://images.pexels.com/photos/30562607/pexels-photo-30562607.jpeg?auto=compress&cs=tinysrgb&w=1920",
+    alt: "An outdoor event set with elegant tables beneath warm string lights at night (sample imagery)",
+  },
+  heroStats: [
+    { value: "3", label: "booth experiences", icon: "camera" },
+    { value: "4 hrs", label: "longest hire window", icon: "clock" },
+    { value: "HD", label: "prints plus QR downloads", icon: "qrcode" },
+  ],
+  serviceImages: {
+    "premium-photobooth": {
+      src: "https://images.pexels.com/photos/17641795/pexels-photo-17641795.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "A guest posing inside a curtained photo booth (sample imagery)",
+    },
+    "roaming-photobooth": {
+      src: "https://images.pexels.com/photos/6224736/pexels-photo-6224736.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "Two friends laughing at a party in front of a golden backdrop (sample imagery)",
+    },
+    "360-video-booth": {
+      src: "https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "Guests celebrating on a dance floor beneath festival lights (sample imagery)",
+    },
+  },
+  showcaseImages: [
+    {
+      src: "https://images.pexels.com/photos/34458014/pexels-photo-34458014.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "Wedding guests raising a toast on the dance floor (sample imagery)",
+      caption: "A wedding toast mid-dance",
+    },
+    {
+      src: "https://images.pexels.com/photos/32333372/pexels-photo-32333372.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "Friends celebrating a birthday in a shower of confetti (sample imagery)",
+      caption: "Confetti after the candles",
+    },
+    {
+      src: "https://images.pexels.com/photos/7638133/pexels-photo-7638133.jpeg?auto=compress&cs=tinysrgb&w=900",
+      alt: "Friends laughing and dancing together at a celebration (sample imagery)",
+      caption: "Laughter at a private party",
+    },
+  ],
+  ctaImage: {
+    src: "https://images.pexels.com/photos/29851245/pexels-photo-29851245.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    alt: "A wedding party celebrating under outdoor string lights at night (sample imagery)",
+  },
+  sampleTestimonials: [
+    {
+      id: "sample-1",
+      quote:
+        "The booth was the heart of the night — guests queued for hours and walked away with prints in hand.",
+      name: "Mia & Jordan",
+      eventType: "Wedding",
+    },
+    {
+      id: "sample-2",
+      quote:
+        "Our team still talks about the 360 clips. It turned a corporate night into something people actually remember.",
+      name: "Priya S.",
+      eventType: "Corporate event",
+    },
+    {
+      id: "sample-3",
+      quote:
+        "Setup was seamless and the prints looked incredible — the birthday kids wouldn't leave the booth.",
+      name: "Tara N.",
+      eventType: "Birthday",
+    },
+  ],
 };

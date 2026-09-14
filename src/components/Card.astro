@@ -1,0 +1,268 @@
+---
+import Button from "./Button.astro";
+
+type CardIcon = "camera" | "users" | "video";
+
+interface Props {
+  title: string;
+  description?: string;
+  meta?: string;
+  price?: string;
+  badge?: string;
+  tagline?: string;
+  icon?: CardIcon;
+  items?: string[];
+  highlights?: string[];
+  href?: string;
+  ctaLabel?: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  tone?: "light" | "dark";
+  featured?: boolean;
+}
+const {
+  title,
+  description,
+  meta,
+  price,
+  badge,
+  tagline,
+  icon,
+  items = [],
+  highlights = [],
+  href,
+  ctaLabel,
+  imageSrc,
+  imageAlt,
+  tone = "light",
+  featured = false,
+} = Astro.props;
+
+function iconSvg(name: string, size = 20): string {
+  const paths: Record<string, string> = {
+    camera:
+      '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+    users:
+      '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    video:
+      '<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  };
+  const inner = paths[name] ?? "";
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+---
+
+<article class:list={["card", `card--${tone}`, { "card--featured": featured }]}>
+  {imageSrc ? (
+    <img class="card-image" src={imageSrc} alt={imageAlt ?? ""} loading="lazy" decoding="async" />
+  ) : null}
+  <div class="card-body">
+    {icon || badge ? (
+      <div class="card-head">
+        {icon ? <span class="card-icon" set:html={iconSvg(icon)} /> : null}
+        {badge ? <p class="card-badge">{badge}</p> : null}
+      </div>
+    ) : null}
+    <h3 class="card-title">{title}</h3>
+    {tagline ? <p class="card-tagline">{tagline}</p> : null}
+    {meta ? <p class="card-meta">{meta}</p> : null}
+    {price ? <p class="card-price">{price}</p> : null}
+    {description ? <p class="card-description">{description}</p> : null}
+    {highlights.length > 0 ? (
+      <ul class="card-list card-highlights">
+        {highlights.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    ) : null}
+    {items.length > 0 ? (
+      <ul class="card-list">
+        {items.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    ) : null}
+    {href && ctaLabel ? (
+      <p class="card-cta">
+        <Button href={href} variant="secondary" tone={tone}>
+          {ctaLabel}
+        </Button>
+      </p>
+    ) : null}
+  </div>
+</article>
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--elevation-1);
+    transition:
+      transform var(--motion-quick) var(--ease-default),
+      box-shadow var(--motion-quick) var(--ease-default),
+      border-color var(--motion-quick) var(--ease-default);
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--elevation-2);
+  }
+  .card-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform var(--motion-settled) var(--ease-default);
+  }
+  .card:hover .card-image {
+    transform: scale(1.04);
+  }
+  .card-body {
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-2xs);
+  }
+  .card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .card-badge {
+    margin: 0;
+    padding: 0.25em 0.65em;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-accent);
+    background: transparent;
+    font-weight: 600;
+    font-size: var(--text-caption);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .card-title {
+    margin: 0 0 var(--space-2xs);
+    font-weight: 500;
+  }
+  .card-tagline {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-body);
+    font-weight: 400;
+  }
+  .card-meta {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+  .card-price {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 500;
+  }
+  .card-description {
+    margin: 0 0 var(--space-xs);
+    color: var(--color-ink-soft);
+  }
+  .card-list {
+    list-style: none;
+    margin: 0 0 var(--space-sm);
+    display: grid;
+    gap: var(--space-3xs);
+  }
+  .card-list li {
+    padding-left: var(--space-sm);
+    position: relative;
+  }
+  .card-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .card-highlights {
+    margin-bottom: var(--space-xs);
+  }
+  .card-highlights li {
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+  .card-cta {
+    margin: auto 0 0;
+  }
+
+  /* Dark variant (homepage "event noir" cards) */
+  .card--dark {
+    background: var(--color-surface-dark);
+    border-color: rgba(230, 206, 138, 0.16);
+    color: var(--color-on-ink);
+  }
+  .card--dark:hover {
+    border-color: rgba(230, 206, 138, 0.45);
+  }
+  .card--dark .card-title,
+  .card--dark .card-price {
+    color: var(--color-on-ink);
+  }
+  .card--dark .card-meta,
+  .card--dark .card-description {
+    color: var(--color-on-ink-secondary);
+  }
+  .card--dark .card-tagline {
+    color: var(--color-accent-on-dark);
+  }
+  .card--dark .card-icon {
+    color: var(--color-accent-on-dark);
+    border-color: rgba(230, 206, 138, 0.32);
+    background: rgba(230, 206, 138, 0.08);
+  }
+  .card--dark .card-badge {
+    color: var(--color-accent-on-dark);
+    border-color: rgba(230, 206, 138, 0.32);
+  }
+  .card--dark .card-list li {
+    color: var(--color-on-ink-secondary);
+  }
+  .card--dark .card-list li::before {
+    background: var(--color-accent-on-dark);
+  }
+  .card--dark .card-highlights li {
+    color: var(--color-on-ink-secondary);
+  }
+
+  /* Featured package */
+  .card--featured {
+    border-color: var(--color-accent-on-dark);
+    box-shadow:
+      0 0 0 1px var(--color-accent-on-dark),
+      var(--elevation-2);
+  }
+  .card--featured.card--dark {
+    border-color: var(--color-accent-on-dark);
+  }
+</style>

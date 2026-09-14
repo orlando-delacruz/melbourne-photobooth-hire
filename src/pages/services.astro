@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import PageHeader from "../components/PageHeader.astro";
+import Reveal from "../components/islands/Reveal";
 import { getContent } from "../lib/content/repository";
 
 const { services } = getContent();
@@ -10,19 +13,27 @@ const { services } = getContent();
   title="Services | Melbourne Photobooth Hire"
   description="Premium, roaming and 360 photobooth experiences for Melbourne weddings, birthdays and corporate events."
 >
-  <h1>Our Booths</h1>
-  <p>Melbourne&apos;s go-to photobooth hire — open-air and roaming setups for any event.</p>
-  <ul>
+  <PageHeader
+    title="Our Booths"
+    eyebrow="Photobooth experiences"
+    lede="Melbourne's go-to photobooth hire — open-air and roaming setups for any event."
+  />
+  <div class="card-grid section">
     {services.map((service) => (
-      <li>
-        <h2>
-          {service.name}
-          {service.badge ? ` — ${service.badge}` : ""}
-        </h2>
-        <p>{service.summary}</p>
-      </li>
+      <Reveal client:visible>
+        <Card
+          title={service.name}
+          badge={service.badge}
+          icon={service.icon}
+          tagline={service.tagline}
+          description={service.summary}
+          highlights={service.highlights}
+          href="/packages"
+          ctaLabel="View packages"
+        />
+      </Reveal>
     ))}
-  </ul>
+  </div>
   <p>
     <Button href="/packages" variant="secondary">
       View packages

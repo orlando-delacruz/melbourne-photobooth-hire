@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { getContent } from "../lib/content/repository";
 
 const { faqs } = getContent();
@@ -10,12 +11,15 @@ const { faqs } = getContent();
   title="FAQ | Melbourne Photobooth Hire"
   description="Booking, pricing, inclusions, travel, setup and policy answers from Melbourne Photobooth Hire."
 >
-  <h1>FAQ</h1>
-  <p>Can&apos;t find what you&apos;re looking for? Send an enquiry via the contact page.</p>
+  <PageHeader
+    title="FAQ"
+    eyebrow="Answers"
+    lede="Can't find what you're looking for? Send an enquiry via the contact page."
+  />
   {faqs.length === 0 ? (
-    <p>Questions and answers will appear here once client-confirmed.</p>
+    <p class="section">Questions and answers will appear here once client-confirmed.</p>
   ) : (
-    <ul>
+    <ul class="faq-list section">
       {faqs.map((faq) => (
         <li>
           <h2>{faq.question}</h2>
@@ -30,3 +34,26 @@ const { faqs } = getContent();
     </Button>
   </p>
 </BaseLayout>
+
+<style>
+  .faq-list {
+    list-style: none;
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    display: grid;
+    gap: var(--space-md);
+    max-width: var(--text-max-width);
+  }
+  .faq-list li {
+    border-bottom: 1px solid var(--color-divider);
+    padding-bottom: var(--space-md);
+  }
+  .faq-list h2 {
+    margin: 0 0 var(--space-2xs);
+    font-size: var(--text-h3);
+  }
+  .faq-list p {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+</style>

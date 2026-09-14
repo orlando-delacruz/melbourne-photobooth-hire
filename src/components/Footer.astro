@@ -12,9 +12,11 @@ const { items, brandName, serviceAreaStatement, reviewUrl } = Astro.props;
 
 <footer class="site-footer">
   <div class="container footer-inner">
-    <p class="footer-brand">{brandName}</p>
-    <p>{serviceAreaStatement}</p>
-    <nav aria-label="Footer">
+    <div class="footer-brand">
+      <p class="brand-name">{brandName}</p>
+      <p class="brand-statement">{serviceAreaStatement}</p>
+    </div>
+    <nav class="footer-nav" aria-label="Footer">
       <ul>
         {items.map((item) => (
           <li>
@@ -30,7 +32,7 @@ const { items, brandName, serviceAreaStatement, reviewUrl } = Astro.props;
       </ul>
     </nav>
     {reviewUrl ? (
-      <p>
+      <p class="footer-review">
         <a href={reviewUrl}>Leave a Google review</a>
       </p>
     ) : null}
@@ -38,20 +40,60 @@ const { items, brandName, serviceAreaStatement, reviewUrl } = Astro.props;
 </footer>
 <style>
   .site-footer {
-    border-top: 1px solid var(--color-border);
     margin-top: var(--space-xl);
-    padding-top: var(--space-lg);
-    padding-bottom: var(--space-lg);
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+    padding-block: var(--space-lg);
+    border-top: 1px solid rgba(227, 201, 138, 0.18);
   }
-  .footer-brand {
-    font-weight: 700;
+  .footer-inner {
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: 1fr;
   }
-  .site-footer nav ul {
+  .brand-name {
+    margin: 0 0 var(--space-2xs);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--color-on-ink);
+  }
+  .brand-statement {
+    margin: 0;
+    color: var(--color-on-ink-secondary);
+  }
+  .footer-nav ul {
     list-style: none;
-    margin: var(--space-sm) 0;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2xs) var(--space-sm);
+  }
+  .footer-nav a {
+    color: var(--color-on-ink);
+    text-decoration: none;
+    padding: var(--space-2xs) 0;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .footer-nav a:hover {
+    color: var(--color-accent-on-dark);
+  }
+  .footer-review {
+    margin: 0;
+  }
+  .footer-review a {
+    color: var(--color-accent-on-dark);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (min-width: 640px) {
+    .footer-inner {
+      grid-template-columns: 2fr 1fr;
+      align-items: start;
+    }
+    .footer-review {
+      grid-column: 1 / -1;
+    }
   }
 </style>

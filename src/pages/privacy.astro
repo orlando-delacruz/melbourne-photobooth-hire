@@ -1,11 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
 ---
 
 <BaseLayout
   title="Privacy Policy | Melbourne Photobooth Hire"
   description="Privacy Policy for Melbourne Photobooth Hire. Content pending client approval."
 >
-  <h1>Privacy Policy</h1>
-  <p>Privacy content will appear here once client-approved.</p>
+  <PageHeader title="Privacy Policy" eyebrow="Legal" />
+  <div class="readable section">
+    <p>Privacy content will appear here once client-approved.</p>
+  </div>
 </BaseLayout>

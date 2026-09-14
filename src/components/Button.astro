@@ -2,34 +2,92 @@
 interface Props {
   href: string;
   variant?: "primary" | "secondary" | "tertiary";
+  tone?: "light" | "dark";
 }
-const { href, variant = "primary" } = Astro.props;
+const { href, variant = "primary", tone = "light" } = Astro.props;
 ---
 
-<a class:list={["button", `button--${variant}`]} href={href}>
+<a class:list={["button", `button--${variant}`, `button--tone-${tone}`]} href={href}>
   <slot />
 </a>
 <style>
   .button {
-    display: inline-block;
-    border-radius: var(--radius-sm);
-    padding: var(--space-2xs) var(--space-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-body);
     font-weight: 600;
+    font-size: var(--text-small);
     text-decoration: none;
+    white-space: nowrap;
+    transition:
+      transform var(--motion-quick) var(--ease-default),
+      box-shadow var(--motion-quick) var(--ease-default),
+      background-color var(--motion-quick) var(--ease-default),
+      border-color var(--motion-quick) var(--ease-default),
+      color var(--motion-quick) var(--ease-default);
   }
-  .button--primary {
+  .button:hover {
+    transform: translateY(-1px);
+  }
+  .button:active {
+    transform: translateY(0);
+  }
+
+  /* Primary */
+  .button--primary.button--tone-light {
     background: var(--color-primary);
     color: var(--color-primary-contrast);
   }
-  .button--secondary {
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+  .button--primary.button--tone-light:hover {
+    box-shadow: var(--elevation-1);
+  }
+
+  /* Secondary */
+  .button--secondary.button--tone-light {
+    border: 1px solid var(--color-input-border);
+    color: var(--color-ink);
     background: transparent;
   }
+  .button--secondary.button--tone-light:hover {
+    border-color: var(--color-ink);
+    background: rgba(26, 21, 17, 0.05);
+  }
+
+  /* Tertiary (text link) */
   .button--tertiary {
-    color: var(--color-primary);
+    padding: 0;
+    min-height: auto;
+    border-radius: 0;
+    color: var(--color-accent);
     text-decoration: underline;
-    padding-left: 0;
-    padding-right: 0;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  /* On dark bands */
+  .button--primary.button--tone-dark {
+    background: var(--color-accent-on-dark);
+    color: var(--color-ink);
+  }
+  .button--primary.button--tone-dark:hover {
+    background: #eed9a9;
+    box-shadow: var(--elevation-1);
+  }
+  .button--secondary.button--tone-dark {
+    border: 1px solid rgba(243, 237, 223, 0.4);
+    color: var(--color-on-ink);
+    background: transparent;
+  }
+  .button--secondary.button--tone-dark:hover {
+    border-color: var(--color-accent-on-dark);
+    color: var(--color-accent-on-dark);
+    background: transparent;
+  }
+  .button--tertiary.button--tone-dark {
+    color: var(--color-accent-on-dark);
   }
 </style>

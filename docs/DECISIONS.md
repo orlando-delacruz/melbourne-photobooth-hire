@@ -251,14 +251,21 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Four decision records exist (DEC-001 through DEC-004). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Eleven decision records exist (DEC-001 through DEC-011). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
-| ID      | Title                                                    | Status   | Date       |
-| ------- | -------------------------------------------------------- | -------- | ---------- |
-| DEC-001 | Phase 1 Astro skeleton and tooling baseline              | Accepted | 2026-09-12 |
-| DEC-002 | Typecheck, format enforcement, and root CONTEXT glossary | Accepted | 2026-09-12 |
-| DEC-003 | Centralized mock-content seam and styling split          | Accepted | 2026-09-12 |
-| DEC-004 | Inquiry form island with hand-rolled Zod resolver        | Accepted | 2026-09-12 |
+| ID      | Title                                                    | Status     | Date       |
+| ------- | -------------------------------------------------------- | ---------- | ---------- |
+| DEC-001 | Phase 1 Astro skeleton and tooling baseline              | Accepted   | 2026-09-12 |
+| DEC-002 | Typecheck, format enforcement, and root CONTEXT glossary | Accepted   | 2026-09-12 |
+| DEC-003 | Centralized mock-content seam and styling split          | Superseded | 2026-09-12 |
+| DEC-004 | Inquiry form island with hand-rolled Zod resolver        | Accepted   | 2026-09-12 |
+| DEC-005 | Provisional mock content and pending-state rendering     | Accepted   | 2026-09-12 |
+| DEC-006 | Provisional premium visual redesign                      | Accepted   | 2026-09-12 |
+| DEC-007 | Provisional "event noir" homepage redesign + sample rule | Accepted   | 2026-09-12 |
+| DEC-008 | Hero background-image redesign with overlay             | Accepted   | 2026-09-12 |
+| DEC-009 | Hero refinement: overlay fix, icons, typography, motion  | Accepted   | 2026-09-12 |
+| DEC-010 | Booths section premium refinement: content, card, grid  | Accepted   | 2026-09-12 |
+| DEC-011 | Booth card icons and shortened copy                     | Accepted   | 2026-09-12 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -294,7 +301,7 @@ Four decision records exist (DEC-001 through DEC-004). Existing selections, requ
 
 - **ID:** DEC-003
 - **Title:** Centralized mock-content seam and styling split
-- **Status:** Accepted
+- **Status:** Superseded
 - **Date:** 2026-09-12
 - **Context:** ROADMAP Sections 4–5 require a centralized mock layer swapped per-surface for Supabase content in Phase 3. TECH-STACK selects Styled Components "across Astro and React UI", but styled-components cannot style `.astro` files directly. First build also exposed a styled-components default-import SSR interop failure (`styled.button is not a function`).
 - **Decision:** `src/lib/content/` owns one small interface (`ContentSource.load()` / `getContent()` accepting an injectable source) with a mock adapter of clearly-marked placeholder data only (empty gallery/FAQs to exercise empty states; `reviewUrl: null` so the review CTA stays absent until confirmed). Styling splits: CSS custom properties in `src/styles/tokens.css` (+ `global.css`) for Astro components, typed styled-components `theme` for React islands only. Island convention: named `styled` import (SSR-safe), minimal serialized props, `client:media` hydration for the mobile nav island.
@@ -302,7 +309,7 @@ Four decision records exist (DEC-001 through DEC-004). Existing selections, requ
 - **Rationale:** One seam = one swap point for Phase 3; split styling honors both the selected stack and Astro's rendering model; `client:media` keeps desktop pages at zero island JS.
 - **Consequences:** Pages/components consume `getContent()` only; Phase 3 adds a Supabase adapter without touching callers; provisional palette label must be lifted on client brand confirmation.
 - **Related documents:** `docs/ROADMAP.md` (Sections 4–5), `docs/ARCHITECTURE.md` (Sections 6–8), `docs/DESIGN-SYSTEM.md` (Sections 5–10), `docs/DATA-MODEL.md` (Section 5).
-- **Supersedes / Superseded by:** —
+- **Supersedes / Superseded by:** Superseded by DEC-005
 - **Open questions or follow-up:** Client confirmation of brand colors/fonts, CMS modules/fields, and review URL before Phase 3 wiring.
 
 ### DEC-004 — Inquiry form island with hand-rolled Zod resolver
@@ -319,6 +326,122 @@ Four decision records exist (DEC-001 through DEC-004). Existing selections, requ
 - **Related documents:** `docs/REQUIREMENTS.md` (Sections 9, 23), `docs/ARCHITECTURE.md` (Section 9), `docs/UI-UX.md` (Sections 13–14), `docs/ROADMAP.md` (Phase 2).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Client confirmation of final field set, required-vs-optional, and option lists.
+
+### DEC-005 — Provisional mock content and pending-state rendering
+
+- **ID:** DEC-005
+- **Title:** Provisional mock content and pending-state rendering
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** DEC-003 described the mock adapter as holding empty gallery/FAQs, but implementation grew provisional reference-based services, packages, add-ons, FAQs, and testimonials through the seam, while `about.astro` bypassed the seam with hardcoded business claims and the homepage rendered mock testimonials as if real (REQ-REV-007 prohibits fake reviews). Grill rounds Q1–Q8 locked project context with all business facts staying provisional and conditionals staying off.
+- **Decision:** Retain the DEC-003 seam and styling split unchanged. Revise the mock-content rule: populated provisional services/packages/add-ons/FAQs exercise layout only and must not be treated as confirmed facts; gallery and testimonials stay empty (REQ-GAL-001/005, REQ-REV-007) with the homepage omitting the Reviews section when empty; `reviewUrl: null` keeps the review CTA absent; About renders through `getContent()` with a pending state directing visitors to enquire. No CMS modules, persistence, sitemap/`site`/canonicals, or integrations are activated.
+- **Alternatives considered:** Keeping mock testimonials rendered — rejected (fake-review violation). Deleting provisional services/packages/FAQs too — rejected (destroys the Phase 2 layout exercise; testimonials are the special case). Silently editing DEC-003 — rejected (violates the supersession rule).
+- **Rationale:** Preserves Phase 2 layout velocity without publishing unconfirmed business facts; honest empty/pending states throughout within the ₱15,000 scope.
+- **Consequences:** About, homepage, and mock changes land with this record; Phase 3 adds a Supabase adapter without touching callers; client confirmation still required for all business facts before production.
+- **Related documents:** `docs/REQUIREMENTS.md` (Sections 3, 5–8, 12, 23), `docs/ARCHITECTURE.md` (Sections 6–7), `docs/UI-UX.md` (Sections 7, 11, 21), `docs/DATA-MODEL.md` (Section 5), `docs/ROADMAP.md` (Phase 2).
+- **Supersedes / Superseded by:** Supersedes DEC-003
+- **Open questions or follow-up:** Client confirmation of services, packages, FAQs, testimonials, About story, review URL, and CMS scope before production/Phase 3.
+
+### DEC-006 — Provisional premium visual redesign
+
+- **ID:** DEC-006
+- **Title:** Provisional premium visual redesign
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** The Phase 2 site used the provisional warm-cream/terracotta palette with system fonts. The client requested a modern, elegant, premium redesign of all UI (tokens, header, footer, buttons, cards, hero, pages, form). DESIGN-SYSTEM Sections 5–6, 38 keep final colors and fonts **Confirmation Required**; the redesign therefore proposes new provisional values, never confirmed brand facts. Motion is a selected technology in `docs/TECH-STACK.md` but was not installed.
+- **Decision:** Adopt a provisional **ink + ivory + champagne** "editorial spotlight" direction: warm near-black `#1A1511` bands/CTA, ivory `#F7F2E9` page background, champagne `#9E7B33`/`#E3C98A` accents; **Cormorant Garamond** display serif + **Inter** body/UI, self-hosted via `@fontsource/cormorant-garamond` + `@fontsource/inter`; install `motion` (selected stack) for a single hero entrance and below-the-fold reveals (reduced-motion respected, content readable without JS via a `html.js` guard). Add documented design-system tokens: `elevation-0/1/2`, `motion-quick/settled` + one default easing, `radius-pill`. New presentational components `Hero`, `PageHeader`, `Card`; restyle all existing components and the 10 pages. Existing behavior (semantics, ARIA, inquiry validation, nav breakpoints) is preserved; business copy is unchanged.
+- **Alternatives considered:** Keeping the warm-cream/terracotta palette — rejected (reads as the generic AI default per frontend-design review). Dark photography-led site-wide — rejected (hurts readability of text-light pages). Google Fonts `<link>` loading — rejected in favor of self-hosting (no third-party request, no CLS). CSS-only motion — superseded by the client's explicit choice of the Motion package.
+- **Rationale:** Gives the marketing site a premium, photography-led identity within the ₱15,000 scope while keeping all brand values explicitly provisional and all business facts unchanged.
+- **Consequences:** Tokens, theme, components, and pages now render the new direction; the `motion` and `@fontsource/*` dependencies are added; final colors/fonts still require client confirmation before production; DESIGN-SYSTEM.md is not edited (it intentionally leaves values unconfirmed).
+- **Related documents:** `docs/TECH-STACK.md` (Sections 4–6), `docs/DESIGN-SYSTEM.md` (Sections 5–12, 29, 38), `docs/UI-UX.md` (Sections 6–10, 13–14), `docs/ROADMAP.md` (Phase 2).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of the provisional palette/font pairing and any supplied brand guidelines before production; review URL and photography remain outstanding.
+
+### DEC-007 — Provisional "event noir" homepage redesign and sample-content rule
+
+- **ID:** DEC-007
+- **Title:** Provisional "event noir" homepage redesign and sample-content rule
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** The client asked to make the homepage look modern, premium and elegant, explicitly authorising invented content and photography from online sources for design purposes, with real content to be managed through the CMS later. DEC-006's "editorial spotlight" read as a generic AI default (warm cream + high-contrast serif + clay/champagne accent) per the frontend-design review, which flags that pattern as a templated tell. REQ-GAL-008 (no stock presented as real events), REQ-REV-007 (no fake reviews presented as real), and REQ-SVC-004/REQ-PKG-006 (no unconfirmed claims published) constrain how sample content may be rendered.
+- **Decision:** Adopt a provisional **"event noir"** homepage identity that refines DEC-006's provisional values (final brand values remain **Confirmation Required**): the homepage renders on a full-bleed dark espresso canvas (`body.page-home`), with ivory "print" panels for the showcase and review sections; switch the display face to **Fraunces** (self-hosted via `@fontsource/fraunces`, replacing Cormorant Garamond) paired with the existing Inter; keep the champagne-gold accent as the single "thread" (eyebrows, badges, step numerals, hairline borders, dark-tone CTAs). Layout is photography-led and left-aligned: split hero (copy + framed portrait + capability stats), three image service cards, a sample showcase strip, priced package cards with a featured "Most Popular" treatment, numbered how-it-works steps (a genuine sequence), sample reviews, FAQ teaser, event-type chips, and a photo-scrim closing CTA. **Sample-content rule:** all invented material (Pexels stock imagery with "(sample imagery)" alt markers, capability stats derived from provisional product content, invented review quotes) is SAMPLE-only, lives in `src/lib/content/mock.ts` through the existing `getContent()` seam, is rendered with explicit "Sample" markers (never as Google reviews or real client events), and must never be treated as production content. Hotlinked Pexels URLs are centralised in `mock.ts` so a future vendor-local swap is one file.
+- **Alternatives considered:** Keeping the DEC-006 ivory-first palette — rejected (read as the generic cream+serif+clay default the client had already rejected). A second serif accent word in the headline — rejected (frontend-design guidance forbids accenting a single word). Persisting sample content to the real `/gallery` — rejected (would pollute the honest empty state); a separate homepage showcase strip keeps the boundary clean. Vendoring images into `public/images/` — offered but declined by the client in favour of hotlinking.
+- **Rationale:** Delivers the requested modern/premium/elegant result within the ₱15,000 scope while keeping the compliance boundaries intact: no fake reviews presented as real, no stock presented as real events, no unconfirmed claims published, and a single swap point for confirmed CMS content later.
+- **Consequences:** tokens/theme gain `--color-surface-dark`, `--color-scrim`; Header/MobileNav move to dark; Hero, Card (image/price/dark/featured variants), SectionHeading (tone) extended backward-compatibly; homepage rebuilt with sample content. Cormorant Garamond dependency removed. Any preview deployment containing this homepage is internal-only; production remains blocked on real content, confirmed brand values, and the confirmed domain.
+- **Related documents:** `docs/UI-UX.md` (Sections 7, 21), `docs/DESIGN-SYSTEM.md` (Sections 5–6, 38), `docs/REQUIREMENTS.md` (REQ-GAL-008, REQ-REV-007, REQ-SVC-004, REQ-PKG-006), `docs/ROADMAP.md` (Phase 2).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of the event-noir palette and Fraunces pairing; client-approved photography replacing sample imagery; approved testimonials replacing sample quotes; CMS confirmation before Phase 3 wiring.
+
+### DEC-008 — Hero background-image redesign with overlay
+
+- **ID:** DEC-008
+- **Title:** Hero background-image redesign with overlay
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** The client asked to enhance the homepage hero to feel modern, elegant and premium, with the image used as a background under an overlay. The DEC-007 hero used a side portrait panel on a flat ink canvas. A hero background image carries a text-legibility risk, so the overlay treatment and a legibility-safe image choice are the core decisions.
+- **Decision:** Convert the hero to a **full-bleed background image** with a two-layer overlay. The section breaks out of the page container via the standard `margin-inline: calc(50% - 50vw)` technique (no layout change); `background-size: cover`, `min-height: min(40rem, 92svh)` reserve space (CLS stability); a base `--color-scrim` wash plus a directional gradient (90deg on desktop, 180deg on mobile) keep the Fraunces headline, lede and CTAs readable anywhere on the photo while letting the photograph show through on the right. New verified SAMPLE hero background image: Pexels `30562607` (outdoor evening event, elegant tables under warm string lights, w=1920). The image is preloaded in the document head via a new homepage-only `preloadImage` prop on `BaseLayout` (LCP). Alt text is exposed via an `.sr-only` span (backgrounds cannot carry alt), preserving the "(sample imagery)" marker. The old portrait `heroImage` field was replaced by `heroBackgroundImage` in the content seam; the stats row and Reveal mount stagger are retained; fallback is plain `--color-ink` when no image is present.
+- **Alternatives considered:** Reusing the CTA band's string-lights shot (29851245) — rejected (would duplicate the closing section; a distinct wide shot was sourced instead). Reusing the first-dance portrait as background — rejected (portrait crop and busy centre would fight the copy). A contained rounded panel instead of full-bleed — offered, client chose full-bleed.
+- **Rationale:** The background + overlay delivers the requested immersive, premium treatment while keeping text legibility, accessibility (sr-only alt), and performance (preload, reserved space) intact, all within the provisional event-noir system and the sample-content rule.
+- **Consequences:** Hero component props changed from `imageSrc/imageAlt` to `backgroundSrc/backgroundAlt`; `BaseLayout` gained an optional `preloadImage` prop (default unchanged); `--color-scrim-strong` token added; portrait field removed from the seam. Any preview containing the sample hero is internal-only; production remains blocked on real content and confirmed brand values.
+- **Related documents:** `docs/DECISIONS.md` (DEC-007), `docs/UI-UX.md` (Section 7), `docs/DESIGN-SYSTEM.md` (Sections 5, 9–10), `docs/REQUIREMENTS.md` (REQ-GAL-008, REQ-ACC-010).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client-approved photography replacing the sample hero image; confirmed brand values before production.
+
+### DEC-009 — Hero refinement: overlay fix, icons, typography, motion
+
+- **ID:** DEC-009
+- **Title:** Hero refinement: overlay fix, icons, typography, motion
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** DEC-008's hero overlay was a purely horizontal gradient, leaving the bottom-right of the photo (bright string-lights area) at only ~0.68 effective darkness — the bottom of the image was clearly visible without adequate overlay. Typography at `--text-display` (3.25rem, weight 400) was thin for Fraunces at display size. The hero entrance used 5 separate `client:load` Reveal islands — functional but scattered (a generic default per the frontend-design skill, which recommends a single orchestrated moment). Icons in the hero were absent; the stat row communicated purely through text.
+- **Decision:** Four coordinated refinements to the existing DEC-008 hero:
+  1. **Overlay fix:** restructure as `.hero-bg` image layer + two-axis gradient on `::after` (horizontal `90deg` copy scrim + vertical `180deg` bottom fade at 0.9). Mobile single `180deg` to 0.98 at bottom. Base scrim `--color-scrim` unchanged.
+  2. **Icons:** extend `HeroStat` with optional `icon` field (`"camera" | "clock" | "qrcode"`); render Lucide-style inline SVGs inside each `<dt>` (24×24, stroke 1.8, round caps, gold `--color-accent-on-dark`, `aria-hidden`); `Hero.astro` defines a frontmatter `heroIconSvg()` helper — no new dependency.
+  3. **Typography:** `--text-display` scaled to `clamp(2.75rem, 6vw, 4.25rem)` desktop / `clamp(2.25rem, 11vw, 2.75rem)` mobile; headline weight `400 → 500`, `line-height 1.05`, `letter-spacing -0.015em`; lede `clamp(1.1875rem, 1.6vw, 1.375rem)` with `--color-on-ink-secondary` for clear hierarchy under the H1.
+  4. **Animation:** `.hero-bg` slow settle (`scale(1.06 → 1)` over 2.2s, compositor-only transform); copy entrance consolidated to 3 beats (eyebrow+h1 delay .05, lede+CTAs .18, stats .38) — fewer hydrate roots, one orchestrated load moment.
+  5. **Scroll indicator:** optional `<a class="hero-scroll">` with gold `ChevronDown` SVG, sr-only label, 44px target, bottom-center; homepage passes `scrollHref="#services-heading"`.
+- **Alternatives considered:** 5-line per-element stagger — retained from DEC-008 but rejected here as scattered; 3-beat grouping is more deliberate. Single React `HeroEntrance` island with internal stagger — offered but rejected as disproportionate refactor for the ₱15,000 scope. Adding a leading icon to the primary CTA — rejected (the frontend-design skill flags trailing `→` and arrow chrome as template tells; keeping CTAs clean). Ken-burns parallax on scroll — rejected (adds JS complexity for marginal visual gain).
+- **Rationale:** Each refinement addresses a specific, reported issue (overlay bleed, thin typography, scattered motion, missing iconography) within the smallest maintainable change — no new dependencies, no new files, no architectural shift. The overlay fix is a direct correction of DEC-008's gradient; the other three are proportional refinements within the established event-noir system.
+- **Consequences:** Hero.astro restructured (`.hero-bg` div, multi-background `::after`, scroll anchor, icon helper); `HeroStat` type extended (backward-compatible `icon?`); tokens.css `--text-display` scaled (hero-only usage confirmed); mock.ts stats carry icon keys; index.astro passes scroll props. All provisional; browser pass still needed to verify the actual photo/contrast.
+- **Related documents:** `docs/DECISIONS.md` (DEC-008), `docs/UI-UX.md` (Section 7), `docs/DESIGN-SYSTEM.md` (Sections 5, 10, 29).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client-approved photography replacing the sample hero image; confirmed brand values before production; browser visual verification of the overlay gradient and icon contrast.
+
+### DEC-010 — Booths section premium refinement: content, card, grid
+
+- **ID:** DEC-010
+- **Title:** Booths section premium refinement: content, card, grid
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** The client asked to make the "THE BOOTHS" homepage section modern, elegant and premium, with organized/aligned layout, appropriate spacing, improved color/typography hierarchy, and production-ready content. The existing booths section used a plain 3-card grid with `auto-fit minmax(16rem,1fr)` (causing 2+1 orphan at tablet widths), flat dark cards (padded image, plain text badge, no scannable structure), and a SectionHeading lede at `--text-h3` (1.25rem) that matched the card title size — creating a flat typography staircase.
+- **Decision:** Four coordinated refinements:
+  1. **Content** — `Service` type gains optional `tagline?: string` and `highlights?: string[]` (backward-compatible). All three services rewritten with polished, customer-focused copy aligned to the documented reference direction in `PROJECT.md §7` (no new business claims). Each gets a short italic tagline in Fraunces accent, a refined summary, and 2–3 scannable highlights (gold dot markers).
+  2. **Card component** — shared `Card.astro` upgraded: edge-to-edge image (negative margins + `overflow:hidden` card) with slow hover zoom `scale(1.04)`; badge → gold pill chip (uppercase caption, hairline border); tagline support (Fraunces italic); highlights list support (`.card-highlights`); dark surface border refined to gold-tinted hairline `rgba(230,206,138,0.16)` → `0.45` on hover. All props optional — backward-compatible.
+  3. **Grid** — booths section uses scoped `.booths-grid`: `1fr` mobile → `repeat(3, minmax(0,1fr))` at `≥1024px` — no orphan, always aligned. The shared `.card-grid` (used by packages/services page) is left unchanged.
+  4. **Typography** — `SectionHeading` lede reduced from `--text-h3` (1.25rem) to `--text-body` (1rem) site-wide, creating a clean staircase: eyebrow 0.875 → title 1.5 → lede 1.0 → card title 1.25.
+- **Alternatives considered:** Adding tagline/highlights fields to the Service type was the cleanest way to deliver structured content without inventing new business facts (all derived from `PROJECT.md §7` reference direction). A shared `.card-grid` refinement (global 3-col) was considered but rejected as disproportionate scope creep for a section-scoped request. Keeping SectionHeading lede at `--text-h3` would have left the hierarchy flat.
+- **Rationale:** Each refinement addresses a specific, reported issue within the smallest maintainable change — no new dependencies, no new files, no architectural shift. The Card changes affect packages and the Services page consistently (both inherit the same premium treatment), which is the correct behavior for a shared component.
+- **Consequences:** `types.ts` Service extended (backward-compatible); `mock.ts` services rewritten with new fields; `Card.astro` polished (shared across homepage/packages/services); `SectionHeading.astro` lede scaled down (affects all sections consistently); `index.astro` booths section uses scoped grid + staggered reveals. All content remains provisional/SAMPLE.
+- **Related documents:** `docs/DECISIONS.md` (DEC-007), `docs/UI-UX.md` (Section 8), `docs/DESIGN-SYSTEM.md` (Sections 8, 17, 34), `docs/REQUIREMENTS.md` (REQ-SVC-001 through REQ-SVC-006), `docs/PROJECT.md` (Section 7).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of the service content before production; browser visual verification of the card image edge-to-edge treatment, badge pill contrast, and grid alignment at 375/768/1024/1440.
+
+### DEC-011 — Booth card icons and shortened copy
+
+- **ID:** DEC-011
+- **Title:** Booth card icons and shortened copy
+- **Status:** Accepted
+- **Date:** 2026-09-12
+- **Context:** After DEC-010's booths-section refinement, the client asked to shorten the booth card copy and add appropriate icons. The three service summaries were 2–3 sentences (~40–55 words), which made the cards content-heavy; the cards had no iconography identifying the booth type.
+- **Decision:** Two coordinated refinements, applied to the shared card and both the homepage booths section and the Services page:
+  1. **Shortened copy** — `Service.summary` values reduced to a single concise line (~17–22 words each), staying within the documented reference direction in `PROJECT.md §7` (no new business claims). Taglines and 3 highlights per card are retained unchanged.
+  2. **Card icons** — `Service` gains optional `icon?: "camera" | "users" | "video"` (backward-compatible). `Card.astro` gains an optional `icon` prop and an inline-SVG helper (Lucide-style, stroke 1.8, round caps, `aria-hidden`), rendering a gold icon chip (2.25rem rounded square) at the top-left of the card body with the badge pill aligned right in a `.card-head` row. Mapping: Premium → Camera, Roaming → Users, 360 Video → Video.
+- **Alternatives considered:** Per-highlight semantic icons — offered but rejected (adds content-model complexity for marginal value; the header chip is cleaner). Leaving the Services page bare — rejected for consistency; it now receives `icon`/`tagline`/`highlights` too.
+- **Rationale:** Shorter, scannable copy plus a per-booth icon chip delivers the requested result within the smallest maintainable change — no new dependencies, no new files, no architectural shift. The icon chip also gives each booth a distinct visual identity consistent with the hero stats icons.
+- **Consequences:** `types.ts` Service extended; `mock.ts` summaries shortened and icons added; `Card.astro` gained icon chip + `.card-head` row (backward-compatible); `index.astro` and `services.astro` pass the new fields. All content remains provisional/SAMPLE.
+- **Related documents:** `docs/DECISIONS.md` (DEC-007, DEC-010), `docs/UI-UX.md` (Section 8), `docs/DESIGN-SYSTEM.md` (Sections 17, 34), `docs/REQUIREMENTS.md` (REQ-SVC-001 through REQ-SVC-006), `docs/PROJECT.md` (Section 7).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client confirmation of the service content before production; browser visual verification of the icon chip contrast and the aligned icon/badge row at 375/768/1024/1440.
 
 Future records are appended here in ID order with status and date kept current.
 
@@ -374,7 +497,7 @@ This document is complete when:
 10. The hierarchy section prohibits authorizing requirement violations, security weakening, invented business facts, or silent overrides.
 11. Technology, architecture, security, data/API, testing/development, and deployment handling defer detail to their owning documents and create no new technology choices.
 12. Superseding, evidence, and unresolved-decision rules prevent silent history edits and silent approvals.
-13. The register states it is currently empty and does not invent historical decisions.
+13. The register invents no historical decisions; records DEC-001 and later exist only via the lifecycle in Sections 5–8.
 14. Related documentation, scope exclusions, and the Shot&Prints Reference-Only boundary are explicit.
 15. No invented decisions, confirmations, requirements, technologies, tooling, commands, versions, conventions, variables, credentials, addresses, links, or infrastructure details appear.
 16. The fixed-price scope discipline (simplicity, maintainability, no overengineering) is preserved.

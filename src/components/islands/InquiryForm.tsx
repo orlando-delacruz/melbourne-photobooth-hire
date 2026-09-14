@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import { ThemeProvider, styled } from "styled-components";
+import { ThemeProvider, css, styled } from "styled-components";
+import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { theme } from "../../lib/theme";
 import { EVENT_TYPES, PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
@@ -26,61 +27,70 @@ const Field = styled.div`
 `;
 
 const Label = styled.label`
-  font-weight: 600;
+  font-weight: 500;
 `;
 
 const Required = styled.span`
   font-weight: 400;
+  color: ${({ theme }) => theme.color.accent};
 `;
 
 const Hint = styled.p`
   margin: 0;
   color: ${({ theme }) => theme.color.textSecondary};
-  font-size: 0.875rem;
+  font-size: var(--text-small);
+`;
+
+const controlStyles = css`
+  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.xs};
+  border: 1px solid ${({ theme }) => theme.color.inputBorder};
+  border-radius: ${({ theme }) => theme.radius.sm};
+  font: inherit;
+  background: ${({ theme }) => theme.color.surface};
+  color: ${({ theme }) => theme.color.text};
+  width: 100%;
+  transition: border-color ${({ theme }) => theme.motion.quick} ${({ theme }) => theme.motion.ease};
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.color.focus};
+    outline-offset: 2px;
+  }
 `;
 
 const Control = styled.input`
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.xs};
-  border: 1px solid ${({ theme }) => theme.color.border};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  font: inherit;
-  background: ${({ theme }) => theme.color.surface};
-  color: ${({ theme }) => theme.color.text};
-  width: 100%;
+  ${controlStyles}
 `;
 
 const Select = styled.select`
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.xs};
-  border: 1px solid ${({ theme }) => theme.color.border};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  font: inherit;
-  background: ${({ theme }) => theme.color.surface};
-  color: ${({ theme }) => theme.color.text};
-  width: 100%;
+  ${controlStyles}
 `;
 
 const Area = styled.textarea`
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.xs};
-  border: 1px solid ${({ theme }) => theme.color.border};
-  border-radius: ${({ theme }) => theme.radius.sm};
-  font: inherit;
-  background: ${({ theme }) => theme.color.surface};
-  color: ${({ theme }) => theme.color.text};
-  width: 100%;
+  ${controlStyles}
   min-height: 7rem;
 `;
 
 const ErrorText = styled.p`
   margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.space.xs3};
   color: ${({ theme }) => theme.color.error};
-  font-size: 0.875rem;
+  font-size: var(--text-small);
+  line-height: 1.4;
 `;
 
 const Summary = styled.div`
   border: 1px solid ${({ theme }) => theme.color.error};
   border-radius: ${({ theme }) => theme.radius.md};
-  padding: ${({ theme }) => theme.space.sm};
+  padding: ${({ theme }) => theme.space.xs} ${({ theme }) => theme.space.sm};
   background: ${({ theme }) => theme.color.surface};
+  color: ${({ theme }) => theme.color.error};
+  display: flex;
+  align-items: flex-start;
+  gap: ${({ theme }) => theme.space.xs2};
+  p {
+    margin: 0;
+  }
 `;
 
 const Notice = styled.div`
@@ -88,23 +98,54 @@ const Notice = styled.div`
   border-radius: ${({ theme }) => theme.radius.md};
   padding: ${({ theme }) => theme.space.sm};
   background: ${({ theme }) => theme.color.surface};
+  box-shadow: ${({ theme }) => theme.elevation["1"]};
+  max-width: 44rem;
+`;
+
+const NoticeHeading = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space.xs2};
+  margin: 0 0 ${({ theme }) => theme.space.xs2};
+  color: ${({ theme }) => theme.color.success};
+  font-family: var(--font-body);
+  font-size: var(--text-h3);
 `;
 
 const Submit = styled.button`
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.space.xs2};
   background: ${({ theme }) => theme.color.primary};
   color: ${({ theme }) => theme.color.primaryContrast};
   border: none;
-  border-radius: ${({ theme }) => theme.radius.sm};
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.sm};
+  border-radius: ${({ theme }) => theme.radius.pill};
+  padding: 0 ${({ theme }) => theme.space.sm};
+  min-height: 44px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    transform ${({ theme }) => theme.motion.quick} ${({ theme }) => theme.motion.ease},
+    box-shadow ${({ theme }) => theme.motion.quick} ${({ theme }) => theme.motion.ease};
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.elevation["1"]};
+  }
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
-  return <ErrorText id={id}>{message}</ErrorText>;
+  return (
+    <ErrorText id={id}>
+      <AlertCircle size={16} aria-hidden="true" />
+      <span>{message}</span>
+    </ErrorText>
+  );
 }
 
 export default function InquiryForm() {
@@ -143,7 +184,10 @@ export default function InquiryForm() {
     <ThemeProvider theme={theme}>
       {phase === "ready" ? (
         <Notice ref={noticeRef} tabIndex={-1} role="status">
-          <h2>Enquiry checked</h2>
+          <NoticeHeading>
+            <CheckCircle2 size={20} aria-hidden="true" />
+            Enquiry checked
+          </NoticeHeading>
           <p>
             Your details pass validation. Online submission is being connected — please check back
             soon to send your enquiry.
@@ -163,6 +207,7 @@ export default function InquiryForm() {
           </p>
           {isSubmitted && errorCount > 0 ? (
             <Summary role="alert">
+              <AlertCircle size={18} aria-hidden="true" />
               <p>
                 {errorCount === 1
                   ? "There is 1 field to correct."
@@ -276,7 +321,10 @@ export default function InquiryForm() {
             <Area id="inquiry-message" {...register("message")} />
           </Field>
 
-          <Submit type="submit">Check enquiry</Submit>
+          <Submit type="submit">
+            <Send size={18} aria-hidden="true" />
+            Check enquiry
+          </Submit>
         </Form>
       )}
     </ThemeProvider>

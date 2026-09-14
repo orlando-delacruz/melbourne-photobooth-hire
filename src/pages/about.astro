@@ -1,22 +1,31 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { getContent } from "../lib/content/repository";
+
+const { site } = getContent();
 ---
 
 <BaseLayout
   title="About | Melbourne Photobooth Hire"
   description="About Melbourne Photobooth Hire — photobooth experiences for Melbourne events."
 >
-  <h1>About</h1>
-  <p>
-    Melbourne Photobooth Hire provides open-air, roaming and 360 photobooth experiences for
-    weddings, birthdays, corporate events, school formals, engagement parties and Christmas parties
-    across Melbourne and surrounding areas.
-  </p>
-  <p>
-    Every hire includes custom print templates, HD printing, instant QR downloads, props, and full
-    setup and pack-down by our team.
-  </p>
-  <p>
-    <a href="/contact">Enquire now</a>
-  </p>
+  <PageHeader
+    title="About"
+    eyebrow="The business"
+    lede="Photobooth experiences for Melbourne events, handled by a dedicated local team."
+  />
+  <div class="readable section">
+    <p>{site.serviceAreaStatement}</p>
+    <p>
+      About information will appear here once client-confirmed. Until then, please enquire for
+      current details.
+    </p>
+    <p>
+      <Button href="/contact" variant="primary">
+        Enquire now
+      </Button>
+    </p>
+  </div>
 </BaseLayout>

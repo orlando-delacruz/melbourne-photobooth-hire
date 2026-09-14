@@ -1,11 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHeader from "../components/PageHeader.astro";
 ---
 
 <BaseLayout
   title="Terms & Conditions | Melbourne Photobooth Hire"
   description="Terms and Conditions for Melbourne Photobooth Hire. Content pending client approval."
 >
-  <h1>Terms &amp; Conditions</h1>
-  <p>Terms content will appear here once client-approved.</p>
+  <PageHeader title="Terms & Conditions" eyebrow="Legal" />
+  <div class="readable section">
+    <p>Terms content will appear here once client-approved.</p>
+  </div>
 </BaseLayout>

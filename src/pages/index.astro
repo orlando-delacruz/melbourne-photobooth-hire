@@ -1,111 +1,193 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import Hero from "../components/Hero.astro";
+import Reveal from "../components/islands/Reveal";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
 
-const { services, packages, eventTypes, processSteps, testimonials, faqs, site } = getContent();
+const {
+  services,
+  packages,
+  eventTypes,
+  processSteps,
+  faqs,
+  heroBackgroundImage,
+  heroStats,
+  serviceImages,
+  showcaseImages,
+  ctaImage,
+  sampleTestimonials,
+} = getContent();
 ---
 
 <BaseLayout
+  bodyClass="page-home"
   title="Melbourne Photobooth Hire | Photobooth Hire for Melbourne Events"
   description="Melbourne Photobooth Hire — photobooth experiences for weddings, birthdays and corporate events, with custom prints and instant QR downloads."
+  preloadImage={heroBackgroundImage?.src}
 >
-  <section class="hero" aria-labelledby="page-title">
-    <h1 id="page-title">{site.heroHeadline}</h1>
-    <p class="lede">{site.heroSupporting}</p>
-    <p>
-      <Button href="/contact" variant="primary">
-        Enquire now
-      </Button>
-      <Button href="/packages" variant="secondary">
-        View packages
-      </Button>
-    </p>
-  </section>
-  <style>
-    .hero {
-      padding-top: var(--space-lg);
-      padding-bottom: var(--space-lg);
-    }
-    .hero h1 {
-      font-size: var(--text-display);
-    }
-    .lede {
-      font-size: var(--text-h3);
-      color: var(--color-text-secondary);
-    }
-  </style>
-  <section aria-labelledby="services-heading">
-    <SectionHeading title="Our Booths" id="services-heading" />
-    <p>Melbourne&apos;s go-to photobooth hire — open-air and roaming setups for any event.</p>
-    <ul>
-      {services.map((service) => (
-        <li>
-          <h3>
-            {service.name}
-            {service.badge ? ` — ${service.badge}` : ""}
-          </h3>
-          <p>{service.summary}</p>
-        </li>
+  <Hero
+    headline="Turn the room into a studio."
+    supporting="Open-air booths, roaming setups and 360 video for weddings, birthdays and corporate events — with prints guests keep and QR downloads in seconds."
+    primaryHref="/contact"
+    primaryLabel="Enquire now"
+    secondaryHref="/packages"
+    secondaryLabel="View packages"
+    backgroundSrc={heroBackgroundImage?.src}
+    backgroundAlt={heroBackgroundImage?.alt}
+    stats={heroStats}
+    scrollHref="#services-heading"
+    scrollLabel="Scroll to our booths"
+  />
+
+  <section class="section" aria-labelledby="services-heading">
+    <SectionHeading
+      tone="dark"
+      title="Three ways to bring the room into the frame"
+      eyebrow="The booths"
+      id="services-heading"
+      lede="Every hire includes HD prints, QR downloads and full setup and pack-down by our team."
+    />
+    <div class="booths-grid">
+      {services.map((service, index) => (
+        <Reveal client:visible delay={index * 0.08}>
+          <Card
+            tone="dark"
+            title={service.name}
+            badge={service.badge}
+            icon={service.icon}
+            tagline={service.tagline}
+            description={service.summary}
+            highlights={service.highlights}
+            imageSrc={serviceImages?.[service.id]?.src}
+            imageAlt={serviceImages?.[service.id]?.alt}
+            href="/packages"
+            ctaLabel="View packages"
+          />
+        </Reveal>
       ))}
-    </ul>
-    <p>
-      <Button href="/services" variant="secondary">
-        Explore services
-      </Button>
-    </p>
+    </div>
   </section>
-  <section aria-labelledby="events-heading">
-    <SectionHeading title="Perfect For" id="events-heading" />
-    <ul>
-      {eventTypes.map((eventType) => (
-        <li>{eventType}</li>
-      ))}
-    </ul>
-  </section>
-  <section aria-labelledby="packages-heading">
-    <SectionHeading title="Packages" id="packages-heading" />
-    <ul>
+
+  {showcaseImages && showcaseImages.length > 0 ? (
+    <section class="section" aria-labelledby="showcase-heading">
+      <div class="panel-print">
+        <SectionHeading
+          title="The kind of night we stage"
+          eyebrow="Styled moments"
+          id="showcase-heading"
+          lede="Sample imagery for layout — real event photos will appear here once client-approved."
+        />
+        <ul class="showcase-grid">
+          {showcaseImages.map((item, index) => (
+            <li>
+              <Reveal client:visible delay={index * 0.06}>
+                <figure class="showcase-item">
+                  <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+                  <figcaption>
+                    <span>{item.caption}</span>
+                    <span class="sample-tag">Sample</span>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+        <p>
+          <Button href="/gallery" variant="secondary">
+            View gallery
+          </Button>
+        </p>
+      </div>
+    </section>
+  ) : null}
+
+  <section class="section" aria-labelledby="packages-heading">
+    <SectionHeading
+      tone="dark"
+      title="All-inclusive hire, priced per hour"
+      eyebrow="Packages"
+      id="packages-heading"
+      lede="No hidden extras — inclusions are listed per package. Final pricing is confirmed at enquiry."
+    />
+    <div class="card-grid">
       {packages.map((pkg) => (
-        <li>
-          {pkg.name} — {pkg.durationLabel} · {pkg.priceLabel}
-        </li>
+        <Reveal client:visible>
+          <Card
+            tone="dark"
+            title={pkg.name}
+            badge={pkg.badge}
+            meta={pkg.durationLabel}
+            price={pkg.priceLabel}
+            description={pkg.summary}
+            items={pkg.inclusions.slice(0, 4)}
+            featured={pkg.badge === "Most Popular"}
+            href="/contact"
+            ctaLabel="Enquire about this package"
+          />
+        </Reveal>
       ))}
-    </ul>
-    <p>
-      <Button href="/packages" variant="secondary">
-        View packages
-      </Button>
-    </p>
+    </div>
   </section>
-  <section aria-labelledby="process-heading">
-    <SectionHeading title="How It Works" id="process-heading" />
-    <ol>
-      {processSteps.map((step) => (
-        <li>
-          <h3>{step.title}</h3>
-          <p>{step.summary}</p>
-        </li>
+
+  <section class="section" aria-labelledby="process-heading">
+    <SectionHeading
+      tone="dark"
+      title="From first enquiry to the first flash"
+      eyebrow="How it works"
+      id="process-heading"
+      lede="Three steps between you and a room full of prints."
+    />
+    <ol class="steps">
+      {processSteps.map((step, index) => (
+        <Reveal client:visible delay={index * 0.06}>
+          <li class="step">
+            <p class="step-number" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </p>
+            <h3>{step.title}</h3>
+            <p>{step.summary}</p>
+          </li>
+        </Reveal>
       ))}
     </ol>
   </section>
-  <section aria-labelledby="reviews-heading">
-    <SectionHeading title="Reviews" id="reviews-heading" />
-    <ul>
-      {testimonials.slice(0, 3).map((item) => (
-        <li>
-          <blockquote>{item.quote}</blockquote>
-          <p>
-            {item.name} — {item.eventType}
-          </p>
-        </li>
-      ))}
-    </ul>
-  </section>
-  <section aria-labelledby="faq-heading">
-    <SectionHeading title="FAQ" id="faq-heading" />
-    <ul>
+
+  {sampleTestimonials && sampleTestimonials.length > 0 ? (
+    <section class="section" aria-labelledby="reviews-heading">
+      <div class="panel-print">
+        <SectionHeading
+          title="What guests say"
+          eyebrow="Reviews"
+          id="reviews-heading"
+          lede="Sample quotes for layout only — real client reviews will appear here once approved."
+        />
+        <ul class="review-list">
+          {sampleTestimonials.map((item) => (
+            <li class="review-item">
+              <span class="sample-tag">Sample</span>
+              <blockquote>{item.quote}</blockquote>
+              <p class="review-attribution">
+                {item.name}, {item.eventType}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  ) : null}
+
+  <section class="section" aria-labelledby="faq-heading">
+    <SectionHeading
+      tone="dark"
+      title="Answers before you ask"
+      eyebrow="Good to know"
+      id="faq-heading"
+      lede="Quick answers to common questions."
+    />
+    <ul class="faq-list">
       {faqs.slice(0, 4).map((faq) => (
         <li>
           <h3>{faq.question}</h3>
@@ -113,29 +195,217 @@ const { services, packages, eventTypes, processSteps, testimonials, faqs, site }
         </li>
       ))}
     </ul>
-    <p>
-      <Button href="/faq" variant="secondary">
+    <p class="explore-ctas">
+      <Button href="/faq" variant="secondary" tone="dark">
         Read FAQ
       </Button>
     </p>
   </section>
-  <section aria-labelledby="explore-heading">
-    <SectionHeading title="Explore" id="explore-heading" />
-    <p>
-      <Button href="/gallery" variant="secondary">
-        View gallery
-      </Button>
-      <Button href="/faq" variant="secondary">
-        Read FAQ
-      </Button>
-    </p>
+
+  <section class="section" aria-labelledby="event-types-heading">
+    <SectionHeading
+      tone="dark"
+      title="Every occasion, one booth"
+      eyebrow="Perfect for"
+      id="event-types-heading"
+      lede="Weddings, birthdays, corporate nights and everything in between."
+    />
+    <ul class="chip-list">
+      {eventTypes.map((eventType) => (
+        <li>{eventType}</li>
+      ))}
+    </ul>
   </section>
-  <section aria-labelledby="enquire-heading">
-    <SectionHeading title="Ready to enquire?" id="enquire-heading" />
-    <p>
-      <Button href="/contact" variant="primary">
-        Enquire now
-      </Button>
-    </p>
+
+  <section class="section" aria-labelledby="enquire-heading">
+    <div class="cta-band" style={ctaImage ? `background-image: url('${ctaImage.src}')` : undefined}>
+      <div class="cta-scrim"></div>
+      <div class="cta-content">
+        <p class="cta-eyebrow">Ready when you are</p>
+        <h2 id="enquire-heading">Ready to book your night?</h2>
+        <p class="cta-lede">Tell us your date and we'll recommend the booth for your event.</p>
+        <p class="cta-buttons">
+          <Button href="/contact" variant="primary" tone="dark">
+            Enquire now
+          </Button>
+          <Button href="/packages" variant="secondary" tone="dark">
+            View packages
+          </Button>
+        </p>
+      </div>
+    </div>
   </section>
 </BaseLayout>
+
+<style>
+  .booths-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+  @media (min-width: 1024px) {
+    .booths-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .showcase-grid {
+    list-style: none;
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    display: grid;
+    gap: var(--space-sm);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+  .showcase-item {
+    margin: 0;
+  }
+  .showcase-item img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+  }
+  .showcase-item figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    margin-top: var(--space-2xs);
+    font-size: var(--text-small);
+  }
+  .sample-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--space-2xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-ink-soft);
+    font-size: var(--text-caption);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .review-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-md);
+  }
+  .review-item blockquote {
+    margin: var(--space-2xs) 0 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+  .review-attribution {
+    margin: var(--space-2xs) 0 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-sm);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  .step {
+    border-top: 1px solid rgba(230, 206, 138, 0.22);
+    padding-top: var(--space-sm);
+  }
+  .step-number {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-accent-on-dark);
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    font-weight: 400;
+  }
+  .step h3 {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-on-ink);
+  }
+  .step p:last-child {
+    margin: 0;
+    color: var(--color-on-ink-secondary);
+  }
+  .faq-list {
+    list-style: none;
+    margin: 0 0 var(--space-sm);
+    padding: 0;
+    display: grid;
+    gap: var(--space-sm);
+    max-width: var(--text-max-width);
+  }
+  .faq-list h3 {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-on-ink);
+  }
+  .faq-list p {
+    margin: 0;
+    color: var(--color-on-ink-secondary);
+  }
+  .explore-ctas {
+    margin: 0;
+  }
+  .chip-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+  .chip-list li {
+    border: 1px solid var(--color-ink-border);
+    border-radius: var(--radius-pill);
+    padding: var(--space-2xs) var(--space-sm);
+    font-weight: 500;
+    font-size: var(--text-small);
+    color: var(--color-on-ink-secondary);
+    background: var(--color-surface-dark);
+  }
+  .cta-band {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-ink);
+    background-size: cover;
+    background-position: center;
+    padding: var(--space-lg);
+  }
+  .cta-scrim {
+    position: absolute;
+    inset: 0;
+    background: var(--color-scrim);
+  }
+  .cta-content {
+    position: relative;
+    z-index: 1;
+    max-width: var(--text-max-width);
+  }
+  .cta-eyebrow {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-accent-on-dark);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+  .cta-content h2 {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-on-ink);
+    font-size: var(--text-h1);
+  }
+  .cta-lede {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-on-ink);
+  }
+  .cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin: 0;
+  }
+</style>
