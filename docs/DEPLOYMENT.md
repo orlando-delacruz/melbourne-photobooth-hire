@@ -110,13 +110,13 @@ Manual production changes should be avoided where the same configuration can be 
 
 ## 5. Domain
 
-The provisional production domain (pending client confirmation — see Section 30) is:
+The production domain (confirmed 2026-09-16 — see `docs/DECISIONS.md` DEC-016) is:
 
 ```text
 melbournephotoboothhire.com.au
 ```
 
-This domain must not be treated as client-confirmed production configuration. Canonical URLs, sitemap URLs, metadata, and related production SEO configuration must follow the confirmed production domain once confirmed.
+Canonical URLs, sitemap URLs, metadata, and related production SEO configuration follow this domain. It is configured as the Astro `site` value in `astro.config.mjs` (DEC-016); the alternate hostname (www / non-www) must redirect to the chosen canonical hostname once DNS is connected.
 
 The domain registrar is:
 

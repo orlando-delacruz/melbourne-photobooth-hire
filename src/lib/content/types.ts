@@ -1,6 +1,6 @@
 // Content shapes for Melbourne Photobooth Hire.
 //
-// PROVISIONAL DEV MOCKS — structure follows the Shot&Prints reference for
+// PROVISIONAL CONTENT: structure follows the Shot&Prints reference for
 // development velocity (user-waived confirmation for dev). Values are
 // CMS-editable placeholders, not confirmed production facts. Do not publish
 // as verified business claims. Shot&Prints identity (contacts, ABN, socials,
@@ -37,6 +37,8 @@ export interface ProcessStep {
   id: string;
   title: string;
   summary: string;
+  /** Presentational icon key for the "How it works" steps. */
+  icon?: "message" | "palette" | "sparkles";
 }
 
 export interface Testimonial {
@@ -44,12 +46,18 @@ export interface Testimonial {
   quote: string;
   name: string;
   eventType: string;
+  /**
+   * Star rating (1-5). PROVISIONAL: must never be rendered for a testimonial
+   * whose rating is unverified (REQ-REV-007); omitted when absent.
+   */
+  rating?: number;
 }
 
 export interface GalleryItem {
   id: string;
   src: string;
   alt: string;
+  caption?: string;
 }
 
 export interface Faq {
@@ -68,10 +76,9 @@ export interface SiteSettings {
 }
 
 /**
- * A remotely-hosted sample image used by the homepage.
- * SAMPLE — external stock photography for layout purposes only. Never
- * presented as a real client event; alt text carries a "(sample imagery)"
- * marker. Swapped for client-approved media via the same seam.
+ * A remotely-hosted placeholder image.
+ * PLACEHOLDER: external stock photography for layout purposes only, replaced
+ * for client-approved imagery via the same seam.
  */
 export interface SampleImage {
   src: string;
@@ -85,16 +92,25 @@ export interface HeroStat {
   icon?: "camera" | "clock" | "qrcode";
 }
 
-/**
- * A sample testimonial. SAMPLE — invented quotes to exercise layout only
- * (REQ-REV-007 forbids presenting them as real reviews). Rendered with an
- * explicit "Sample" marker and replaced by approved content later.
- */
-export interface SampleTestimonial {
+export interface AboutValue {
   id: string;
-  quote: string;
-  name: string;
-  eventType: string;
+  title: string;
+  detail: string;
+}
+
+export interface AboutStat {
+  value: string;
+  label: string;
+}
+
+/** Provisional About-page content (CMS-editable; not a confirmed company history). */
+export interface AboutContent {
+  eyebrow: string;
+  headline: string;
+  lede: string;
+  story: string[];
+  values: AboutValue[];
+  stats: AboutStat[];
 }
 
 export interface SiteContent {
@@ -108,11 +124,11 @@ export interface SiteContent {
   gallery: GalleryItem[];
   faqs: Faq[];
   site: SiteSettings;
+  about: AboutContent;
   /** Homepage-only provisional fields. */
   heroBackgroundImage?: SampleImage;
   heroStats?: HeroStat[];
   serviceImages?: Record<string, SampleImage>;
   showcaseImages?: SampleImage[];
   ctaImage?: SampleImage;
-  sampleTestimonials?: SampleTestimonial[];
 }

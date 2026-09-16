@@ -1,8 +1,11 @@
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
 
-// `site` and sitemap integration follow once the production domain is
-// client-confirmed (see docs/DEPLOYMENT.md).
+// The production domain is confirmed for deployment (DEC-016); `site` is the
+// single source for canonical URLs, Open Graph URLs and the sitemap.
 export default defineConfig({
-  integrations: [react()],
+  site: "https://melbournephotoboothhire.com.au",
+  trailingSlash: "never",
+  integrations: [react(), sitemap()],
 });

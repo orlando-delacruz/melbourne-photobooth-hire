@@ -1,0 +1,195 @@
+---
+interface Item {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  items: Item[];
+  tone?: "light" | "dark";
+}
+const { items, tone = "light" } = Astro.props;
+---
+
+<div class:list={["accordion", `accordion--${tone}`, { "on-dark": tone === "dark" }]}>
+  {items.map((item) => (
+    <details class="accordion__item">
+      <summary class="accordion__summary">
+        <span class="accordion__question">{item.question}</span>
+        <span class="accordion__marker" aria-hidden="true"></span>
+      </summary>
+      <div class="accordion__answer">
+        <div class="accordion__answer-inner">
+          <p>{item.answer}</p>
+        </div>
+      </div>
+    </details>
+  ))}
+</div>
+<script>
+  // Progressive enhancement: native <details> works without JS; when JS runs we
+  // animate the answer height open and closed. Reduced-motion users keep the
+  // instant native toggle.
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduceMotion) {
+    const DURATION = 340;
+    const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+    document.querySelectorAll<HTMLDetailsElement>(".accordion__item").forEach((item) => {
+      const summary = item.querySelector(".accordion__summary");
+      const answer = item.querySelector<HTMLElement>(".accordion__answer");
+      if (!summary || !answer) return;
+      let busy = false;
+      summary.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (busy) return;
+        busy = true;
+        const opening = !item.open;
+        if (opening) item.open = true;
+        const start = opening ? 0 : answer.scrollHeight;
+        const end = opening ? answer.scrollHeight : 0;
+        answer.style.overflow = "hidden";
+        answer.style.height = start + "px";
+        requestAnimationFrame(() => {
+          answer.style.transition = "height " + DURATION + "ms " + EASE;
+          answer.style.height = end + "px";
+        });
+        answer.addEventListener(
+          "transitionend",
+          () => {
+            if (!opening) item.open = false;
+            answer.style.removeProperty("height");
+            answer.style.removeProperty("overflow");
+            answer.style.removeProperty("transition");
+            busy = false;
+          },
+          { once: true },
+        );
+      });
+    });
+  }
+</script>
+<style>
+  .accordion {
+    border-top: 1px solid var(--color-divider);
+  }
+  .accordion--dark {
+    border-top-color: var(--color-ink-hairline);
+  }
+  .accordion__item {
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .accordion--dark .accordion__item {
+    border-bottom-color: var(--color-ink-hairline);
+  }
+  .accordion__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+    cursor: pointer;
+    list-style: none;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .accordion__summary::-webkit-details-marker {
+    display: none;
+  }
+  .accordion__summary:hover .accordion__question {
+    color: var(--color-accent-strong);
+  }
+  .accordion--dark .accordion__summary:hover .accordion__question {
+    color: var(--color-accent-on-dark);
+  }
+  .accordion__summary:hover .accordion__marker {
+    border-color: var(--color-accent);
+    background: var(--color-accent-wash);
+  }
+  .accordion--dark .accordion__summary:hover .accordion__marker {
+    border-color: var(--color-accent-on-dark);
+    background: var(--color-accent-wash);
+  }
+  .accordion__question {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-snug);
+    color: var(--color-ink);
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .accordion--dark .accordion__question {
+    color: var(--color-on-ink);
+  }
+  .accordion__marker {
+    position: relative;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    transition:
+      border-color var(--motion-quick) var(--ease-default),
+      background-color var(--motion-quick) var(--ease-default);
+  }
+  .accordion__marker::before,
+  .accordion__marker::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: var(--color-accent);
+    transform: translate(-50%, -50%);
+    transition:
+      transform var(--motion-quick) var(--ease-default),
+      opacity var(--motion-quick) var(--ease-default);
+  }
+  .accordion__marker::before {
+    width: 0.7rem;
+    height: 1.5px;
+  }
+  .accordion__marker::after {
+    width: 1.5px;
+    height: 0.7rem;
+  }
+  .accordion--dark .accordion__marker {
+    border-color: var(--color-ink-hairline-strong);
+  }
+  .accordion--dark .accordion__marker::before,
+  .accordion--dark .accordion__marker::after {
+    background: var(--color-accent-on-dark);
+  }
+  /* Open: the marker becomes a minus (shape change) plus a tinted chip. */
+  .accordion__item[open] .accordion__marker {
+    background: var(--color-accent-wash);
+    border-color: var(--color-accent);
+  }
+  .accordion--dark .accordion__item[open] .accordion__marker {
+    border-color: var(--color-accent-on-dark);
+  }
+  .accordion__item[open] .accordion__marker::after {
+    transform: translate(-50%, -50%) scaleY(0);
+    opacity: 0;
+  }
+  .accordion__answer {
+    overflow: hidden;
+  }
+  .accordion__answer-inner {
+    padding: 0 var(--space-lg) var(--space-md) 0;
+    max-width: 46rem;
+  }
+  .accordion__answer-inner p {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+  .accordion--dark .accordion__answer-inner p {
+    color: var(--color-on-ink-secondary);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .accordion__marker,
+    .accordion__marker::before,
+    .accordion__marker::after {
+      transition: none;
+    }
+  }
+</style>

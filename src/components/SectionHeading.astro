@@ -5,40 +5,62 @@ interface Props {
   lede?: string;
   id?: string;
   tone?: "light" | "dark";
+  align?: "start" | "center";
+  size?: "md" | "lg";
+  /** Draw the champagne rule before the eyebrow. */
+  rule?: boolean;
 }
-const { title, eyebrow, lede, id, tone = "light" } = Astro.props;
+const {
+  title,
+  eyebrow,
+  lede,
+  id,
+  tone = "light",
+  align = "start",
+  size = "md",
+  rule = true,
+} = Astro.props;
 ---
 
-<div class:list={["section-heading", `section-heading--${tone}`]}>
-  {eyebrow ? <p class="eyebrow">{eyebrow}</p> : null}
+<div
+  class:list={[
+    "section-heading",
+    `section-heading--${tone}`,
+    `section-heading--${align}`,
+    `section-heading--${size}`,
+    { "on-dark": tone === "dark" },
+  ]}
+>
+  {eyebrow ? <p class:list={["eyebrow", { "eyebrow--rule": rule }]}>{eyebrow}</p> : null}
   <h2 id={id}>{title}</h2>
   {lede ? <p class="lede">{lede}</p> : null}
 </div>
 <style>
   .section-heading {
     max-width: var(--text-max-width);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
   }
-  .eyebrow {
-    margin: 0 0 var(--space-3xs);
-    color: var(--color-accent);
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: var(--text-small);
+  .section-heading--center {
+    margin-inline: auto;
+    text-align: center;
+  }
+  .section-heading--center .eyebrow {
+    justify-content: center;
   }
   .section-heading h2 {
-    margin: 0 0 var(--space-2xs);
-    font-size: clamp(1.75rem, 3vw, 2.25rem);
-    line-height: 1.1;
+    margin: var(--space-sm) 0 var(--space-xs);
+    font-size: var(--text-title);
+    line-height: var(--leading-title);
+  }
+  .section-heading--lg h2 {
+    font-size: var(--text-display);
+    line-height: var(--leading-display);
   }
   .lede {
     margin: 0;
     color: var(--color-ink-soft);
-    font-size: var(--text-body);
+    font-size: var(--text-lead);
     font-weight: 400;
-  }
-  .section-heading--dark .eyebrow {
-    color: var(--color-accent-on-dark);
   }
   .section-heading--dark h2 {
     color: var(--color-on-ink);

@@ -2,10 +2,10 @@ import type { FieldErrors, FieldValues, Resolver } from "react-hook-form";
 import * as z from "zod";
 
 /**
- * Inquiry validation — shared client/server schema shape (Phase 2: client
+ * Inquiry validation: shared client/server schema shape (Phase 2: client
  * usability layer only; the Astro Server Endpoint re-validates in Phase 4).
  *
- * PROVISIONAL — the field set, required-vs-optional designations, and option
+ * PROVISIONAL: the field set, required-vs-optional designations, and option
  * lists below are the documented candidates from REQ-INQ-008 through
  * REQ-INQ-010. Final confirmation is required before production use.
  */

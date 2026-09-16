@@ -41,60 +41,56 @@ function heroIconSvg(name: string, size = 18): string {
   const paths: Record<string, string> = {
     camera:
       '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
-    clock:
-      '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
     qrcode:
       '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/>',
   };
   const inner = paths[name] ?? "";
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 }
 ---
 
-<section
-  class="hero"
-  aria-labelledby="page-title"
->
+<section class="hero on-dark" aria-labelledby="page-title">
   {backgroundSrc ? (
-    <div
-      class="hero-bg"
-      style={`background-image: url('${backgroundSrc}')`}
-      aria-hidden="true"
-    />
+    <div class="hero-bg" style={`background-image: url('${backgroundSrc}')`} aria-hidden="true" />
   ) : null}
+  <div class="hero-veil" aria-hidden="true"></div>
   <div class="hero-inner">
     {backgroundAlt ? <span class="sr-only">{backgroundAlt}</span> : null}
     <div class="container">
       <div class="hero-copy">
         <Reveal client:load mode="mount" delay={0.05}>
-          <p class="hero-eyebrow">{eyebrow}</p>
+          <p class="hero-eyebrow eyebrow eyebrow--rule">{eyebrow}</p>
         </Reveal>
-        <Reveal client:load mode="mount" delay={0.13}>
+        <Reveal client:load mode="mount" delay={0.14}>
           <h1 id="page-title" class="hero-headline">
             {headline}
           </h1>
         </Reveal>
-        <Reveal client:load mode="mount" delay={0.22}>
+        <Reveal client:load mode="mount" delay={0.24}>
           <p class="hero-lede">{supporting}</p>
         </Reveal>
-        <Reveal client:load mode="mount" delay={0.3}>
+        <Reveal client:load mode="mount" delay={0.33}>
           <p class="hero-ctas">
-            <Button href={primaryHref} variant="primary" tone="dark">
+            <Button href={primaryHref} variant="primary" tone="dark" size="lg" arrow>
               {primaryLabel}
             </Button>
             {secondaryHref && secondaryLabel ? (
-              <Button href={secondaryHref} variant="secondary" tone="dark">
+              <Button href={secondaryHref} variant="secondary" tone="dark" size="lg">
                 {secondaryLabel}
               </Button>
             ) : null}
           </p>
         </Reveal>
         {stats.length > 0 ? (
-          <Reveal client:load mode="mount" delay={0.38}>
+          <Reveal client:load mode="mount" delay={0.42}>
             <dl class="hero-stats">
               {stats.map((stat) => (
                 <div class="hero-stat">
-                  <dt class="hero-stat-value" set:html={`${stat.icon ? heroIconSvg(stat.icon) : ""}${stat.value}`} />
+                  <dt
+                    class="hero-stat-value"
+                    set:html={`${stat.icon ? heroIconSvg(stat.icon) : ""}${stat.value}`}
+                  />
                   <dd class="hero-stat-label">{stat.label}</dd>
                 </div>
               ))}
@@ -107,7 +103,7 @@ function heroIconSvg(name: string, size = 18): string {
   {scrollHref ? (
     <a class="hero-scroll" href={scrollHref}>
       <span class="sr-only">{scrollLabel}</span>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      <span class="hero-scroll-line" aria-hidden="true"></span>
     </a>
   ) : null}
 </section>
@@ -115,88 +111,83 @@ function heroIconSvg(name: string, size = 18): string {
   .hero {
     position: relative;
     overflow: hidden;
+    isolation: isolate;
     width: auto;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    background-color: var(--color-ink);
+    background-color: var(--color-ink-deep);
     color: var(--color-on-ink);
     display: flex;
     align-items: center;
-    min-height: min(40rem, 92svh);
-    padding-block: clamp(3.5rem, 10vw, 7rem);
-    border-bottom: 1px solid rgba(230, 206, 138, 0.16);
+    min-height: 44rem;
+    min-height: min(44rem, 96svh);
+    padding-block: clamp(4.5rem, 11vw, 8rem);
+    border-bottom: 1px solid var(--color-ink-hairline);
   }
   .hero-bg {
     position: absolute;
-    inset: 0;
+    inset: -2% 0;
     background-size: cover;
     background-position: center;
     transform-origin: center;
-    animation: hero-bg-settle 2.2s var(--ease-default) both;
+    animation: hero-bg-settle 2.4s var(--ease-default) both;
+    z-index: -3;
   }
   @keyframes hero-bg-settle {
-    from { transform: scale(1.06); }
-    to   { transform: scale(1); }
+    from {
+      transform: scale(1.07);
+    }
+    to {
+      transform: scale(1);
+    }
   }
-  .hero::before {
-    content: "";
+  /* Base wash + directional gradient + bottom vignette, on one layer. */
+  .hero-veil {
     position: absolute;
     inset: 0;
-    background: var(--color-scrim);
-    pointer-events: none;
-    z-index: 1;
-  }
-  .hero::after {
-    content: "";
-    position: absolute;
-    inset: 0;
+    z-index: -2;
     background:
       linear-gradient(
         90deg,
-        rgba(23, 18, 12, 0.92) 0%,
-        rgba(23, 18, 12, 0.62) 50%,
-        rgba(23, 18, 12, 0.18) 76%,
-        rgba(23, 18, 12, 0.4) 100%
+        rgba(13, 9, 6, 0.94) 0%,
+        rgba(13, 9, 6, 0.7) 46%,
+        rgba(13, 9, 6, 0.24) 74%,
+        rgba(13, 9, 6, 0.5) 100%
       ),
       linear-gradient(
         180deg,
-        rgba(23, 18, 12, 0) 58%,
-        rgba(23, 18, 12, 0.6) 84%,
-        rgba(23, 18, 12, 0.9) 100%
-      );
+        rgba(13, 9, 6, 0.2) 0%,
+        rgba(13, 9, 6, 0.72) 86%,
+        rgba(13, 9, 6, 0.96) 100%
+      ),
+      radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.14), transparent 55%);
     pointer-events: none;
-    z-index: 2;
   }
   .hero-inner {
     position: relative;
-    z-index: 3;
+    z-index: 1;
     width: 100%;
   }
   .hero-copy {
-    max-width: var(--text-max-width);
+    max-width: 46rem;
   }
   .hero-eyebrow {
-    margin: 0 0 var(--space-xs);
     color: var(--color-accent-on-dark);
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: var(--text-small);
-    letter-spacing: 0.02em;
   }
   .hero-headline {
-    margin: 0 0 var(--space-sm);
+    margin: var(--space-md) 0 var(--space-md);
     color: var(--color-on-ink);
     font-size: var(--text-display);
     font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.05;
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-display);
   }
   .hero-lede {
-    margin: 0 0 var(--space-md);
+    margin: 0 0 var(--space-lg);
     color: var(--color-on-ink-secondary);
-    font-size: clamp(1.1875rem, 1.6vw, 1.375rem);
+    font-size: var(--text-lead);
     font-weight: 400;
-    max-width: 34rem;
+    max-width: 36rem;
   }
   .hero-ctas {
     display: flex;
@@ -207,14 +198,15 @@ function heroIconSvg(name: string, size = 18): string {
   .hero-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 0;
+    gap: var(--space-xs) 0;
     margin: 0;
-    padding: 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-ink-hairline);
   }
   .hero-stat {
-    min-width: 9rem;
-    padding: 0 var(--space-sm);
-    border-left: 1px solid rgba(230, 206, 138, 0.32);
+    min-width: 10rem;
+    padding: 0 var(--space-md);
+    border-left: 1px solid var(--color-ink-hairline);
   }
   .hero-stat:first-child {
     padding-left: 0;
@@ -227,7 +219,7 @@ function heroIconSvg(name: string, size = 18): string {
     gap: var(--space-2xs);
     color: var(--color-on-ink);
     font-family: var(--font-display);
-    font-size: var(--text-h1);
+    font-size: var(--text-h2);
     font-weight: 500;
   }
   .hero-stat-value :global(svg) {
@@ -235,8 +227,8 @@ function heroIconSvg(name: string, size = 18): string {
     flex-shrink: 0;
   }
   .hero-stat-label {
-    margin: 0;
-    color: var(--color-on-ink-secondary);
+    margin: var(--space-3xs) 0 0;
+    color: var(--color-on-ink-faint);
     font-size: var(--text-small);
   }
   .hero-scroll {
@@ -249,15 +241,13 @@ function heroIconSvg(name: string, size = 18): string {
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: var(--radius-pill);
-    color: var(--color-accent-on-dark);
-    text-decoration: none;
-    transition: color var(--motion-quick) var(--ease-default);
-    z-index: 4;
+    z-index: 2;
   }
-  .hero-scroll:hover,
-  .hero-scroll:focus-visible {
-    color: var(--color-on-ink);
+  .hero-scroll-line {
+    display: block;
+    width: 1px;
+    height: 42px;
+    background: linear-gradient(180deg, transparent, var(--color-accent-on-dark));
   }
   .sr-only {
     position: absolute;
@@ -272,20 +262,68 @@ function heroIconSvg(name: string, size = 18): string {
   }
   @media (max-width: 639px) {
     .hero {
-      min-height: min(38rem, 94svh);
+      min-height: 34rem;
+      min-height: min(34rem, 84svh);
+      padding-block: clamp(2.75rem, 8vw, 4rem);
     }
     .hero-bg {
       background-position: center 32%;
     }
-    .hero::after {
+    .hero-veil {
       background:
         linear-gradient(
           180deg,
-          rgba(23, 18, 12, 0.55) 0%,
-          rgba(23, 18, 12, 0.78) 40%,
-          rgba(23, 18, 12, 0.94) 78%,
-          rgba(23, 18, 12, 0.98) 100%
-        );
+          rgba(13, 9, 6, 0.5) 0%,
+          rgba(13, 9, 6, 0.82) 42%,
+          rgba(13, 9, 6, 0.96) 84%,
+          rgba(13, 9, 6, 1) 100%
+        ),
+        radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.14), transparent 60%);
+    }
+    .hero-headline {
+      margin: var(--space-sm) 0 var(--space-sm);
+    }
+    .hero-lede {
+      margin-bottom: var(--space-md);
+    }
+    /* Stack the CTAs full width so they never wrap unevenly. */
+    .hero-ctas {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-md);
+    }
+    .hero-ctas :global(.button) {
+      width: 100%;
+      justify-content: center;
+    }
+    /* Stats become a tidy three-up row with a single top rule. */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-2xs);
+      padding-top: var(--space-sm);
+      border-top: 1px solid var(--color-ink-hairline);
+    }
+    .hero-stat {
+      min-width: 0;
+      padding: 0;
+      border-left: 0;
+    }
+    .hero-stat-value {
+      font-size: var(--text-h3);
+      gap: var(--space-3xs);
+    }
+    .hero-stat-label {
+      font-size: var(--text-small);
+    }
+    .hero-scroll {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bg {
+      animation: none;
     }
   }
 </style>

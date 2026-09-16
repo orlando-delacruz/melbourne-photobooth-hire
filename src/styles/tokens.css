@@ -1,6 +1,6 @@
 /* Design tokens for Melbourne Photobooth Hire.
  *
- * PROVISIONAL — the "event noir" palette (espresso + champagne + ivory) and
+ * PROVISIONAL: the "event noir" palette (espresso + champagne + ivory) and
  * Fraunces/Inter font pairing are proposals requiring client confirmation
  * before they become production brand values (see docs/DESIGN-SYSTEM.md
  * Sections 5-6, 38). Structural scales (spacing, type steps, breakpoints,
@@ -9,45 +9,91 @@
  */
 
 :root {
-  /* Color roles (provisional proposal — "event noir", photography-led) */
+  /* ── Colour: "event noir" ─────────────────────────────────────────────
+   * A warm near-black "darkroom" canvas, ivory photographic paper, and a
+   * single champagne-gold thread that carries eyebrows, rules and numerals. */
+  --color-ink-deep: #0d0906;
   --color-ink: #17120c;
+  --color-ink-raised: #211a12;
+  --color-ink-border: #3a3128;
+  --color-ink-hairline: rgba(230, 206, 138, 0.16);
+  --color-ink-hairline-strong: rgba(230, 206, 138, 0.32);
+
+  /* Text on ivory */
   --color-ink-soft: #4a423a;
-  --color-ink-faint: #71695f;
-  --color-ivory: #f5efe3;
+  --color-ink-faint: #675f55;
+
+  /* Ivory / paper */
+  --color-ivory: #f4ede0;
+  --color-ivory-deep: #ebe0cb;
   --color-surface: #ffffff;
-  --color-surface-dark: #211a12;
   --color-elevated: #ffffff;
-  --color-primary: #17120c;
-  --color-primary-contrast: #f5efe3;
-  --color-accent: #9e7b33;
+  --color-surface-dark: #211a12;
+
+  /* Champagne thread */
+  --color-accent: #7d5f24;
+  --color-accent-strong: #644a19;
   --color-accent-on-dark: #e6ce8a;
-  --color-on-ink: #f3ecdc;
-  --color-on-ink-secondary: #c8bca5;
+  --color-accent-wash: rgba(230, 206, 138, 0.1);
+  --color-accent-line: rgba(230, 206, 138, 0.28);
+
+  /* Text on ink */
+  --color-on-ink: #f4eee0;
+  --color-on-ink-secondary: #c6baa4;
+  --color-on-ink-faint: #948a78;
+
+  /* Lines */
   --color-border: #e2d8c6;
   --color-divider: #ece3d3;
-  --color-ink-border: #3a3128;
+  --color-border-strong: #cbbda3;
   --color-input-border: #a2947c;
-  --color-scrim: rgba(23, 18, 12, 0.6);
-  --color-scrim-strong: rgba(23, 18, 12, 0.78);
+
+  /* Semantic */
   --color-success: #1f6e43;
   --color-warning: #8a5a00;
   --color-error: #b3261e;
-  --color-focus: #b45309;
+  --color-focus: #a85a12;
+  --color-focus-dark: #e6ce8a;
 
-  /* Typefaces (provisional proposal — self-hosted) */
+  /* Scrims */
+  --color-scrim: rgba(13, 9, 6, 0.62);
+  --color-scrim-strong: rgba(13, 9, 6, 0.84);
+
+  /* Legacy role aliases (kept so existing references keep working). */
+  --color-primary: var(--color-ink);
+  --color-primary-contrast: var(--color-ivory);
+
+  /* ── Typefaces (provisional proposal, self-hosted) ────────────────── */
   --font-display: "Fraunces", "Times New Roman", Georgia, serif;
   --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Type scale (relative steps) */
-  --text-display: clamp(2.75rem, 6vw, 4.25rem);
-  --text-h1: 2rem;
-  --text-h2: 1.5rem;
-  --text-h3: 1.25rem;
+  /* ── Type scale (fluid where it matters) ───────────────────────────── */
+  --text-display: clamp(2.75rem, 6vw, 4.5rem);
+  --text-title: clamp(2rem, 4.2vw, 3rem);
+  --text-h1: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h2: clamp(1.375rem, 2vw, 1.75rem);
+  --text-h3: 1.1875rem;
+  --text-h4: 1.0625rem;
+  --text-lead: clamp(1.0625rem, 1.4vw, 1.3125rem);
   --text-body: 1rem;
   --text-small: 0.875rem;
   --text-caption: 0.75rem;
+  --text-eyebrow: 0.8125rem;
 
-  /* Spacing ladder */
+  /* Leading */
+  --leading-display: 1.02;
+  --leading-title: 1.1;
+  --leading-snug: 1.3;
+  --leading-body: 1.65;
+
+  /* Tracking */
+  --tracking-display: -0.028em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+  --tracking-eyebrow: 0.14em;
+
+  /* ── Spacing ladder ────────────────────────────────────────────────── */
   --space-3xs: 0.25rem;
   --space-2xs: 0.5rem;
   --space-xs: 0.75rem;
@@ -55,28 +101,34 @@
   --space-md: 1.5rem;
   --space-lg: 2.5rem;
   --space-xl: 4rem;
+  --space-2xl: 6rem;
+  --space-3xl: 8rem;
 
-  /* Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
+  /* ── Radius (three steps + pill) ───────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
   --radius-pill: 999px;
 
-  /* Elevation (design-system Section 12) */
+  /* ── Elevation (design-system Section 12) ──────────────────────────── */
   --elevation-0: none;
-  --elevation-1: 0 1px 2px rgba(23, 18, 12, 0.05), 0 8px 24px rgba(23, 18, 12, 0.06);
-  --elevation-2: 0 4px 12px rgba(23, 18, 12, 0.12), 0 16px 40px rgba(23, 18, 12, 0.18);
+  --elevation-1: 0 1px 2px rgba(20, 15, 9, 0.06), 0 10px 30px -12px rgba(20, 15, 9, 0.16);
+  --elevation-2: 0 2px 6px rgba(20, 15, 9, 0.08), 0 26px 60px -22px rgba(20, 15, 9, 0.34);
+  --elevation-3: 0 4px 10px rgba(10, 7, 4, 0.16), 0 44px 90px -32px rgba(0, 0, 0, 0.55);
 
-  /* Motion (design-system Section 29) */
+  /* ── Motion (design-system Section 29) ─────────────────────────────── */
   --motion-instant: 0ms;
-  --motion-quick: 160ms;
-  --motion-settled: 320ms;
+  --motion-quick: 180ms;
+  --motion-settled: 420ms;
   --ease-default: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Layout */
-  --content-max-width: 72rem;
-  --text-max-width: 44rem;
+  /* ── Layout ────────────────────────────────────────────────────────── */
+  --content-max-width: 76rem;
+  --content-wide: 84rem;
+  --text-max-width: 68ch;
   --page-padding: 1.25rem;
+  --section-padding: clamp(4rem, 9vw, 7.5rem);
 }
 
 @media (min-width: 640px) {
@@ -85,10 +137,16 @@
   }
 }
 
+@media (min-width: 1280px) {
+  :root {
+    --page-padding: 2.5rem;
+  }
+}
+
 @media (max-width: 639px) {
   :root {
-    --text-display: clamp(2.25rem, 11vw, 2.75rem);
     --text-h1: 1.625rem;
     --text-h2: 1.25rem;
+    --section-padding: 3.5rem;
   }
 }

@@ -1,0 +1,21 @@
+---
+/**
+ * Renders a Schema.org JSON-LD block.
+ *
+ * Only pass data that describes real, visible page content (REQ-SEO-011).
+ * Placeholder or unconfirmed business facts must not be emitted as structured
+ * data (see docs/DECISIONS.md DEC-016).
+ *
+ * Note: keep the literal opening-tag token out of the frontmatter. The dev
+ * dependency scanner searches raw source for it and parses what follows as
+ * JavaScript, which breaks dependency pre-bundling.
+ */
+interface Props {
+  schema: Record<string, unknown>;
+}
+const { schema } = Astro.props;
+// Escaping "<" keeps the payload safe inside the JSON-LD element.
+const json = JSON.stringify(schema).replace(/</g, "\\u003c");
+---
+
+<script is:inline type="application/ld+json" set:html={json}></script>

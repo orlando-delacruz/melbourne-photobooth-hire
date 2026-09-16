@@ -1,0 +1,332 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+import type { Testimonial } from "../lib/content/types";
+
+interface Props {
+  testimonials: Testimonial[];
+  title: string;
+  eyebrow?: string;
+  lede?: string;
+  id?: string;
+  tone?: "light" | "dark";
+}
+
+const { testimonials, title, eyebrow, lede, id = "reviews-heading", tone = "light" } = Astro.props;
+
+function initials(name: string): string {
+  return name
+    .split(/[\s&]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+}
+
+const STAR_PATH =
+  "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z";
+
+const starSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${STAR_PATH}"/></svg>`;
+
+const quoteSvg = `<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M5.5 6C3.6 7.3 2.5 9.2 2.5 11.6c0 2.2 1.3 3.9 3.2 4.6.2 1.5-.6 2.6-2.2 3.5l1 1.7c3-1.3 4.9-3.9 4.9-7.3V6H5.5Zm11 0c-1.9 1.3-3 3.2-3 5.6 0 2.2 1.3 3.9 3.2 4.6.2 1.5-.6 2.6-2.2 3.5l1 1.7c3-1.3 4.9-3.9 4.9-7.3V6h-4.9Z"/></svg>`;
+---
+
+<div class={`reviews-marquee reviews-marquee--${tone}`}>
+  <SectionHeading tone={tone} size="lg" title={title} eyebrow={eyebrow} lede={lede} id={id} />
+
+  <div
+    class="rm-viewport"
+    tabindex="0"
+    role="group"
+    aria-label="Customer reviews (focus pauses scrolling)"
+  >
+    <ul class="rm-track">
+      {testimonials.map((item) => (
+        <li class="rm-card">
+          <span class="rm-quote" aria-hidden="true" set:html={quoteSvg} />
+          {item.rating ? (
+            <span
+              class="rm-stars"
+              role="img"
+              aria-label={`Rated ${item.rating} out of 5`}
+              set:html={Array.from({ length: Math.max(0, Math.min(5, Math.round(item.rating))) })
+                .map(() => starSvg)
+                .join("")}
+            />
+          ) : null}
+          <blockquote class="rm-text">{item.quote}</blockquote>
+          <footer class="rm-author">
+            <span class="rm-avatar" aria-hidden="true">
+              {initials(item.name)}
+            </span>
+            <span class="rm-author-body">
+              <strong class="rm-name">{item.name}</strong>
+              <span class="rm-event">{item.eventType}</span>
+            </span>
+          </footer>
+        </li>
+      ))}
+      {testimonials.map((item) => (
+        <li class="rm-card rm-card--clone" aria-hidden="true">
+          <span class="rm-quote" set:html={quoteSvg} />
+          {item.rating ? (
+            <span
+              class="rm-stars"
+              set:html={Array.from({ length: Math.max(0, Math.min(5, Math.round(item.rating))) })
+                .map(() => starSvg)
+                .join("")}
+            />
+          ) : null}
+          <blockquote class="rm-text">{item.quote}</blockquote>
+          <footer class="rm-author">
+            <span class="rm-avatar">{initials(item.name)}</span>
+            <span class="rm-author-body">
+              <strong class="rm-name">{item.name}</strong>
+              <span class="rm-event">{item.eventType}</span>
+            </span>
+          </footer>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .reviews-marquee {
+    position: relative;
+  }
+
+  /* Edge fade so cards dissolve rather than clip at the panel edges.
+     Vertical padding keeps the card lift and shadow inside the clip box. */
+  .rm-viewport {
+    overflow: hidden;
+    padding-block: var(--space-md);
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 4.5rem,
+      #000 calc(100% - 4.5rem),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 4.5rem,
+      #000 calc(100% - 4.5rem),
+      transparent 100%
+    );
+  }
+
+  .rm-track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: stretch;
+    width: max-content;
+    animation: rm-scroll 64s linear infinite;
+    will-change: transform;
+  }
+  /* Pausing on hover or keyboard focus gives users a reading window. */
+  .rm-viewport:hover .rm-track,
+  .rm-viewport:focus-within .rm-track {
+    animation-play-state: paused;
+  }
+  .rm-viewport:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 6px;
+    border-radius: var(--radius-md);
+  }
+  .reviews-marquee--dark .rm-viewport:focus-visible {
+    outline-color: var(--color-focus-dark);
+  }
+
+  @keyframes rm-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* ── Premium review card ─────────────────────────────────────────────── */
+
+  .rm-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: clamp(17rem, 76vw, 21.5rem);
+    margin-right: var(--space-md);
+    min-height: 15rem;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    transition:
+      transform var(--motion-settled) var(--ease-default),
+      box-shadow var(--motion-settled) var(--ease-default),
+      border-color var(--motion-settled) var(--ease-default);
+  }
+  /* Champagne hairline along the top edge. */
+  .rm-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+    pointer-events: none;
+  }
+  .rm-card:hover {
+    transform: translateY(-6px);
+  }
+
+  .rm-quote {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    line-height: 0;
+    opacity: 0.22;
+    pointer-events: none;
+  }
+
+  .rm-stars {
+    display: inline-flex;
+    gap: 3px;
+    margin-bottom: var(--space-md);
+  }
+
+  .rm-text {
+    margin: 0 0 var(--space-lg);
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--text-h3);
+    line-height: 1.5;
+    text-wrap: pretty;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    overflow: hidden;
+  }
+
+  .rm-author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: auto;
+    padding-top: var(--space-sm);
+  }
+  .rm-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: var(--text-small);
+    letter-spacing: var(--tracking-wide);
+  }
+  .rm-author-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .rm-name {
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+  .rm-event {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  /* ── Dark canvas (homepage) ──────────────────────────────────────────── */
+
+  .reviews-marquee--dark .rm-card {
+    background: linear-gradient(180deg, rgba(244, 238, 224, 0.07), rgba(244, 238, 224, 0.02));
+    border: 1px solid var(--color-ink-hairline);
+    box-shadow: var(--elevation-2);
+  }
+  .reviews-marquee--dark .rm-card:hover {
+    border-color: var(--color-ink-hairline-strong);
+    box-shadow: var(--elevation-3);
+  }
+  .reviews-marquee--dark .rm-quote,
+  .reviews-marquee--dark .rm-stars {
+    color: var(--color-accent-on-dark);
+  }
+  .reviews-marquee--dark .rm-text {
+    color: var(--color-on-ink);
+  }
+  .reviews-marquee--dark .rm-author {
+    border-top: 1px solid var(--color-ink-hairline);
+  }
+  .reviews-marquee--dark .rm-avatar {
+    background: var(--color-accent-wash);
+    border: 1px solid var(--color-accent-line);
+    color: var(--color-accent-on-dark);
+  }
+  .reviews-marquee--dark .rm-name {
+    color: var(--color-on-ink);
+  }
+  .reviews-marquee--dark .rm-event {
+    color: var(--color-on-ink-faint);
+  }
+
+  /* ── Light canvas ────────────────────────────────────────────────────── */
+
+  .reviews-marquee--light .rm-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--elevation-1);
+  }
+  .reviews-marquee--light .rm-card:hover {
+    border-color: var(--color-accent-line);
+    box-shadow: var(--elevation-2);
+  }
+  .reviews-marquee--light .rm-quote,
+  .reviews-marquee--light .rm-stars {
+    color: var(--color-accent);
+  }
+  .reviews-marquee--light .rm-text {
+    color: var(--color-ink);
+  }
+  .reviews-marquee--light .rm-author {
+    border-top: 1px solid var(--color-divider);
+  }
+  .reviews-marquee--light .rm-avatar {
+    background: var(--color-accent-wash);
+    border: 1px solid var(--color-accent-line);
+    color: var(--color-accent-strong);
+  }
+  .reviews-marquee--light .rm-name {
+    color: var(--color-ink);
+  }
+  .reviews-marquee--light .rm-event {
+    color: var(--color-ink-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rm-viewport {
+      overflow-x: auto;
+      overflow-y: hidden;
+      mask-image: none;
+      -webkit-mask-image: none;
+      scroll-snap-type: x mandatory;
+      padding-bottom: var(--space-xs);
+    }
+    .rm-track {
+      animation: none !important;
+      transform: none !important;
+    }
+    .rm-card {
+      scroll-snap-align: start;
+    }
+    .rm-card--clone {
+      display: none;
+    }
+  }
+</style>

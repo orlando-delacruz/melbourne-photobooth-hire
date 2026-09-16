@@ -3,26 +3,71 @@ interface Props {
   href: string;
   variant?: "primary" | "secondary" | "tertiary";
   tone?: "light" | "dark";
+  size?: "md" | "lg";
+  /** Show a trailing arrow that eases forward on hover. */
+  arrow?: boolean;
+  class?: string;
 }
-const { href, variant = "primary", tone = "light" } = Astro.props;
+const {
+  href,
+  variant = "primary",
+  tone = "light",
+  size = "md",
+  arrow = false,
+  class: className,
+} = Astro.props;
+
+const classes = [
+  "button",
+  `button--${variant}`,
+  `button--tone-${tone}`,
+  `button--${size}`,
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
 ---
 
-<a class:list={["button", `button--${variant}`, `button--tone-${tone}`]} href={href}>
-  <slot />
+<a class={classes} href={href}>
+  <span class="button__label">
+    <slot />
+  </span>
+  {arrow ? (
+    <svg
+      class="button__arrow"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </svg>
+  ) : null}
 </a>
 <style>
   .button {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--space-2xs);
     min-height: 44px;
-    padding: 0 var(--space-sm);
+    padding: 0 var(--space-md);
     border-radius: var(--radius-pill);
+    border: 1px solid transparent;
     font-family: var(--font-body);
     font-weight: 600;
     font-size: var(--text-small);
+    letter-spacing: 0.005em;
     text-decoration: none;
     white-space: nowrap;
+    overflow: hidden;
+    isolation: isolate;
     transition:
       transform var(--motion-quick) var(--ease-default),
       box-shadow var(--motion-quick) var(--ease-default),
@@ -30,64 +75,131 @@ const { href, variant = "primary", tone = "light" } = Astro.props;
       border-color var(--motion-quick) var(--ease-default),
       color var(--motion-quick) var(--ease-default);
   }
+  .button--lg {
+    min-height: 54px;
+    padding: 0 var(--space-lg);
+    font-size: var(--text-body);
+  }
   .button:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
   .button:active {
     transform: translateY(0);
   }
+  .button__label {
+    position: relative;
+    z-index: 1;
+  }
+  .button__arrow {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    transition: transform var(--motion-quick) var(--ease-default);
+  }
+  .button:hover .button__arrow {
+    transform: translateX(3px);
+  }
 
   /* Primary */
-  .button--primary.button--tone-light {
-    background: var(--color-primary);
-    color: var(--color-primary-contrast);
+  .button--primary {
+    background: var(--color-ink);
+    color: var(--color-ivory);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
-  .button--primary.button--tone-light:hover {
-    box-shadow: var(--elevation-1);
+  .button--primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.14) 50%,
+      transparent 70%
+    );
+    transform: translateX(-110%);
+    transition: transform var(--motion-settled) var(--ease-default);
+    z-index: 0;
+  }
+  .button--primary:hover::before {
+    transform: translateX(110%);
+  }
+  .button--primary:hover {
+    background: var(--color-ink-deep);
+    box-shadow: var(--elevation-2);
   }
 
   /* Secondary */
-  .button--secondary.button--tone-light {
-    border: 1px solid var(--color-input-border);
+  .button--secondary {
+    border-color: var(--color-border-strong);
     color: var(--color-ink);
     background: transparent;
   }
-  .button--secondary.button--tone-light:hover {
+  .button--secondary:hover {
     border-color: var(--color-ink);
-    background: rgba(26, 21, 17, 0.05);
+    background: rgba(23, 18, 12, 0.04);
+    box-shadow: var(--elevation-1);
   }
 
-  /* Tertiary (text link) */
+  /* Tertiary (text link with underline) */
   .button--tertiary {
     padding: 0;
     min-height: auto;
     border-radius: 0;
-    color: var(--color-accent);
+    gap: var(--space-3xs);
+    color: var(--color-accent-strong);
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: 4px;
     text-decoration-thickness: 1px;
+  }
+  .button--tertiary:hover {
+    transform: none;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
   }
 
   /* On dark bands */
   .button--primary.button--tone-dark {
     background: var(--color-accent-on-dark);
     color: var(--color-ink);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+  .button--primary.button--tone-dark::before {
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 70%
+    );
   }
   .button--primary.button--tone-dark:hover {
-    background: #eed9a9;
+    background: #f0dca6;
     box-shadow: var(--elevation-1);
   }
   .button--secondary.button--tone-dark {
-    border: 1px solid rgba(243, 237, 223, 0.4);
+    border-color: rgba(244, 238, 224, 0.32);
     color: var(--color-on-ink);
-    background: transparent;
+    background: rgba(244, 238, 224, 0.02);
   }
   .button--secondary.button--tone-dark:hover {
     border-color: var(--color-accent-on-dark);
     color: var(--color-accent-on-dark);
-    background: transparent;
+    background: rgba(230, 206, 138, 0.08);
   }
   .button--tertiary.button--tone-dark {
     color: var(--color-accent-on-dark);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button,
+    .button__arrow,
+    .button--primary::before {
+      transition: none;
+    }
+    .button:hover {
+      transform: none;
+    }
+    .button:hover .button__arrow {
+      transform: none;
+    }
   }
 </style>

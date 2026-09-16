@@ -605,7 +605,7 @@ Restrained motion system:
 
 Motion standards (design-system decisions):
 
-- **Motion purpose.** Feedback and polish only. No auto-playing, looping, or attention-seeking effects; no animation on long content sequences.
+- **Motion purpose.** Feedback and polish only. No auto-playing, looping, or attention-seeking effects; no animation on long content sequences. *Documented exception:* the homepage reviews marquee is a deliberated, client-approved looping effect that pauses on hover and keyboard focus and becomes a static scroll-snap list under reduced motion (see `docs/DECISIONS.md`, DEC-014 and DEC-015).
 - **Duration categories.** Three small categories — `instant` (state changes with no meaningful transition), `quick` (hover, button, accordion, menu), and `settled` (dialog/lightbox entrance at most). Keep durations brief; do not create dozens of animation tokens.
 - **Easing philosophy.** Calm, simple easing that settles without bounce or overshoot. One default easing; special easings require justification.
 - **Reduced-motion behavior.** Under `prefers-reduced-motion`, non-essential animation is disabled or reduced to an instant state change. Essential state changes remain communicated through text and structure, never through motion alone.

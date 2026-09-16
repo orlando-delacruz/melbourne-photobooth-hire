@@ -11,10 +11,26 @@ interface Props {
 const { items, currentPath, brandName } = Astro.props;
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <div class="container header-inner">
     <a class="brand" href="/">
-      {brandName}
+      <span class="brand-mark" aria-hidden="true">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2.5" y="5.5" width="19" height="13" rx="3.5" />
+          <circle cx="12" cy="12" r="3.4" />
+          <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
+        </svg>
+      </span>
+      <span class="brand-name">{brandName}</span>
     </a>
     <nav class="desktop-nav" aria-label="Primary">
       <ul>
@@ -32,7 +48,21 @@ const { items, currentPath, brandName } = Astro.props;
       </ul>
     </nav>
     <a class="header-cta" href={ENQUIRY_HREF}>
-      Enquire now
+      <span>Enquire now</span>
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
     </a>
     <div class="mobile-nav">
       <MobileNav
@@ -44,15 +74,33 @@ const { items, currentPath, brandName } = Astro.props;
     </div>
   </div>
 </header>
+<script is:inline>
+  (() => {
+    const header = document.querySelector("[data-site-header]");
+    if (!header) return;
+    const onScroll = () => {
+      header.classList.toggle("is-scrolled", window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  })();
+</script>
 <style>
   .site-header {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(23, 18, 12, 0.86);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(230, 206, 138, 0.16);
+    background: rgba(17, 12, 7, 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid transparent;
+    transition:
+      background-color var(--motion-settled) var(--ease-default),
+      border-color var(--motion-settled) var(--ease-default);
+  }
+  .site-header.is-scrolled {
+    background: rgba(13, 9, 6, 0.92);
+    border-bottom-color: var(--color-ink-hairline);
   }
   .header-inner {
     display: flex;
@@ -62,23 +110,38 @@ const { items, currentPath, brandName } = Astro.props;
     padding-bottom: var(--space-xs);
   }
   .brand {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin-right: auto;
     color: var(--color-on-ink);
     text-decoration: none;
-    letter-spacing: 0.01em;
-    margin-right: auto;
+  }
+  .brand-mark {
+    display: inline-flex;
+    color: var(--color-accent-on-dark);
+    transition: transform var(--motion-settled) var(--ease-default);
+  }
+  .brand:hover .brand-mark {
+    transform: rotate(-6deg);
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
   }
   .desktop-nav ul {
     display: flex;
     align-items: center;
-    gap: var(--space-2xs);
+    gap: var(--space-3xs);
     list-style: none;
     margin: 0;
     padding: 0;
   }
   .nav-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -87,25 +150,39 @@ const { items, currentPath, brandName } = Astro.props;
     font-weight: 500;
     font-size: var(--text-small);
     text-decoration: none;
-    border-radius: var(--radius-sm);
     transition: color var(--motion-quick) var(--ease-default);
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: var(--space-xs);
+    right: var(--space-xs);
+    bottom: 10px;
+    height: 1.5px;
+    background: var(--color-accent-on-dark);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-settled) var(--ease-default);
   }
   .nav-link:hover {
     color: var(--color-on-ink);
   }
+  .nav-link:hover::after {
+    transform: scaleX(1);
+  }
   .nav-link--current {
     color: var(--color-on-ink);
     font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: var(--color-accent-on-dark);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 6px;
+  }
+  .nav-link--current::after {
+    transform: scaleX(1);
   }
   .header-cta {
     display: inline-flex;
     align-items: center;
+    gap: var(--space-2xs);
     min-height: 44px;
-    padding: 0 var(--space-sm);
+    padding: 0 var(--space-sm) 0 var(--space-md);
     background: var(--color-accent-on-dark);
     color: var(--color-ink);
     border-radius: var(--radius-pill);
@@ -115,11 +192,19 @@ const { items, currentPath, brandName } = Astro.props;
     white-space: nowrap;
     transition:
       transform var(--motion-quick) var(--ease-default),
+      background-color var(--motion-quick) var(--ease-default),
       box-shadow var(--motion-quick) var(--ease-default);
+  }
+  .header-cta svg {
+    transition: transform var(--motion-quick) var(--ease-default);
   }
   .header-cta:hover {
     transform: translateY(-1px);
+    background: #f0dca6;
     box-shadow: var(--elevation-1);
+  }
+  .header-cta:hover svg {
+    transform: translateX(2px);
   }
   .mobile-nav {
     display: none;
@@ -130,6 +215,19 @@ const { items, currentPath, brandName } = Astro.props;
     }
     .mobile-nav {
       display: block;
+    }
+    .header-cta {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link::after,
+    .header-cta svg,
+    .brand-mark {
+      transition: none;
+    }
+    .header-cta:hover {
+      transform: none;
     }
   }
 </style>

@@ -4,93 +4,468 @@ import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import PageHeader from "../components/PageHeader.astro";
 import SectionHeading from "../components/SectionHeading.astro";
+import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
 import { getContent } from "../lib/content/repository";
 
-const { packages, addOns, bookingPolicies } = getContent();
+const { packages, addOns, bookingPolicies, ctaImage, serviceImages } = getContent();
+
+const sharedInclusions = packages.length
+  ? packages
+      .map((pkg) => pkg.inclusions)
+      .reduce((common, list) => common.filter((item) => list.includes(item)))
+  : [];
+
+const standardInclusions = [
+  "Full photobooth service",
+  "Studio-quality lighting and styling",
+  "Custom-branded print template",
+  "HD printing, unlimited sessions",
+  "QR code digital downloads",
+  "Free use of props",
+];
+
+const headerImage = serviceImages?.["premium-photobooth"]?.src;
+
+function svgWrap(inner: string, size = 16): string {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
+const jumpItems = [
+  {
+    href: "#package-plans",
+    label: "Packages",
+    icon: svgWrap(
+      '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+    ),
+  },
+  {
+    href: "#package-included",
+    label: "What's included",
+    icon: svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
+  },
+  {
+    href: "#package-addons",
+    label: "Add-ons",
+    icon: svgWrap('<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>'),
+  },
+  {
+    href: "#package-policies",
+    label: "Policies",
+    icon: svgWrap(
+      '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+    ),
+  },
+];
+
+const addonIcons: Record<string, string> = {
+  "professional-photography":
+    '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  "extended-hire": '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  "custom-backdrop":
+    '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  "digital-guestbook": '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+};
+
+function addonIconSvg(id: string, size = 22): string {
+  return svgWrap(addonIcons[id] ?? '<path d="m5 12.5 4.5 4.5L19 7"/>', size);
+}
+
+const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>', 18);
 ---
 
 <BaseLayout
-  title="Packages | Melbourne Photobooth Hire"
-  description="Starter, Standard and Premium photobooth packages with pricing, inclusions, add-ons and booking policies."
+  title="Photobooth Hire Packages Melbourne | Prices & Inclusions"
+  description="Compare photobooth hire packages in Melbourne: 2, 3 and 4 hour options with full inclusions, add-ons and booking policies. Enquire for a clear quote."
 >
   <PageHeader
     title="Packages"
-    eyebrow="Simple, all-inclusive options"
-    lede="Every booking comes dressed to impress — red carpet and golden bollard entrance setup included as standard, along with full setup and pack-down by our team."
-  />
-  {packages.length === 0 ? (
-    <p class="section">
-      Package options will be shown here once confirmed. Until then, please enquire for current
-      options.
-    </p>
-  ) : (
-    <div class="card-grid section">
-      {packages.map((pkg) => (
-        <Reveal client:visible>
-          <Card
-            title={pkg.name}
-            badge={pkg.badge}
-            meta={`${pkg.durationLabel} · ${pkg.priceLabel}`}
-            description={pkg.summary}
-            items={pkg.inclusions}
-            href="/contact"
-            ctaLabel="Enquire now"
-          />
-        </Reveal>
-      ))}
-    </div>
-  )}
-  <section class="section" aria-labelledby="packages-addons">
-    <SectionHeading title="Add-ons" id="packages-addons" eyebrow="Optional extras" />
-    <div class="card-grid">
-      {addOns.map((addOn) => (
-        <Reveal client:visible>
-          <Card title={addOn.name} description={addOn.detail} />
-        </Reveal>
-      ))}
-    </div>
-  </section>
-  <section class="section" aria-labelledby="packages-policies">
-    <SectionHeading title="Booking policies" id="packages-policies" eyebrow="Good to know" />
-    <ul class="policy-list">
-      {bookingPolicies.map((policy) => (
-        <li>{policy}</li>
+    eyebrow="Simple, all-inclusive hire"
+    lede="Every booking comes dressed to impress, with red carpet and golden bollard entrance setup included as standard, with full setup and pack-down by our team."
+    imageSrc={headerImage}
+    imageAlt={serviceImages?.["premium-photobooth"]?.alt}
+  >
+    <ul class="package-jump">
+      {jumpItems.map((item) => (
+        <li>
+          <a href={item.href}>
+            <span class="package-jump-icon" set:html={item.icon} />
+            {item.label}
+          </a>
+        </li>
       ))}
     </ul>
-  </section>
-  <section class="section" aria-labelledby="packages-next">
-    <SectionHeading title="Next step" id="packages-next" />
-    <p>
-      <Button href="/contact" variant="primary">
-        Enquire now
+  </PageHeader>
+
+  <section class="section" id="package-plans" aria-labelledby="packages-list">
+    <SectionHeading
+      eyebrow="Choose your hire"
+      id="packages-list"
+      title="Priced up front, nothing hidden"
+      lede="Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry."
+      size="lg"
+    />
+    {packages.length === 0 ? (
+      <p class="empty">
+        Package options will be shown here once confirmed. Until then, please enquire for current
+        options.
+      </p>
+    ) : (
+      <div class="card-grid">
+        {packages.map((pkg, index) => (
+          <Reveal client:visible delay={index * 0.08} variant={index === 1 ? "scale" : "rise"}>
+            <Card
+              title={pkg.name}
+              badge={pkg.badge}
+              meta={pkg.durationLabel}
+              price={pkg.priceLabel}
+              description={pkg.summary}
+              items={pkg.inclusions}
+              featured={pkg.badge === "Most popular"}
+              href="/contact"
+              ctaLabel="Enquire now"
+            />
+          </Reveal>
+        ))}
+      </div>
+    )}
+    <div class="packages-foot">
+      <p class="packages-note">
+        Every package can be tailored to your venue and guest numbers. Tell us your date and we'll
+        confirm availability and the best fit.
+      </p>
+      <Button href="/contact" variant="primary" size="lg" arrow>
+        Check your date
       </Button>
-    </p>
+    </div>
   </section>
+
+  <section class="included bleed" id="package-included" aria-labelledby="packages-included">
+    <div class="container">
+      <div class="included-inner">
+        <Reveal client:visible variant="mask">
+          <div>
+            <p class="eyebrow eyebrow--rule">Included as standard</p>
+            <h2 id="packages-included">Every hire ships with the full setup.</h2>
+            <p class="included-lede">
+              No hidden extras. From studio lighting to QR downloads, the essentials come with every
+              package.
+            </p>
+          </div>
+        </Reveal>
+        <Reveal client:visible delay={0.08} variant="blur">
+          <ul class="included-list">
+            {(sharedInclusions.length >= 4 ? sharedInclusions : standardInclusions).map((item) => (
+              <li>
+                <span
+                  class="included-check"
+                  set:html={svgWrap('<path d="m5 12.5 4.5 4.5L19 7"/>', 18)}
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="package-addons" aria-labelledby="packages-addons">
+    <SectionHeading
+      title="Add-ons"
+      id="packages-addons"
+      eyebrow="Optional extras"
+      lede="Layer on photography, extra hours or a themed backdrop to make the night yours."
+      size="lg"
+    />
+    <div class="addons">
+      {addOns.map((addOn, index) => (
+        <Reveal client:visible delay={index * 0.06} variant="scale">
+          <article class="addon">
+            <span class="addon-icon" aria-hidden="true" set:html={addonIconSvg(addOn.id)} />
+            <h3>{addOn.name}</h3>
+            <p>{addOn.detail}</p>
+          </article>
+        </Reveal>
+      ))}
+    </div>
+  </section>
+
+  <section class="section" id="package-policies" aria-labelledby="packages-policies">
+    <div class="policies">
+      <Reveal client:visible>
+        <div class="policies-intro">
+          <p class="eyebrow eyebrow--rule">Good to know</p>
+          <h2 id="packages-policies">Booking policies</h2>
+          <p>The essentials, in plain language, so there are no surprises on the night.</p>
+        </div>
+      </Reveal>
+      <Reveal client:visible delay={0.08} variant="blur">
+        <ul class="policy-list">
+          {bookingPolicies.map((policy) => (
+            <li>
+              <span class="policy-icon" set:html={policyIcon} />
+              <span>{policy}</span>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+    </div>
+  </section>
+
+  <CtaBand
+    id="packages-enquire"
+    eyebrow="Ready when you are"
+    headline="Let's lock in your date."
+    lede="Send your event details and we'll confirm availability and the package that fits."
+    primaryHref="/contact"
+    primaryLabel="Enquire now"
+    secondaryHref="/services"
+    secondaryLabel="Explore the booths"
+    imageSrc={ctaImage?.src}
+    imageAlt={ctaImage?.alt}
+  />
 </BaseLayout>
 
 <style>
-  .policy-list {
+  /* ── Header quick-jump ──────────────────────────────────────────────── */
+
+  .package-jump {
+    list-style: none;
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+  .package-jump a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    min-height: 44px;
+    padding: var(--space-2xs) var(--space-sm);
+    border: 1px solid var(--color-ink-hairline-strong);
+    border-radius: var(--radius-pill);
+    background: rgba(244, 238, 224, 0.05);
+    color: var(--color-on-ink);
+    font-size: var(--text-small);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      border-color var(--motion-quick) var(--ease-default),
+      background-color var(--motion-quick) var(--ease-default),
+      color var(--motion-quick) var(--ease-default);
+  }
+  .package-jump a:hover,
+  .package-jump a:focus-visible {
+    border-color: var(--color-accent-on-dark);
+    background: rgba(230, 206, 138, 0.1);
+    color: var(--color-accent-on-dark);
+  }
+  .package-jump-icon {
+    display: inline-flex;
+    color: var(--color-accent-on-dark);
+  }
+
+  /* ── Pricing ────────────────────────────────────────────────────────── */
+
+  #package-plans,
+  #package-addons,
+  #package-policies {
+    scroll-margin-top: 7rem;
+  }
+  .packages-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-divider);
+  }
+  .packages-note {
+    margin: 0;
+    max-width: 42rem;
+    color: var(--color-ink-soft);
+  }
+  .empty {
+    color: var(--color-ink-soft);
+  }
+
+  /* ── Included band ──────────────────────────────────────────────────── */
+
+  .included {
+    background: var(--color-ink);
+    padding-block: clamp(3.5rem, 7vw, 5.5rem);
+    border-block: 1px solid var(--color-ink-hairline);
+    scroll-margin-top: 4rem;
+  }
+  .included-inner {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .included h2 {
+    margin: var(--space-sm) 0 0;
+    max-width: 20ch;
+    color: var(--color-on-ink);
+    font-size: var(--text-h1);
+    line-height: var(--leading-title);
+  }
+  .included .eyebrow {
+    color: var(--color-accent-on-dark);
+  }
+  .included-lede {
+    margin: var(--space-sm) 0 0;
+    max-width: 34rem;
+    color: var(--color-on-ink-secondary);
+    font-size: var(--text-lead);
+  }
+  .included-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
+    gap: var(--space-sm);
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .included-list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
     gap: var(--space-2xs);
-    max-width: var(--text-max-width);
+    align-items: start;
+    color: var(--color-on-ink-secondary);
+    font-size: var(--text-small);
   }
-  .policy-list li {
-    padding-left: var(--space-sm);
+  .included-check {
+    display: inline-flex;
+    margin-top: 0.15em;
+    color: var(--color-accent-on-dark);
+  }
+
+  /* ── Add-ons ────────────────────────────────────────────────────────── */
+
+  .addons {
+    display: grid;
+    gap: var(--space-md);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  .addons :global(.reveal) {
+    display: flex;
+    flex-direction: column;
+  }
+  .addon {
     position: relative;
-    color: var(--color-ink-soft);
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--elevation-1);
+    transition:
+      transform var(--motion-settled) var(--ease-default),
+      box-shadow var(--motion-settled) var(--ease-default),
+      border-color var(--motion-settled) var(--ease-default);
   }
-  .policy-list li::before {
+  .addon::before {
     content: "";
     position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--color-accent);
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+    pointer-events: none;
+  }
+  .addon:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-border-strong);
+    box-shadow: var(--elevation-2);
+  }
+  .addon-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: var(--space-sm);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-ivory);
+    color: var(--color-accent-strong);
+  }
+  .addon h3 {
+    margin: 0 0 var(--space-2xs);
+    font-size: var(--text-h3);
+  }
+  .addon p {
+    margin: 0;
+    color: var(--color-ink-soft);
+  }
+
+  /* ── Policies ───────────────────────────────────────────────────────── */
+
+  .policies {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .policies-intro h2 {
+    margin: var(--space-sm) 0 var(--space-sm);
+    font-size: var(--text-title);
+    line-height: var(--leading-title);
+    letter-spacing: var(--tracking-display);
+  }
+  .policies-intro p {
+    margin: 0;
+    max-width: 34rem;
+    color: var(--color-ink-soft);
+    font-size: var(--text-lead);
+  }
+  .policy-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .policy-list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-sm);
+    align-items: start;
+    padding-block: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-ink-soft);
+  }
+  .policy-list li:last-child {
+    border-bottom: 0;
+  }
+  .policy-icon {
+    display: inline-flex;
+    margin-top: 0.1em;
+    color: var(--color-accent);
+  }
+
+  @media (min-width: 900px) {
+    .included-inner {
+      grid-template-columns: 1fr 1.2fr;
+      gap: var(--space-2xl);
+    }
+    .policies {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: var(--space-2xl);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .package-jump a,
+    .addon {
+      transition: none;
+    }
+    .addon:hover {
+      transform: none;
+    }
   }
 </style>

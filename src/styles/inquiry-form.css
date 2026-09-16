@@ -1,0 +1,287 @@
+/* Inquiry form styles.
+ *
+ * Plain, token-backed CSS (not styled-components) so the rules are present in
+ * the server-rendered HTML and the form is styled before the island hydrates.
+ * All values reference styles/tokens.css; no hardcoded palette values.
+ */
+
+.iq-form {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.iq-form__note {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+}
+
+.iq-req {
+  color: var(--color-accent-strong);
+}
+
+.iq-optional {
+  color: var(--color-ink-faint);
+  font-weight: 500;
+  font-size: var(--text-caption);
+}
+
+/* ── Groups ───────────────────────────────────────────────────────────── */
+
+.iq-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.iq-group + .iq-group {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-divider);
+}
+.iq-group__legend {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-size: var(--text-h4);
+  font-weight: 500;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+
+/* ── Grid and fields ──────────────────────────────────────────────────── */
+
+.iq-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+@media (min-width: 640px) {
+  .iq-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .iq-field--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.iq-field {
+  display: grid;
+  gap: var(--space-2xs);
+  align-content: start;
+}
+
+.iq-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* ── Controls ─────────────────────────────────────────────────────────── */
+
+.iq-control {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: 1.4;
+  color: var(--color-ink);
+  color-scheme: light;
+  background-color: var(--color-surface);
+  background-color: color-mix(in srgb, var(--color-ivory) 42%, var(--color-surface));
+  transition:
+    border-color var(--motion-quick) var(--ease-default),
+    box-shadow var(--motion-quick) var(--ease-default),
+    background-color var(--motion-quick) var(--ease-default);
+}
+.iq-control::placeholder {
+  color: var(--color-ink-faint);
+}
+.iq-control:hover {
+  border-color: var(--color-ink-soft);
+}
+.iq-control:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
+}
+.iq-control[aria-invalid="true"] {
+  border-color: var(--color-error);
+  background-color: var(--color-surface);
+  background-color: color-mix(in srgb, var(--color-error) 5%, var(--color-surface));
+}
+.iq-control[aria-invalid="true"]:focus-visible {
+  outline-color: var(--color-error);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 14%, transparent);
+}
+.iq-control:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.iq-select {
+  appearance: none;
+  padding-right: 2.5rem;
+}
+.iq-select-wrap {
+  position: relative;
+  display: block;
+}
+.iq-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 1.5px solid var(--color-ink-faint);
+  border-bottom: 1.5px solid var(--color-ink-faint);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color var(--motion-quick) var(--ease-default);
+}
+.iq-select-wrap:hover::after,
+.iq-select-wrap:focus-within::after {
+  border-color: var(--color-ink-soft);
+}
+
+.iq-textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.iq-control[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
+}
+.iq-control[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ── Hints and errors ─────────────────────────────────────────────────── */
+
+.iq-hint {
+  margin: 0;
+  color: var(--color-ink-faint);
+  font-size: var(--text-small);
+}
+
+.iq-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--text-small);
+  line-height: 1.4;
+}
+.iq-error svg {
+  flex-shrink: 0;
+  margin-top: 0.15em;
+}
+
+.iq-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-error) 5%, var(--color-surface));
+  color: var(--color-error);
+}
+.iq-summary p {
+  margin: 0;
+}
+.iq-summary svg {
+  flex-shrink: 0;
+  margin-top: 0.1em;
+}
+
+/* ── Submit ───────────────────────────────────────────────────────────── */
+
+.iq-actions {
+  display: flex;
+}
+
+.iq-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 3.375rem;
+  padding: 0 var(--space-lg);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font: inherit;
+  font-weight: 600;
+  font-size: var(--text-body);
+  cursor: pointer;
+  transition:
+    transform var(--motion-quick) var(--ease-default),
+    box-shadow var(--motion-quick) var(--ease-default),
+    background-color var(--motion-quick) var(--ease-default);
+}
+.iq-submit:hover {
+  transform: translateY(-2px);
+  background: var(--color-ink-deep);
+  box-shadow: var(--elevation-2);
+}
+.iq-submit:active {
+  transform: translateY(0);
+}
+@media (min-width: 640px) {
+  .iq-submit {
+    width: auto;
+  }
+}
+
+/* ── Success notice ───────────────────────────────────────────────────── */
+
+.iq-notice {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-sm);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--elevation-1);
+}
+.iq-notice__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin: 0;
+  color: var(--color-success);
+  font-family: var(--font-body);
+  font-size: var(--text-h3);
+}
+.iq-notice__body {
+  margin: 0;
+  color: var(--color-ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iq-control,
+  .iq-submit,
+  .iq-select-wrap::after {
+    transition: none;
+  }
+  .iq-submit:hover {
+    transform: none;
+  }
+}

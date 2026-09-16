@@ -3,7 +3,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
 import Hero from "../components/Hero.astro";
+import Accordion from "../components/Accordion.astro";
+import CtaBand from "../components/CtaBand.astro";
+import GalleryTrigger from "../components/GalleryTrigger.astro";
+import ReviewsMarquee from "../components/ReviewsMarquee.astro";
 import Reveal from "../components/islands/Reveal";
+import GalleryLightbox from "../components/islands/GalleryLightbox";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
 
@@ -13,24 +18,77 @@ const {
   eventTypes,
   processSteps,
   faqs,
+  testimonials,
   heroBackgroundImage,
   heroStats,
   serviceImages,
   showcaseImages,
   ctaImage,
-  sampleTestimonials,
 } = getContent();
+
+const stepIconPaths: Record<string, string> = {
+  message:
+    '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/>',
+  palette:
+    '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  sparkles:
+    '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>',
+};
+
+function stepIconSvg(name?: string, size = 22): string {
+  const inner = (name && stepIconPaths[name]) || stepIconPaths.sparkles;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
+const promiseIconPaths: Record<string, string> = {
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  qrcode:
+    '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/>',
+  users:
+    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+};
+
+function promiseIconSvg(name: string, size = 20): string {
+  const inner = promiseIconPaths[name] || stepIconPaths.sparkles;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
+// Presentational icon per event type. Content stays a plain string list at the
+// seam; unknown labels fall back to the sparkles glyph.
+const eventIconPaths: Record<string, string> = {
+  Weddings:
+    '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  Birthdays:
+    '<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/>',
+  "Corporate Events":
+    '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
+  "School Formals":
+    '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  "Engagement Parties":
+    '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
+  "Christmas Parties":
+    '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+  "Milestone Anniversaries":
+    '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  "Product Launches":
+    '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+};
+
+function eventIconSvg(label: string, size = 16): string {
+  const inner = eventIconPaths[label] || stepIconPaths.sparkles;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
 ---
 
 <BaseLayout
   bodyClass="page-home"
-  title="Melbourne Photobooth Hire | Photobooth Hire for Melbourne Events"
-  description="Melbourne Photobooth Hire — photobooth experiences for weddings, birthdays and corporate events, with custom prints and instant QR downloads."
+  title="Photobooth Hire Melbourne | Melbourne Photobooth Hire"
+  description="Photobooth hire in Melbourne for weddings, birthdays, corporate and school events. Open-air, roaming and 360 booths with HD prints and instant QR downloads."
   preloadImage={heroBackgroundImage?.src}
 >
   <Hero
     headline="Turn the room into a studio."
-    supporting="Open-air booths, roaming setups and 360 video for weddings, birthdays and corporate events — with prints guests keep and QR downloads in seconds."
+    supporting="Open-air booths, roaming setups and 360 video for weddings, birthdays and corporate events, with prints guests keep and QR downloads in seconds."
     primaryHref="/contact"
     primaryLabel="Enquire now"
     secondaryHref="/packages"
@@ -42,13 +100,60 @@ const {
     scrollLabel="Scroll to our booths"
   />
 
-  <section class="section" aria-labelledby="services-heading">
+  <section class="section on-dark intro" aria-labelledby="intro-heading">
+    <div class="intro-grid">
+      <Reveal client:visible>
+        <div>
+          <p class="eyebrow eyebrow--rule">The experience</p>
+          <h2 id="intro-heading">Styled for the room it's in.</h2>
+        </div>
+      </Reveal>
+      <Reveal client:visible delay={0.08}>
+        <div class="intro-body">
+          <p>
+            A photobooth is more than a camera in the corner. We design the lighting, the backdrop
+            and the print around your event, then run it with the kind of hosting that gets even the
+            quietest guest in front of the lens.
+          </p>
+          <dl class="promises">
+            <div class="promise">
+              <dt>
+                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("clock")} />
+                Arrive early, set up quietly
+              </dt>
+              <dd>Ready before the first guest walks in.</dd>
+            </div>
+            <div class="promise">
+              <dt>
+                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("qrcode")} />
+                Prints and QR in seconds
+              </dt>
+              <dd>HD prints in hand, downloads on their phone.</dd>
+            </div>
+            <div class="promise">
+              <dt>
+                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("users")} />
+                One local Melbourne team
+              </dt>
+              <dd>From enquiry to pack-down, same people.</dd>
+            </div>
+          </dl>
+          <Button href="/about" variant="tertiary" tone="dark" arrow>
+            More about us
+          </Button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+
+  <section class="section on-dark" aria-labelledby="services-heading">
     <SectionHeading
       tone="dark"
       title="Three ways to bring the room into the frame"
       eyebrow="The booths"
       id="services-heading"
       lede="Every hire includes HD prints, QR downloads and full setup and pack-down by our team."
+      size="lg"
     />
     <div class="booths-grid">
       {services.map((service, index) => (
@@ -63,8 +168,8 @@ const {
             highlights={service.highlights}
             imageSrc={serviceImages?.[service.id]?.src}
             imageAlt={serviceImages?.[service.id]?.alt}
-            href="/packages"
-            ctaLabel="View packages"
+            href="/services"
+            ctaLabel="Explore the booths"
           />
         </Reveal>
       ))}
@@ -72,45 +177,48 @@ const {
   </section>
 
   {showcaseImages && showcaseImages.length > 0 ? (
-    <section class="section" aria-labelledby="showcase-heading">
-      <div class="panel-print">
-        <SectionHeading
-          title="The kind of night we stage"
-          eyebrow="Styled moments"
-          id="showcase-heading"
-          lede="Sample imagery for layout — real event photos will appear here once client-approved."
-        />
+    <section class="section on-dark" aria-labelledby="showcase-heading">
+      <Reveal client:visible variant="mask">
+        <div class="showcase-head">
+          <SectionHeading
+            tone="dark"
+            title="The kind of night we stage"
+            eyebrow="Styled moments"
+            id="showcase-heading"
+            lede="Backdrops, lighting and props chosen to match the room, not a default kit."
+          />
+          <p class="showcase-cta">
+            <Button href="/gallery" variant="secondary" tone="dark" arrow>
+              View gallery
+            </Button>
+          </p>
+        </div>
         <ul class="showcase-grid">
           {showcaseImages.map((item, index) => (
             <li>
-              <Reveal client:visible delay={index * 0.06}>
+              <Reveal client:visible delay={index * 0.07} variant="blur">
                 <figure class="showcase-item">
-                  <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
-                  <figcaption>
-                    <span>{item.caption}</span>
-                    <span class="sample-tag">Sample</span>
-                  </figcaption>
+                  <GalleryTrigger src={item.src} caption={item.caption}>
+                    <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+                  </GalleryTrigger>
+                  <figcaption>{item.caption}</figcaption>
                 </figure>
               </Reveal>
             </li>
           ))}
         </ul>
-        <p>
-          <Button href="/gallery" variant="secondary">
-            View gallery
-          </Button>
-        </p>
-      </div>
+      </Reveal>
     </section>
   ) : null}
 
-  <section class="section" aria-labelledby="packages-heading">
+  <section class="section on-dark" aria-labelledby="packages-heading">
     <SectionHeading
       tone="dark"
-      title="All-inclusive hire, priced per hour"
+      title="All-inclusive hire, priced up front"
       eyebrow="Packages"
       id="packages-heading"
-      lede="No hidden extras — inclusions are listed per package. Final pricing is confirmed at enquiry."
+      lede="No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry."
+      size="lg"
     />
     <div class="card-grid">
       {packages.map((pkg) => (
@@ -122,31 +230,40 @@ const {
             meta={pkg.durationLabel}
             price={pkg.priceLabel}
             description={pkg.summary}
-            items={pkg.inclusions.slice(0, 4)}
-            featured={pkg.badge === "Most Popular"}
+            items={pkg.inclusions}
+            featured={pkg.badge === "Most popular"}
             href="/contact"
             ctaLabel="Enquire about this package"
           />
         </Reveal>
       ))}
     </div>
+    <p class="packages-note">
+      <Button href="/packages" variant="secondary" tone="dark" arrow>
+        Compare all packages
+      </Button>
+    </p>
   </section>
 
-  <section class="section" aria-labelledby="process-heading">
+  <section class="section on-dark" aria-labelledby="process-heading">
     <SectionHeading
       tone="dark"
       title="From first enquiry to the first flash"
       eyebrow="How it works"
       id="process-heading"
       lede="Three steps between you and a room full of prints."
+      size="lg"
     />
     <ol class="steps">
       {processSteps.map((step, index) => (
-        <Reveal client:visible delay={index * 0.06}>
+        <Reveal client:visible delay={index * 0.08} variant="scale">
           <li class="step">
-            <p class="step-number" aria-hidden="true">
-              {String(index + 1).padStart(2, "0")}
-            </p>
+            <div class="step-head">
+              <span class="step-icon" set:html={stepIconSvg(step.icon)} />
+              <p class="step-number" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </p>
+            </div>
             <h3>{step.title}</h3>
             <p>{step.summary}</p>
           </li>
@@ -155,102 +272,170 @@ const {
     </ol>
   </section>
 
-  {sampleTestimonials && sampleTestimonials.length > 0 ? (
-    <section class="section" aria-labelledby="reviews-heading">
-      <div class="panel-print">
-        <SectionHeading
-          title="What guests say"
+  {testimonials.length > 0 ? (
+    <section class="section on-dark reviews" aria-labelledby="reviews-heading">
+      <Reveal client:visible variant="mask">
+        <ReviewsMarquee
+          testimonials={testimonials}
+          tone="dark"
           eyebrow="Reviews"
+          title="What hosts and guests say"
           id="reviews-heading"
-          lede="Sample quotes for layout only — real client reviews will appear here once approved."
+          lede="A few words from recent weddings, birthdays and corporate nights."
         />
-        <ul class="review-list">
-          {sampleTestimonials.map((item) => (
-            <li class="review-item">
-              <span class="sample-tag">Sample</span>
-              <blockquote>{item.quote}</blockquote>
-              <p class="review-attribution">
-                {item.name}, {item.eventType}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </div>
+      </Reveal>
     </section>
   ) : null}
 
-  <section class="section" aria-labelledby="faq-heading">
+  <section class="section on-dark" aria-labelledby="faq-heading">
     <SectionHeading
       tone="dark"
       title="Answers before you ask"
       eyebrow="Good to know"
       id="faq-heading"
-      lede="Quick answers to common questions."
+      lede="Quick answers to the questions we hear most."
+      size="lg"
     />
-    <ul class="faq-list">
-      {faqs.slice(0, 4).map((faq) => (
-        <li>
-          <h3>{faq.question}</h3>
-          <p>{faq.answer}</p>
-        </li>
-      ))}
-    </ul>
-    <p class="explore-ctas">
-      <Button href="/faq" variant="secondary" tone="dark">
-        Read FAQ
+    <Reveal client:visible>
+      <Accordion items={faqs.slice(0, 4)} tone="dark" />
+    </Reveal>
+    <p class="faq-cta">
+      <Button href="/faq" variant="secondary" tone="dark" arrow>
+        Read all FAQs
       </Button>
     </p>
   </section>
 
-  <section class="section" aria-labelledby="event-types-heading">
+  <section class="section on-dark" aria-labelledby="event-types-heading">
     <SectionHeading
       tone="dark"
       title="Every occasion, one booth"
       eyebrow="Perfect for"
       id="event-types-heading"
       lede="Weddings, birthdays, corporate nights and everything in between."
+      size="lg"
     />
     <ul class="chip-list">
       {eventTypes.map((eventType) => (
-        <li>{eventType}</li>
+        <li>
+          <span class="chip-icon" aria-hidden="true" set:html={eventIconSvg(eventType)} />
+          {eventType}
+        </li>
       ))}
     </ul>
   </section>
 
-  <section class="section" aria-labelledby="enquire-heading">
-    <div class="cta-band" style={ctaImage ? `background-image: url('${ctaImage.src}')` : undefined}>
-      <div class="cta-scrim"></div>
-      <div class="cta-content">
-        <p class="cta-eyebrow">Ready when you are</p>
-        <h2 id="enquire-heading">Ready to book your night?</h2>
-        <p class="cta-lede">Tell us your date and we'll recommend the booth for your event.</p>
-        <p class="cta-buttons">
-          <Button href="/contact" variant="primary" tone="dark">
-            Enquire now
-          </Button>
-          <Button href="/packages" variant="secondary" tone="dark">
-            View packages
-          </Button>
-        </p>
-      </div>
-    </div>
-  </section>
+  <CtaBand
+    id="enquire-heading"
+    eyebrow="Ready when you are"
+    headline="Ready to book your night?"
+    lede="Tell us your date and venue, and we'll recommend the booth that fits your event, usually within one business day."
+    primaryHref="/contact"
+    primaryLabel="Enquire now"
+    secondaryHref="/packages"
+    secondaryLabel="View packages"
+    imageSrc={ctaImage?.src}
+    imageAlt={ctaImage?.alt}
+  />
+
+  <GalleryLightbox client:idle />
 </BaseLayout>
 
 <style>
+  .intro-grid {
+    display: grid;
+    gap: var(--space-lg);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .intro h2 {
+    margin: var(--space-sm) 0 0;
+    max-width: 16ch;
+    font-size: var(--text-title);
+    line-height: var(--leading-title);
+    letter-spacing: var(--tracking-display);
+    color: var(--color-on-ink);
+  }
+  .intro-body {
+    max-width: 40rem;
+  }
+  .intro-body > p {
+    margin: 0 0 var(--space-md);
+    color: var(--color-on-ink-secondary);
+    font-size: var(--text-lead);
+  }
+  .promises {
+    display: grid;
+    gap: var(--space-sm);
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    border-top: 1px solid var(--color-ink-hairline);
+  }
+  .promise {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3xs);
+    padding-block: var(--space-sm);
+    border-bottom: 1px solid var(--color-ink-hairline);
+  }
+  .promise dt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    color: var(--color-on-ink);
+    font-weight: 600;
+    font-size: var(--text-small);
+  }
+  .promise-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-ink-hairline-strong);
+    background: var(--color-accent-wash);
+    color: var(--color-accent-on-dark);
+  }
+  .promise dd {
+    margin: 0;
+    color: var(--color-on-ink-secondary);
+    font-size: var(--text-small);
+  }
+  @media (min-width: 640px) {
+    .promise {
+      grid-template-columns: minmax(12rem, 1fr) 1fr;
+      gap: var(--space-sm);
+      align-items: center;
+    }
+  }
   .booths-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-sm);
+    gap: var(--space-md);
   }
   @media (min-width: 1024px) {
     .booths-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
+  .showcase-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
+  .showcase-head :global(.section-heading) {
+    margin-bottom: var(--space-lg);
+  }
+  .showcase-cta {
+    margin: 0 0 var(--space-lg);
+  }
   .showcase-grid {
     list-style: none;
-    margin: 0 0 var(--space-sm);
+    margin: 0;
     padding: 0;
     display: grid;
     gap: var(--space-sm);
@@ -258,154 +443,116 @@ const {
   }
   .showcase-item {
     margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
   }
   .showcase-item img {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 4;
     object-fit: cover;
-    border-radius: var(--radius-md);
+    transition:
+      transform 700ms var(--ease-default),
+      filter 700ms var(--ease-default);
+  }
+  .showcase-item:hover img {
+    transform: scale(1.04);
+    filter: brightness(1.05) saturate(1.03);
   }
   .showcase-item figcaption {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2xs);
     margin-top: var(--space-2xs);
+    color: var(--color-on-ink-secondary);
     font-size: var(--text-small);
-  }
-  .sample-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0 var(--space-2xs);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
-    color: var(--color-ink-soft);
-    font-size: var(--text-caption);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .review-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-md);
-  }
-  .review-item blockquote {
-    margin: var(--space-2xs) 0 0;
+    font-style: italic;
     font-family: var(--font-display);
-    font-size: var(--text-h3);
-    line-height: 1.4;
-    color: var(--color-ink);
   }
-  .review-attribution {
-    margin: var(--space-2xs) 0 0;
-    color: var(--color-ink-soft);
-    font-size: var(--text-small);
+  .packages-note {
+    margin: var(--space-lg) 0 0;
   }
   .steps {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: var(--space-sm);
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: var(--space-md);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   }
   .step {
-    border-top: 1px solid rgba(230, 206, 138, 0.22);
+    position: relative;
+    border-top: 1px solid var(--color-ink-hairline-strong);
     padding-top: var(--space-sm);
   }
+  /* Champagne thread draws across the rule on hover. */
+  .step::after {
+    content: "";
+    position: absolute;
+    inset: -1px auto auto 0;
+    width: 100%;
+    height: 1px;
+    background: var(--color-accent-on-dark);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 620ms var(--ease-default);
+  }
+  .step:hover::after {
+    transform: scaleX(1);
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+  .step-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-ink-hairline-strong);
+    background: var(--color-accent-wash);
+    color: var(--color-accent-on-dark);
+    transition:
+      background-color var(--motion-settled) var(--ease-default),
+      transform var(--motion-settled) var(--ease-default);
+  }
+  .step:hover .step-icon {
+    transform: translateY(-2px);
+    background: rgba(230, 206, 138, 0.18);
+  }
   .step-number {
-    margin: 0 0 var(--space-2xs);
+    margin: 0;
     color: var(--color-accent-on-dark);
     font-family: var(--font-display);
-    font-size: var(--text-h1);
+    font-size: var(--text-h2);
     font-weight: 400;
+    line-height: 1;
+    opacity: 0.55;
   }
   .step h3 {
     margin: 0 0 var(--space-2xs);
     color: var(--color-on-ink);
+    font-size: var(--text-h3);
   }
   .step p:last-child {
     margin: 0;
     color: var(--color-on-ink-secondary);
   }
-  .faq-list {
-    list-style: none;
-    margin: 0 0 var(--space-sm);
-    padding: 0;
-    display: grid;
-    gap: var(--space-sm);
-    max-width: var(--text-max-width);
+  .faq-cta {
+    margin: var(--space-lg) 0 0;
   }
-  .faq-list h3 {
-    margin: 0 0 var(--space-2xs);
-    color: var(--color-on-ink);
-  }
-  .faq-list p {
-    margin: 0;
-    color: var(--color-on-ink-secondary);
-  }
-  .explore-ctas {
-    margin: 0;
-  }
-  .chip-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs);
-  }
-  .chip-list li {
-    border: 1px solid var(--color-ink-border);
-    border-radius: var(--radius-pill);
-    padding: var(--space-2xs) var(--space-sm);
-    font-weight: 500;
-    font-size: var(--text-small);
-    color: var(--color-on-ink-secondary);
-    background: var(--color-surface-dark);
-  }
-  .cta-band {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    background-color: var(--color-ink);
-    background-size: cover;
-    background-position: center;
-    padding: var(--space-lg);
-  }
-  .cta-scrim {
-    position: absolute;
-    inset: 0;
-    background: var(--color-scrim);
-  }
-  .cta-content {
-    position: relative;
-    z-index: 1;
-    max-width: var(--text-max-width);
-  }
-  .cta-eyebrow {
-    margin: 0 0 var(--space-2xs);
+  .chip-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: var(--space-2xs);
     color: var(--color-accent-on-dark);
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: var(--text-small);
   }
-  .cta-content h2 {
-    margin: 0 0 var(--space-2xs);
-    color: var(--color-on-ink);
-    font-size: var(--text-h1);
-  }
-  .cta-lede {
-    margin: 0 0 var(--space-sm);
-    color: var(--color-on-ink);
-  }
-  .cta-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    margin: 0;
+  @media (min-width: 900px) {
+    .intro-grid {
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: var(--space-2xl);
+    }
   }
 </style>

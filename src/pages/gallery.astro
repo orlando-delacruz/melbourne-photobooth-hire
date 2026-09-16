@@ -2,39 +2,72 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import PageHeader from "../components/PageHeader.astro";
+import CtaBand from "../components/CtaBand.astro";
+import GalleryTrigger from "../components/GalleryTrigger.astro";
+import Reveal from "../components/islands/Reveal";
+import GalleryLightbox from "../components/islands/GalleryLightbox";
 import { getContent } from "../lib/content/repository";
 
-const { gallery } = getContent();
+const { gallery, ctaImage, serviceImages } = getContent();
+const headerImage = serviceImages?.["360-video-booth"]?.src;
 ---
 
 <BaseLayout
-  title="Gallery | Melbourne Photobooth Hire"
-  description="Real event imagery from Melbourne Photobooth Hire. Imagery pending client approval."
+  title="Photobooth Gallery Melbourne | Weddings, Parties & Events"
+  description="See the booths, backdrops and moments Melbourne Photobooth Hire stages at weddings, birthdays, corporate events and school formals."
 >
   <PageHeader
     title="Gallery"
     eyebrow="Real event moments"
-    lede="Imagery from real events will appear here once client-approved."
+    lede="A look at the booths, backdrops and moments we stage across Melbourne."
+    imageSrc={headerImage}
+    imageAlt={serviceImages?.["360-video-booth"]?.alt}
   />
+
   {gallery.length === 0 ? (
     <div class="empty-state section">
-      <p class="empty-title">No images are available yet.</p>
-      <p class="empty-lede">
-        Once client-approved photos are ready, this gallery will showcase real event moments.
+      <h2>No images are available yet.</h2>
+      <p>
+        Once approved event photos are ready, this gallery will showcase real moments from the
+        booth.
       </p>
-      <Button href="/contact" variant="primary">
+      <Button href="/contact" variant="primary" size="lg" arrow>
         Enquire now
       </Button>
     </div>
   ) : (
-    <ul class="gallery-grid section">
-      {gallery.map((item) => (
-        <li>
-          <img src={item.src} alt={item.alt} loading="lazy" />
-        </li>
-      ))}
-    </ul>
+    <section class="section" aria-label="Event gallery">
+      <ul class="gallery-grid">
+        {gallery.map((item, index) => (
+          <li>
+            <Reveal client:visible delay={Math.min(index, 5) * 0.05} variant="blur">
+              <figure class="gallery-item">
+                <GalleryTrigger src={item.src} caption={item.caption}>
+                  <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+                </GalleryTrigger>
+                {item.caption ? <figcaption>{item.caption}</figcaption> : null}
+              </figure>
+            </Reveal>
+          </li>
+        ))}
+      </ul>
+    </section>
   )}
+
+  <CtaBand
+    id="gallery-enquire"
+    eyebrow="Your night next"
+    headline="Want your event to look like this?"
+    lede="Tell us the date, venue and the mood you're going for and we'll take it from there."
+    primaryHref="/contact"
+    primaryLabel="Enquire now"
+    secondaryHref="/packages"
+    secondaryLabel="View packages"
+    imageSrc={ctaImage?.src}
+    imageAlt={ctaImage?.alt}
+  />
+
+  <GalleryLightbox client:idle />
 </BaseLayout>
 
 <style>
@@ -44,13 +77,11 @@ const { gallery } = getContent();
     gap: var(--space-2xs);
     max-width: var(--text-max-width);
   }
-  .empty-title {
+  .empty-state h2 {
     margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 600;
+    font-size: var(--text-h2);
   }
-  .empty-lede {
+  .empty-state p {
     margin: 0 0 var(--space-sm);
     color: var(--color-ink-soft);
   }
@@ -59,14 +90,62 @@ const { gallery } = getContent();
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
     gap: var(--space-sm);
   }
-  .gallery-grid img {
+  .gallery-item {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-ink-raised);
+    box-shadow: inset 0 0 0 1px rgba(23, 18, 12, 0.06);
+  }
+  .gallery-item img {
     display: block;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
-    border-radius: var(--radius-md);
+    transition:
+      transform 800ms var(--ease-default),
+      filter 800ms var(--ease-default);
+  }
+  .gallery-item:hover img {
+    transform: scale(1.05);
+    filter: brightness(1.05) saturate(1.03);
+  }
+  .gallery-item figcaption {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: var(--space-md) var(--space-sm) var(--space-sm);
+    background: linear-gradient(180deg, transparent, rgba(13, 9, 6, 0.82));
+    color: var(--color-on-ink);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-small);
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition:
+      opacity var(--motion-settled) var(--ease-default),
+      transform var(--motion-settled) var(--ease-default);
+  }
+  .gallery-item:hover figcaption,
+  .gallery-item:focus-within figcaption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (hover: none) {
+    .gallery-item figcaption {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-item figcaption {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
   }
 </style>

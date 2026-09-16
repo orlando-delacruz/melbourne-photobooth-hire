@@ -1,6 +1,8 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import FloatingMessenger from "../components/FloatingMessenger.astro";
+import StructuredData from "../components/StructuredData.astro";
 import { getContent } from "../lib/content/repository";
 import { NAV_ITEMS } from "../lib/navigation";
 import "@fontsource/fraunces/latin-400.css";
@@ -15,6 +17,8 @@ import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import "../styles/tokens.css";
 import "../styles/global.css";
+import "../styles/mobile-nav.css";
+import "../styles/gallery-lightbox.css";
 
 interface Props {
   title: string;
@@ -23,10 +27,75 @@ interface Props {
   bodyClass?: string;
   /** URL to preload (LCP image), homepage hero background. */
   preloadImage?: string;
+  /** Social share image; defaults to the hero background image. */
+  ogImage?: string;
+  /** Keep a page out of search results (for example the 404 page). */
+  noindex?: boolean;
+  /** Extra Schema.org nodes for this page, rendered alongside the site graph. */
+  structuredData?: Record<string, unknown>[];
 }
-const { title, description, bodyClass = "", preloadImage } = Astro.props;
-const { site } = getContent();
+const {
+  title,
+  description,
+  bodyClass = "",
+  preloadImage,
+  ogImage,
+  noindex = false,
+  structuredData = [],
+} = Astro.props;
+const { site, heroBackgroundImage } = getContent();
 const currentPath = Astro.url.pathname;
+
+const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
+// Canonical URLs are normalised without a trailing slash (root keeps "/").
+const canonicalPath = currentPath.replace(/\/+$/, "") || "/";
+const canonicalUrl = new URL(canonicalPath, siteOrigin).href;
+
+const socialImageSrc = ogImage ?? heroBackgroundImage?.src;
+const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
+const socialImageAlt = ogImage ? site.brandName : heroBackgroundImage?.alt;
+
+const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION as string | undefined;
+
+/**
+ * Site-wide structured data.
+ *
+ * Only confirmed facts are emitted: brand, production URL and Melbourne
+ * service area. Address, phone, social profiles and service/price detail are
+ * deliberately omitted until the client confirms them (DEC-016).
+ */
+const siteSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteOrigin}/#organization`,
+      name: site.brandName,
+      url: `${siteOrigin}/`,
+      description:
+        "Photobooth hire for weddings, birthdays, corporate events and celebrations across Melbourne, Victoria.",
+      areaServed: { "@type": "City", name: "Melbourne" },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteOrigin}/#website`,
+      url: `${siteOrigin}/`,
+      name: site.brandName,
+      inLanguage: "en-AU",
+      publisher: { "@id": `${siteOrigin}/#organization` },
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${canonicalUrl}#webpage`,
+      url: canonicalUrl,
+      name: title,
+      description,
+      inLanguage: "en-AU",
+      isPartOf: { "@id": `${siteOrigin}/#website` },
+      about: { "@id": `${siteOrigin}/#organization` },
+    },
+  ],
+};
 ---
 
 <!doctype html>
@@ -35,11 +104,41 @@ const currentPath = Astro.url.pathname;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#17120c" />
-    <link rel="preconnect" href="https://images.pexels.com" />
-    {preloadImage ? <link rel="preload" as="image" href={preloadImage} /> : null}
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta
+      name="robots"
+      content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+    />
+    <link rel="canonical" href={canonicalUrl} />
+    {googleVerification ? (
+      <meta name="google-site-verification" content={googleVerification} />
+    ) : null}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_AU" />
+    <meta property="og:site_name" content={site.brandName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    {socialImage ? <meta property="og:image" content={socialImage} /> : null}
+    {socialImage && socialImageAlt ? (
+      <meta property="og:image:alt" content={socialImageAlt} />
+    ) : null}
+    <meta name="twitter:card" content={socialImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {socialImage ? <meta name="twitter:image" content={socialImage} /> : null}
+    {socialImage && socialImageAlt ? (
+      <meta name="twitter:image:alt" content={socialImageAlt} />
+    ) : null}
+    <link rel="preconnect" href="https://images.pexels.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.pexels.com" />
+    {preloadImage ? <link rel="preload" as="image" href={preloadImage} /> : null}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <StructuredData schema={siteSchema} />
+    {structuredData.map((node) => (
+      <StructuredData schema={{ "@context": "https://schema.org", ...node }} />
+    ))}
     <script is:inline>
       document.documentElement.classList.add("js");
     </script>
@@ -60,5 +159,6 @@ const currentPath = Astro.url.pathname;
       serviceAreaStatement={site.serviceAreaStatement}
       reviewUrl={site.reviewUrl}
     />
+    <FloatingMessenger />
   </body>
 </html>

@@ -108,6 +108,7 @@ Content-heavy pages must remain functional, readable, and crawlable without depe
 * **What:** Preferred styling solution.
 * **For:** Component-scoped styles across Astro and React UI.
 * **Why:** Established project direction. Provides maintainable component styling without introducing a second styling system.
+* **Implemented approach (DEC-013, 2026-09-16):** In this Astro setup styled-components styles are injected client-side (they are absent from the server-rendered HTML), so the current Astro UI and React islands are styled with the project's CSS custom properties (`src/styles/tokens.css`, `global.css`, and per-component stylesheets). styled-components remains selected and available, but no current island depends on it.
 
 Do not introduce Tailwind CSS or another styling system without a future justified decision (see Section 21).
 

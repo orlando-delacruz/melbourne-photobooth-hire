@@ -3,28 +3,244 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import PageHeader from "../components/PageHeader.astro";
 import { getContent } from "../lib/content/repository";
+import "../styles/inquiry-form.css";
 
-const { site } = getContent();
+const { site, serviceImages } = getContent();
+
+const steps = [
+  {
+    title: "Send your details",
+    detail: "Your date, venue and rough guest numbers are plenty to start.",
+  },
+  {
+    title: "We reply with options",
+    detail: "Availability, the right booth for the room and a clear quote.",
+  },
+  {
+    title: "Lock in your date",
+    detail: "A 20% deposit confirms your date, with the balance due on the day.",
+  },
+];
 ---
 
 <BaseLayout
-  title="Contact | Melbourne Photobooth Hire"
-  description="Enquire with Melbourne Photobooth Hire about photobooth hire for your event."
+  title="Contact & Enquire | Photobooth Hire Melbourne"
+  description="Enquire about photobooth hire in Melbourne. Send your event date, venue and guest numbers and we'll confirm availability and put together a clear quote."
 >
   <PageHeader
-    title="Contact"
-    eyebrow="Make an enquiry"
-    lede="Reach out with your event date and details — we'll confirm availability and recommend the perfect booth."
+    title="Make an enquiry"
+    eyebrow="Let's plan your night"
+    lede="Tell us about your event and we'll confirm availability, recommend the right booth and put together a clear quote."
+    imageSrc={serviceImages?.["roaming-photobooth"]?.src}
+    imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
-  <p class="service-area">{site.serviceAreaStatement}</p>
-  <div class="section">
-    <InquiryForm client:visible />
-  </div>
+
+  <section class="section contact" aria-labelledby="contact-form-heading">
+    <aside class="contact-aside">
+      <h2 id="contact-next">What happens next</h2>
+      <ol class="next-steps">
+        {steps.map((step, index) => (
+          <li>
+            <span class="next-num" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <div class="next-body">
+              <h3>{step.title}</h3>
+              <p>{step.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <dl class="aside-facts">
+        <div class="aside-fact">
+          <dt>Service area</dt>
+          <dd>{site.serviceAreaStatement}</dd>
+        </div>
+        <div class="aside-fact">
+          <dt>Typical reply</dt>
+          <dd>Within one business day.</dd>
+        </div>
+      </dl>
+    </aside>
+
+    <div class="form-card">
+      <header class="form-head">
+        <span class="form-icon" aria-hidden="true">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+        </span>
+        <div>
+          <h2 id="contact-form-heading">Event enquiry</h2>
+          <p>Share a few details and we'll reply with availability and a clear quote.</p>
+        </div>
+      </header>
+      <InquiryForm client:visible />
+      <p class="form-foot">We use your details only to respond to this enquiry.</p>
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
-  .service-area {
+  .contact {
+    display: grid;
+    gap: var(--space-xl);
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .contact-aside {
+    max-width: 28rem;
+  }
+  .contact-aside h2 {
+    margin: 0 0 var(--space-lg);
+    font-size: var(--text-h2);
+  }
+
+  /* Vertical stepper. The connector runs from each numeral's centre to the
+     next, and the numeral sits above it with a matching page-tone fill so the
+     line reads as continuous without pixel-matching row heights. */
+  .next-steps {
+    list-style: none;
+    margin: 0 0 var(--space-xl);
+    padding: 0;
+    display: grid;
+    gap: var(--space-lg);
+  }
+  .next-steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-sm);
+  }
+  .next-steps li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 1.125rem;
+    top: 1.125rem;
+    bottom: calc(-1 * (var(--space-lg) + 1.125rem));
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--color-border-strong);
+  }
+  .next-num {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-ivory);
+    color: var(--color-accent-strong);
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 500;
+  }
+  .next-body h3 {
+    margin: 0.3rem 0 var(--space-3xs);
+    font-size: var(--text-h4);
+  }
+  .next-body p {
     margin: 0;
     color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+
+  .aside-facts {
+    margin: 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    display: grid;
+    gap: var(--space-sm);
+  }
+  .aside-fact dt {
+    color: var(--color-ink-faint);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+  .aside-fact dd {
+    margin: var(--space-3xs) 0 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+
+  .form-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 4vw, 3rem);
+    box-shadow: var(--elevation-2);
+  }
+  .form-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+    pointer-events: none;
+  }
+  .form-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-sm);
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-divider);
+  }
+  .form-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-ivory);
+    color: var(--color-accent-strong);
+  }
+  .form-head h2 {
+    margin: 0 0 var(--space-3xs);
+    font-size: var(--text-h2);
+  }
+  .form-head p {
+    margin: 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+  .form-foot {
+    margin: var(--space-lg) 0 0;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-divider);
+    color: var(--color-ink-faint);
+    font-size: var(--text-small);
+  }
+
+  @media (min-width: 960px) {
+    .contact {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      gap: var(--space-2xl);
+    }
+    .contact-aside {
+      position: sticky;
+      top: 7rem;
+    }
   }
 </style>

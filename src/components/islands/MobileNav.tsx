@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { styled, ThemeProvider } from "styled-components";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Menu, X } from "lucide-react";
-import { theme } from "../../lib/theme";
+
+/**
+ * Mobile navigation island. Styling lives in styles/mobile-nav.css
+ * (token-backed, server-rendered) rather than styled-components, so the
+ * trigger and panel are styled before hydration.
+ */
 
 export interface NavItem {
   href: string;
@@ -17,59 +21,36 @@ interface Props {
 
 const MENU_ID = "mobile-menu";
 
-const Trigger = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space.xs2};
-  min-height: 44px;
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.sm};
-  background: transparent;
-  border: 1px solid var(--color-ink-border);
-  border-radius: var(--radius-pill);
-  color: var(--color-on-ink);
-  font: inherit;
-  font-weight: 600;
-  font-size: var(--text-small);
-  cursor: pointer;
-  transition:
-    border-color var(--motion-quick) var(--ease-default),
-    color var(--motion-quick) var(--ease-default);
-  &:hover {
-    border-color: var(--color-accent-on-dark);
-    color: var(--color-accent-on-dark);
-  }
-`;
-
-const Panel = styled.nav`
-  margin-top: ${({ theme }) => theme.space.xs};
-  background: var(--color-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--elevation-2);
-  padding: ${({ theme }) => theme.space.sm};
-`;
-
-const List = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: ${({ theme }) => theme.space.xs2};
-`;
-
-const PanelLink = styled.a<{ $current: boolean }>`
-  display: block;
-  padding: ${({ theme }) => theme.space.xs2} ${({ theme }) => theme.space.xs};
-  color: ${({ $current }) => ($current ? "var(--color-ink)" : "var(--color-ink-soft)")};
-  font-weight: ${({ $current }) => ($current ? 700 : 500)};
-  text-decoration: none;
-  border-radius: var(--radius-sm);
-  &:hover {
-    color: var(--color-ink);
-  }
-`;
-
-const MotionPanel = motion(Panel);
+function MenuList({
+  items,
+  currentPath,
+  ctaHref,
+}: {
+  items: NavItem[];
+  currentPath: string;
+  ctaHref: string;
+}) {
+  return (
+    <>
+      <ul className="mn-list">
+        {items.map((item) => (
+          <li key={item.href}>
+            <a
+              className={currentPath === item.href ? "mn-link mn-link--current" : "mn-link"}
+              href={item.href}
+              aria-current={currentPath === item.href ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a className="mn-cta" href={ctaHref}>
+        Enquire now
+      </a>
+    </>
+  );
+}
 
 export default function MobileNav({ items, currentPath, ctaHref }: Props) {
   const [open, setOpen] = useState(false);
@@ -91,76 +72,53 @@ export default function MobileNav({ items, currentPath, ctaHref }: Props) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, close]);
 
+  // Let the rest of the page know the menu owns the viewport (e.g. the
+  // floating Messenger CTA steps aside) without coupling the components.
+  useEffect(() => {
+    document.documentElement.dataset.menuOpen = open ? "true" : "false";
+    return () => {
+      delete document.documentElement.dataset.menuOpen;
+    };
+  }, [open]);
+
   const Icon = open ? X : Menu;
+  const content = <MenuList items={items} currentPath={currentPath} ctaHref={ctaHref} />;
 
   return (
-    <ThemeProvider theme={theme}>
-      <Trigger
+    <>
+      <button
         ref={triggerRef}
         type="button"
+        className="mn-trigger"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         aria-controls={MENU_ID}
         onClick={toggle}
       >
         <Icon size={20} aria-hidden="true" />
-        <span aria-hidden="true">{open ? "Close" : "Menu"}</span>
-      </Trigger>
+      </button>
       <AnimatePresence initial={false}>
         {open ? (
           reduceMotion ? (
-            <Panel id={MENU_ID} aria-label="Mobile">
-              <List>
-                {items.map((item) => (
-                  <li key={item.href}>
-                    <PanelLink
-                      href={item.href}
-                      $current={currentPath === item.href}
-                      aria-current={currentPath === item.href ? "page" : undefined}
-                    >
-                      {item.label}
-                    </PanelLink>
-                  </li>
-                ))}
-                <li>
-                  <PanelLink href={ctaHref} $current={false}>
-                    Enquire now
-                  </PanelLink>
-                </li>
-              </List>
-            </Panel>
+            <nav id={MENU_ID} aria-label="Mobile" className="mn-panel">
+              {content}
+            </nav>
           ) : (
-            <MotionPanel
+            <motion.nav
               key="panel"
               id={MENU_ID}
               aria-label="Mobile"
-              initial={{ opacity: 0, y: -8 }}
+              className="mn-panel"
+              initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
-              <List>
-                {items.map((item) => (
-                  <li key={item.href}>
-                    <PanelLink
-                      href={item.href}
-                      $current={currentPath === item.href}
-                      aria-current={currentPath === item.href ? "page" : undefined}
-                    >
-                      {item.label}
-                    </PanelLink>
-                  </li>
-                ))}
-                <li>
-                  <PanelLink href={ctaHref} $current={false}>
-                    Enquire now
-                  </PanelLink>
-                </li>
-              </List>
-            </MotionPanel>
+              {content}
+            </motion.nav>
           )
         ) : null}
       </AnimatePresence>
-    </ThemeProvider>
+    </>
   );
 }
