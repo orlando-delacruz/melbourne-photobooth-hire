@@ -55,7 +55,11 @@ const socialImageSrc = ogImage ?? heroBackgroundImage?.src;
 const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
 const socialImageAlt = ogImage ? site.brandName : heroBackgroundImage?.alt;
 
-const googleVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION as string | undefined;
+// Google Search Console URL-prefix verification. The token is public and must
+// appear in the served HTML; the env value can override it per environment.
+const googleVerification =
+  (import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION as string | undefined) ??
+  "HemkyvmWRx4jOA7etp5IrpO5f0UIdf3jQhkP_38mvkQ";
 
 /**
  * Site-wide structured data.
