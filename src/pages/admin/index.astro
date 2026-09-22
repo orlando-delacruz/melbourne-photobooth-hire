@@ -1,0 +1,15 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import DashboardView from "../../components/admin/DashboardView";
+---
+
+<AdminLayout title="Dashboard">
+  <AdminShell
+    active="dashboard"
+    title="Dashboard"
+    lede="Content overview and areas awaiting client confirmation."
+  >
+    <DashboardView client:load />
+  </AdminShell>
+</AdminLayout>

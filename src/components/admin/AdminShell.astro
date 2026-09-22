@@ -1,0 +1,140 @@
+---
+// Admin shell: sidebar navigation, topbar and content region. The drawer is
+// toggled by a small inline script (same pattern as the public header), so
+// the chrome needs no client-side framework.
+import { ADMIN_DASHBOARD, ADMIN_EXTERNAL_ICON, ADMIN_SECTIONS } from "./sections";
+
+interface Props {
+  /** Active nav key: "dashboard" or a CMS section key. */
+  active: string;
+  /** Page title shown in the topbar. */
+  title: string;
+  /** Short context line shown under the title. */
+  lede?: string;
+  /** Public page URL for the "view page" link. Omitted for the dashboard. */
+  publicHref?: string | null;
+}
+
+const { active, title, lede, publicHref } = Astro.props;
+
+const dashboardIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
+const menuIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>`;
+const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+---
+
+<div class="ad-shell" data-admin-shell>
+  <div class="ad-scrim" data-admin-scrim aria-hidden="true"></div>
+  <aside class="ad-sidebar" aria-label="Content sections">
+    <div class="ad-brand">
+      <span class="ad-brand-mark" aria-hidden="true" set:html={dashboardIcon} />
+      <span class="ad-brand-text">
+        <strong>Melbourne Photobooth Hire</strong>
+        <span>Content admin</span>
+      </span>
+    </div>
+    <nav aria-label="Admin">
+      <p class="ad-nav-caption">Manage</p>
+      <ul class="ad-nav">
+        <li>
+          <a
+            href={ADMIN_DASHBOARD.href}
+            class:list={["ad-nav-link", { "ad-nav-link--current": active === "dashboard" }]}
+            aria-current={active === "dashboard" ? "page" : undefined}
+          >
+            <span class="ad-nav-icon" aria-hidden="true" set:html={ADMIN_DASHBOARD.icon} />
+            {ADMIN_DASHBOARD.label}
+          </a>
+        </li>
+      </ul>
+      <p class="ad-nav-caption">Pages</p>
+      <ul class="ad-nav">
+        {ADMIN_SECTIONS.filter((section) => section.key !== "settings").map((section) => (
+          <li>
+            <a
+              href={section.href}
+              class:list={["ad-nav-link", { "ad-nav-link--current": active === section.key }]}
+              aria-current={active === section.key ? "page" : undefined}
+            >
+              <span class="ad-nav-icon" aria-hidden="true" set:html={section.icon} />
+              {section.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="ad-nav-caption">Site</p>
+      <ul class="ad-nav">
+        <li>
+          <a
+            href="/admin/settings"
+            class:list={["ad-nav-link", { "ad-nav-link--current": active === "settings" }]}
+            aria-current={active === "settings" ? "page" : undefined}
+          >
+            <span
+              class="ad-nav-icon"
+              aria-hidden="true"
+              set:html={ADMIN_SECTIONS.find((section) => section.key === "settings")?.icon ?? ""}
+            />
+            Site settings
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <p class="ad-sidebar-note">
+      Frontend preview. Saves stay in this browser until the CMS backend is connected.
+    </p>
+  </aside>
+
+  <div class="ad-main">
+    <header class="ad-topbar">
+      <button
+        type="button"
+        class="ad-menu-button"
+        data-admin-menu
+        aria-expanded="false"
+        aria-controls="admin-sidebar"
+        aria-label="Open navigation"
+      >
+        <span data-admin-menu-open set:html={menuIcon} />
+        <span data-admin-menu-close hidden set:html={closeIcon} />
+      </button>
+      <div class="ad-topbar-title">
+        <h1>{title}</h1>
+        {lede ? <p>{lede}</p> : null}
+      </div>
+      {publicHref ? (
+        <a class="ad-view-link" href={publicHref} target="_blank" rel="noopener noreferrer">
+          View page
+          <span aria-hidden="true" set:html={ADMIN_EXTERNAL_ICON} />
+        </a>
+      ) : null}
+    </header>
+    <main class="ad-content" id="main">
+      <slot />
+    </main>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const shell = document.querySelector("[data-admin-shell]");
+    const button = document.querySelector("[data-admin-menu]");
+    const scrim = document.querySelector("[data-admin-scrim]");
+    if (!shell || !button || !(button instanceof HTMLButtonElement)) return;
+    const openIcon = button.querySelector("[data-admin-menu-open]");
+    const closeIcon = button.querySelector("[data-admin-menu-close]");
+    const setOpen = (open) => {
+      shell.classList.toggle("ad-shell--nav-open", open);
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+      button.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+      if (openIcon instanceof HTMLElement) openIcon.hidden = open;
+      if (closeIcon instanceof HTMLElement) closeIcon.hidden = !open;
+    };
+    button.addEventListener("click", () => {
+      setOpen(!shell.classList.contains("ad-shell--nav-open"));
+    });
+    if (scrim) scrim.addEventListener("click", () => setOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+  })();
+</script>

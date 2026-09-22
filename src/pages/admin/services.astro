@@ -1,0 +1,19 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import ServicesEditor from "../../components/admin/editors/ServicesEditor";
+import { sectionByKey } from "../../components/admin/sections";
+
+const section = sectionByKey("services");
+---
+
+<AdminLayout title={`Edit ${section.label}`}>
+  <AdminShell
+    active={section.key}
+    title={`Edit ${section.label}`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <ServicesEditor client:load />
+  </AdminShell>
+</AdminLayout>

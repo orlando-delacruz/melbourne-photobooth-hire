@@ -1,0 +1,19 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import GalleryEditor from "../../components/admin/editors/GalleryEditor";
+import { sectionByKey } from "../../components/admin/sections";
+
+const section = sectionByKey("gallery");
+---
+
+<AdminLayout title={`Edit ${section.label}`}>
+  <AdminShell
+    active={section.key}
+    title={`Edit ${section.label}`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <GalleryEditor client:load />
+  </AdminShell>
+</AdminLayout>

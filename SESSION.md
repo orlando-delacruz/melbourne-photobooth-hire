@@ -105,7 +105,17 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 
 ---
 
-## 9. How to continue
+## 10. CMS frontend session (2026-09-22)
+
+- Built the frontend-only CMS under `/admin/` (DEC-017): dashboard, Home, Services, Packages, Gallery, About, FAQ, Contact, Site Settings editors.
+- New: `src/lib/cms/` (types, seed, Zod schemas, localStorage repository, provisional notes), `src/components/admin/` (shell, field primitives, 8 editors, dashboard), `src/pages/admin/`, `src/styles/admin.css`, sitemap filter in `astro.config.mjs`.
+- Public pages untouched; only `astro.config.mjs` modified plus docs.
+- `npm run check` → 0 errors; `npm run build` → 19 pages; `npm run format` → clean; preview smoke test → all 9 admin routes 200, sitemap holds only the 9 public pages.
+- **Not verified:** real browser rendering/interaction at 375/768/1024/1440 (no browser tooling available); CMS save flows exercised only via code review, not a live browser session.
+
+---
+
+## 11. How to continue
 
 1. Read `AGENTS.md`, `CONTEXT.md`, and relevant `docs/` before changing anything.
 2. Inspect existing implementation before edits; follow the conventions in section 6.

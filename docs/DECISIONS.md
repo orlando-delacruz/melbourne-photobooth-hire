@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Sixteen decision records exist (DEC-001 through DEC-016). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Seventeen decision records exist (DEC-001 through DEC-017). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -271,6 +271,7 @@ Sixteen decision records exist (DEC-001 through DEC-016). Existing selections, r
 | DEC-014 | Homepage refinement: lightbox, marquee, icons, CTA       | Accepted   | 2026-09-16 |
 | DEC-015 | Homepage pass 2: no light panels, premium cards, motion  | Accepted   | 2026-09-16 |
 | DEC-016 | SEO technical foundation: domain, canonicals, sitemap    | Accepted   | 2026-09-16 |
+| DEC-017 | CMS frontend: Astro admin routes with local mock store    | Accepted   | 2026-09-22 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -549,6 +550,25 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (Section 13), `docs/ARCHITECTURE.md` (Section 18), `docs/TECH-STACK.md` (Section 18), `docs/DEPLOYMENT.md` (Sections 5, 12–15), `docs/DECISIONS.md` (DEC-001).
 - **Supersedes / Superseded by:** Clarifies DEC-001's deferral of `site`/sitemap/canonicals; does not supersede DEC-001.
 - **Open questions or follow-up:** Client confirmation of NAP/contact details, social profiles and the Google Business Profile review URL (enables `LocalBusiness`, `sameAs` and the review CTA); confirmed FAQ/testimonial content (enables `FAQPage`/`Review`); client-approved imagery to replace the placeholder social image; Search Console verification performed at deployment.
+
+### DEC-017 — CMS frontend: Astro admin routes with local mock store
+
+- **ID:** DEC-017
+- **Title:** CMS frontend: Astro admin routes with local mock store
+- **Status:** Accepted
+- **Date:** 2026-09-22
+- **Context:** The task requires a frontend-only CMS that mirrors the public website content, with no backend, database, auth, or Supabase. Docs leave the admin UI composition, exact modules, and routing open (REQ-CMS-012, REQ-CON-002), while deciding `/admin/` route exclusion, token-backed CSS (DEC-013), RHF + Zod forms, and the `ContentSource` public seam (DEC-003). Per-page SEO fields are task-required but modeled nowhere in the docs.
+- **Decision:**
+  1. **Routes.** Astro multi-route admin under `/admin/` (dashboard at `/admin`, one route per section). Real URLs suit the documented one-content-area-at-a-time UX and future server-side auth. Admin routes are excluded from the sitemap via a filter in `astro.config.mjs`, disallowed in `public/robots.txt`, and carry `noindex, nofollow`.
+  2. **Data layer.** New `src/lib/cms/` module: page-organized `CmsContent` model reusing public entity types, per-section Zod schemas, and a `CmsRepository` interface (`load`/`saveSection`/`resetSection`) with a localStorage-backed mock. Seed values mirror rendered public content verbatim; the public site is untouched and does not read this model yet. Per-page `seoTitle`/`seoDescription`/`ogImage` live in the CMS model only.
+  3. **Editing UX.** React Hook Form + the shared `zodResolver` per section, repeatable editors with add/duplicate/remove/up-down reorder, dirty tracking with a leave guard, per-section save/discard/reset, and localStorage persistence. No sign-in screen; the dashboard notes that auth arrives with the backend.
+  4. **Scope.** Dashboard, Home, Services, Packages, Gallery, About, FAQ, Contact, Site Settings. Testimonials live under Home (their only render surface). Privacy/terms stay code-managed. Nav labels and enquiry-form internals stay code.
+- **Alternatives considered:** Single React SPA shell at `/admin` — rejected; contradicts the Astro-first direction and complicates future route-level auth for no proportional gain. Wiring public pages to the CMS store now — rejected; the task forbids changing public-page content and wiring is the documented Phase 4 job. Extending the public `ContentSource` seam with writes — rejected; the seam is the public read boundary and callers must never change.
+- **Rationale:** Smallest architecture satisfying the frontend-only CMS scope inside existing conventions, with the repository interface shaped like the future backend API so Phase 3/4 replaces the store without touching editors.
+- **Consequences:** `src/pages/admin/*`, `src/components/admin/*`, `src/lib/cms/*` and `src/styles/admin.css` are new; `astro.config.mjs` gains the sitemap filter. Saves persist per-browser only. Provisional content is flagged on the dashboard, not in the model.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS-001..013, REQ-CON-001..005), `docs/ROADMAP.md` (Phases 2-4), `docs/ARCHITECTURE.md` (Astro-first, ContentSource seam), `docs/UI-UX.md` (admin flows), `docs/DESIGN-SYSTEM.md` (Section 26 admin system), `docs/DATA-MODEL.md` (CMS modules Confirmation Required).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Supabase adapter replacing the mock repository (Phase 3); wiring confirmed content into public rendering per surface (Phase 4); client confirmation of prices, testimonials, imagery, review/Messenger links and socials.
 
 ## 22. Related Documentation
 
