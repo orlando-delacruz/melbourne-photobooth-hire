@@ -49,10 +49,14 @@ export default function InquiriesView() {
             <thead>
               <tr>
                 <th scope="col">Name</th>
-                <th scope="col">Email</th>
+                <th scope="col" className="ad-hide-sm">
+                  Email
+                </th>
                 <th scope="col">Event date</th>
                 <th scope="col">Event type</th>
-                <th scope="col">Guests</th>
+                <th scope="col" className="ad-hide-sm">
+                  Guests
+                </th>
                 <th scope="col">Submitted</th>
               </tr>
             </thead>
@@ -60,10 +64,10 @@ export default function InquiriesView() {
               {sorted.map((inquiry) => (
                 <tr key={inquiry.id}>
                   <td>{inquiry.name}</td>
-                  <td>{inquiry.email}</td>
+                  <td className="ad-hide-sm">{inquiry.email}</td>
                   <td>{formatInquiryDate(inquiry.eventDate)}</td>
                   <td>{inquiry.eventType || "Not specified"}</td>
-                  <td>{inquiry.guests || "-"}</td>
+                  <td className="ad-hide-sm">{inquiry.guests || "-"}</td>
                   <td>{formatInquiryDateTime(inquiry.submittedAt)}</td>
                 </tr>
               ))}

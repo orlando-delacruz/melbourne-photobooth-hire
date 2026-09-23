@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "../../lib/validation/inquiry";
 import { AdField, Notice, TextInput } from "./fields";
@@ -24,6 +24,7 @@ type LoginInput = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const [phase, setPhase] = useState<"editing" | "unavailable">("editing");
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -71,13 +72,28 @@ export default function LoginForm() {
           required
           error={isSubmitted ? errors.password?.message : undefined}
         >
-          <TextInput
-            id="login-password"
-            type="password"
-            autoComplete="current-password"
-            error={isSubmitted ? errors.password?.message : undefined}
-            {...register("password")}
-          />
+          <div className="ad-login-field">
+            <TextInput
+              id="login-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              error={isSubmitted ? errors.password?.message : undefined}
+              {...register("password")}
+            />
+            <button
+              type="button"
+              className="ad-login-toggle"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? (
+                <EyeOff size={18} aria-hidden="true" />
+              ) : (
+                <Eye size={18} aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </AdField>
         <p>
           <button type="submit" className="ad-button ad-button--primary ad-login-submit">

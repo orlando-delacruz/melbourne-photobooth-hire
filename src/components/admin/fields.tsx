@@ -314,44 +314,46 @@ export function ItemCard({
         </span>
         <p className="ad-item-title">{title || `Item ${index + 1}`}</p>
         {idText ? <span className="ad-id">{idText}</span> : null}
-        <button
-          type="button"
-          className="ad-icon-button"
-          onClick={onMoveUp}
-          disabled={disableUp}
-          aria-label={`Move ${title || `item ${index + 1}`} up`}
-          title="Move up"
-        >
-          <ArrowUp size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="ad-icon-button"
-          onClick={onMoveDown}
-          disabled={disableDown}
-          aria-label={`Move ${title || `item ${index + 1}`} down`}
-          title="Move down"
-        >
-          <ArrowDown size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="ad-icon-button"
-          onClick={onDuplicate}
-          aria-label={`Duplicate ${title || `item ${index + 1}`}`}
-          title="Duplicate"
-        >
-          <Copy size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="ad-icon-button ad-icon-button--danger"
-          onClick={onRemove}
-          aria-label={`Remove ${title || `item ${index + 1}`}`}
-          title="Remove"
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
+        <span className="ad-item-actions">
+          <button
+            type="button"
+            className="ad-icon-button"
+            onClick={onMoveUp}
+            disabled={disableUp}
+            aria-label={`Move ${title || `item ${index + 1}`} up`}
+            title="Move up"
+          >
+            <ArrowUp size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="ad-icon-button"
+            onClick={onMoveDown}
+            disabled={disableDown}
+            aria-label={`Move ${title || `item ${index + 1}`} down`}
+            title="Move down"
+          >
+            <ArrowDown size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="ad-icon-button"
+            onClick={onDuplicate}
+            aria-label={`Duplicate ${title || `item ${index + 1}`}`}
+            title="Duplicate"
+          >
+            <Copy size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="ad-icon-button ad-icon-button--danger"
+            onClick={onRemove}
+            aria-label={`Remove ${title || `item ${index + 1}`}`}
+            title="Remove"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
+        </span>
       </div>
       <div className="ad-item-body">{children}</div>
     </article>

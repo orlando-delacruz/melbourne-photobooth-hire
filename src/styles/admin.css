@@ -13,6 +13,16 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Padding and width always include the border on admin surfaces: admin pages
+ * do not load the public global.css reset, so box-sizing is declared here
+ * (without it, width rules such as 100% compute as content-box and pages
+ * overflow their viewport). */
+.ad-body *,
+.ad-body *::before,
+.ad-body *::after {
+  box-sizing: border-box;
+}
+
 .ad-body :focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
@@ -242,6 +252,8 @@
 /* ── Panels ─────────────────────────────────────────────────────────────── */
 
 .ad-panel {
+  position: relative;
+  overflow: hidden;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -249,23 +261,18 @@
   padding: clamp(1.25rem, 3vw, 2rem);
 }
 
+/* Champagne thread: the public card signature, carried into the admin. */
+.ad-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+  pointer-events: none;
+}
+
 .ad-panel + .ad-panel {
   margin-top: var(--space-md);
-}
-
-.ad-panel > h2 {
-  margin: 0 0 var(--space-3xs);
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: 600;
-  letter-spacing: var(--tracking-tight);
-}
-
-.ad-panel > .ad-panel-lede {
-  margin: 0 0 var(--space-md);
-  max-width: var(--text-max-width);
-  color: var(--color-ink-soft);
-  font-size: var(--text-small);
 }
 
 .ad-stack {
@@ -285,11 +292,22 @@
 }
 
 .ad-summary-card {
+  position: relative;
+  overflow: hidden;
   padding: var(--space-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--elevation-1);
+}
+
+.ad-summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+  pointer-events: none;
 }
 
 .ad-summary-label {
@@ -328,6 +346,7 @@
 
 .ad-panel-head .ad-panel-lede {
   margin: var(--space-3xs) 0 0;
+  max-width: var(--text-max-width);
   color: var(--color-ink-soft);
   font-size: var(--text-small);
 }
@@ -366,6 +385,16 @@
 
 .ad-table tbody tr:last-child td {
   border-bottom: 0;
+}
+
+@media (hover: hover) {
+  .ad-table tbody tr:hover td {
+    background: var(--color-ivory);
+  }
+}
+
+.ad-hide-sm {
+  display: table-cell;
 }
 
 .ad-table a {
@@ -441,6 +470,10 @@
   color: var(--color-ink);
 }
 
+.ad-button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
 .ad-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -478,6 +511,7 @@
 .ad-input,
 .ad-textarea,
 .ad-select {
+  box-sizing: border-box;
   width: 100%;
   min-height: 3rem;
   padding: 0.7rem 0.9rem;
@@ -627,12 +661,21 @@
 
 .ad-item-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2xs);
+  row-gap: var(--space-2xs);
   padding: var(--space-2xs) var(--space-2xs) var(--space-2xs) var(--space-sm);
   border-bottom: 1px solid var(--color-divider);
   background: var(--color-ivory);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.ad-item-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-left: auto;
 }
 
 .ad-item-title {
@@ -656,8 +699,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -666,12 +709,17 @@
   cursor: pointer;
   transition:
     border-color var(--motion-quick) var(--ease-default),
-    color var(--motion-quick) var(--ease-default);
+    color var(--motion-quick) var(--ease-default),
+    transform var(--motion-quick) var(--ease-default);
 }
 
 .ad-icon-button:hover:not(:disabled) {
   border-color: var(--color-accent);
   color: var(--color-accent-strong);
+}
+
+.ad-icon-button:active:not(:disabled) {
+  transform: scale(0.94);
 }
 
 .ad-icon-button:disabled {
@@ -688,6 +736,28 @@
   display: grid;
   gap: var(--space-sm);
   padding: var(--space-sm);
+}
+
+@media (max-width: 640px) {
+  .ad-content {
+    padding-bottom: calc(var(--space-xl) + 3rem);
+  }
+
+  .ad-hide-sm {
+    display: none;
+  }
+
+  .ad-string-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ad-string-actions {
+    justify-content: flex-end;
+  }
+
+  .ad-item-body {
+    padding: var(--space-2xs);
+  }
 }
 
 .ad-subhead {
@@ -715,13 +785,19 @@
 
 .ad-string-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--space-2xs);
   align-items: start;
   padding: var(--space-2xs);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+}
+
+.ad-string-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
 }
 
 .ad-string-cell {
@@ -737,7 +813,7 @@
 
 .ad-savebar {
   position: sticky;
-  bottom: var(--space-sm);
+  bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
   z-index: 10;
   display: flex;
   flex-wrap: wrap;
@@ -750,6 +826,39 @@
   border: 1px solid var(--color-ink-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--elevation-2);
+}
+
+@media (max-width: 640px) {
+  .ad-savebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "status status"
+      "save save"
+      "reset discard";
+    gap: var(--space-2xs);
+    padding: var(--space-sm);
+  }
+
+  .ad-savebar .ad-dirty,
+  .ad-savebar .ad-saved-at {
+    grid-area: status;
+    margin: 0;
+  }
+
+  .ad-savebar .ad-button--primary {
+    grid-area: save;
+  }
+
+  .ad-savebar .ad-button--tertiary {
+    grid-area: reset;
+    justify-self: start;
+  }
+
+  .ad-savebar .ad-button--secondary {
+    grid-area: discard;
+    justify-self: end;
+  }
 }
 
 .ad-savebar .ad-button--primary {
@@ -983,28 +1092,59 @@
 
 /* ── Login ──────────────────────────────────────────────────────────────── */
 
+/* The threshold: the admin interior is quiet light chrome, the login carries
+ * the public site's "event noir" world. One champagne glow on the canvas,
+ * one card reveal, nothing else moves. */
+
 .ad-login {
+  position: relative;
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: var(--space-md);
+  background: var(--color-ink-deep);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ad-login::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(52rem 34rem at 78% 8%, rgba(230, 206, 138, 0.12), transparent 62%),
+    radial-gradient(44rem 30rem at 12% 96%, rgba(230, 206, 138, 0.07), transparent 60%);
+  pointer-events: none;
 }
 
 .ad-login-card {
   width: 100%;
-  max-width: 26rem;
-  padding: clamp(1.5rem, 4vw, 2.5rem);
+  max-width: 24rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--elevation-2);
+  box-shadow: var(--elevation-3);
+  animation: ad-login-settle 620ms var(--ease-default) both;
+}
+
+@keyframes ad-login-settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ad-login-brand {
   display: flex;
   align-items: center;
   gap: var(--space-2xs);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .ad-login-brand .ad-brand-mark {
@@ -1013,11 +1153,24 @@
 }
 
 .ad-login-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   font-family: var(--font-display);
   font-size: var(--text-small);
   font-weight: 600;
   letter-spacing: var(--tracking-tight);
   color: var(--color-ink);
+  line-height: var(--leading-snug);
+}
+
+.ad-login-brand-caption {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
 }
 
 .ad-login-title {
@@ -1027,6 +1180,7 @@
   font-weight: 600;
   letter-spacing: var(--tracking-tight);
   line-height: var(--leading-snug);
+  color: var(--color-ink);
 }
 
 .ad-login-lede {
@@ -1035,8 +1189,49 @@
   font-size: var(--text-small);
 }
 
+/* Compact inputs: one step under the editor size, still a 44px touch target. */
+.ad-login .ad-input {
+  min-height: 2.75rem;
+  padding-block: 0.55rem;
+}
+
+.ad-login-field {
+  position: relative;
+}
+
+.ad-login-field .ad-input {
+  padding-right: 3.1rem;
+}
+
+.ad-login-toggle {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  border: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: transparent;
+  color: var(--color-ink-faint);
+  cursor: pointer;
+  transition: color var(--motion-quick) var(--ease-default);
+}
+
+.ad-login-toggle:hover,
+.ad-login-toggle:focus-visible {
+  color: var(--color-accent-strong);
+}
+
 .ad-login-submit {
   width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-login-card {
+    animation: none;
+  }
 }
 
 /* ── Responsive shell ───────────────────────────────────────────────────── */
@@ -1084,13 +1279,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ad-sidebar,
-  .ad-card,
   .ad-skeleton-block {
     transition: none;
     animation: none;
   }
 
-  .ad-card:hover {
+  .ad-button,
+  .ad-icon-button {
     transform: none;
   }
 }

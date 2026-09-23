@@ -317,8 +317,12 @@ export function Panel({
 }) {
   return (
     <section className="ad-panel" aria-label={title}>
-      <h2>{title}</h2>
-      {lede ? <p className="ad-panel-lede">{lede}</p> : null}
+      <div className="ad-panel-head">
+        <div>
+          <h2>{title}</h2>
+          {lede ? <p className="ad-panel-lede">{lede}</p> : null}
+        </div>
+      </div>
       <div className="ad-stack">{children}</div>
     </section>
   );
@@ -392,35 +396,37 @@ export function StringList({
                     </p>
                   ) : null}
                 </div>
-                <button
-                  type="button"
-                  className="ad-icon-button"
-                  onClick={() => onMove(index, -1)}
-                  disabled={index === 0}
-                  aria-label={`Move ${label} ${index + 1} up`}
-                  title="Move up"
-                >
-                  <ArrowUp size={16} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="ad-icon-button"
-                  onClick={() => onMove(index, 1)}
-                  disabled={index === items.length - 1}
-                  aria-label={`Move ${label} ${index + 1} down`}
-                  title="Move down"
-                >
-                  <ArrowDown size={16} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="ad-icon-button ad-icon-button--danger"
-                  onClick={() => onRemove(index)}
-                  aria-label={`Remove ${label} ${index + 1}`}
-                  title="Remove"
-                >
-                  <Trash2 size={16} aria-hidden="true" />
-                </button>
+                <span className="ad-string-actions">
+                  <button
+                    type="button"
+                    className="ad-icon-button"
+                    onClick={() => onMove(index, -1)}
+                    disabled={index === 0}
+                    aria-label={`Move ${label} ${index + 1} up`}
+                    title="Move up"
+                  >
+                    <ArrowUp size={16} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="ad-icon-button"
+                    onClick={() => onMove(index, 1)}
+                    disabled={index === items.length - 1}
+                    aria-label={`Move ${label} ${index + 1} down`}
+                    title="Move down"
+                  >
+                    <ArrowDown size={16} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="ad-icon-button ad-icon-button--danger"
+                    onClick={() => onRemove(index)}
+                    aria-label={`Remove ${label} ${index + 1}`}
+                    title="Remove"
+                  >
+                    <Trash2 size={16} aria-hidden="true" />
+                  </button>
+                </span>
               </div>
             );
           })}
