@@ -1,0 +1,11 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import InquiriesView from "../../components/admin/InquiriesView";
+---
+
+<AdminLayout title="Inquiries">
+  <AdminShell active="inquiries" title="Inquiries" lede="Enquiries from the website contact form.">
+    <InquiriesView client:load />
+  </AdminShell>
+</AdminLayout>

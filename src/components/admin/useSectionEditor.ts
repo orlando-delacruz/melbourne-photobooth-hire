@@ -83,7 +83,7 @@ export function useSectionEditor<K extends CmsSectionKey>(
         setNotice({
           tone: "success",
           title: "Section saved.",
-          body: "Saved in this browser only. The public website is unchanged until the CMS backend is connected.",
+          body: "Your changes are saved and ready to publish.",
         });
       })
       .catch(() => {

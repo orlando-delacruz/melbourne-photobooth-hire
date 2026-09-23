@@ -4,9 +4,6 @@
 // the public pages and the provisional mock content (src/lib/content/mock.ts).
 // Where the public site hardcodes copy in .astro files, the same strings are
 // mirrored here. The public site does not read this model yet.
-//
-// Provisional content (pricing, testimonials, stock imagery, review and
-// Messenger links) is flagged in src/lib/cms/provisional.ts, not in the data.
 
 import type { CmsContent } from "./types";
 

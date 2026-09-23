@@ -106,7 +106,7 @@ export default function SettingsEditor() {
         <AdField
           id="settings-messenger"
           label="Messenger URL"
-          hint="Chat destination for the floating button. Currently a placeholder."
+          hint="Chat destination for the floating chat button."
           error={errMsg(errors.messengerUrl)}
         >
           <TextInput
@@ -119,17 +119,14 @@ export default function SettingsEditor() {
         </AdField>
       </Panel>
 
-      <Panel
-        title="Social profiles"
-        lede="No social links are on the public site yet; add them here when confirmed."
-      >
+      <Panel title="Social profiles" lede="Add social profiles to show them on the website.">
         <ArraySection
           title="Social link list"
           count={socials.fields.length}
           addLabel="Add social link"
           onAdd={() => socials.append({ label: "", url: "" })}
           emptyTitle="No social links"
-          emptyBody="Nothing renders publicly until at least one confirmed link is added."
+          emptyBody="Add a link to display it on the website."
         >
           {socials.fields.map((field, index) => {
             const base = `socials.${index}` as const;
@@ -229,7 +226,7 @@ export default function SettingsEditor() {
 
       <Panel
         title="Shared imagery"
-        lede="Images reused across page headers, cards and enquiry bands. All current images are stock photography."
+        lede="Images reused across page headers, cards and enquiry bands."
       >
         <div className="ad-stack">
           {SHARED_IMAGES.map(({ key, label, hint }) => (

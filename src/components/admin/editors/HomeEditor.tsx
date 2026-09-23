@@ -495,10 +495,7 @@ export default function HomeEditor() {
         </ArraySection>
       </Panel>
 
-      <Panel
-        title="Reviews"
-        lede="Testimonials shown in the homepage marquee. Names and ratings need client confirmation before publication."
-      >
+      <Panel title="Reviews" lede="Testimonials shown in the homepage marquee.">
         <SectionHeadingGroup prefix="reviewsSection.heading" register={register} errors={errors} />
         <ArraySection
           title="Testimonials"
@@ -576,7 +573,7 @@ export default function HomeEditor() {
                 <AdField
                   id={`${base}-rating`}
                   label="Star rating"
-                  hint="Leave as no rating unless the client confirms it."
+                  hint="Leave as no rating unless a rating is confirmed."
                   error={errorAt(errors, `${base}.rating`)}
                 >
                   <AdSelect

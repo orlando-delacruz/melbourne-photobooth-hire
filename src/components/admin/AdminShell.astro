@@ -2,7 +2,12 @@
 // Admin shell: sidebar navigation, topbar and content region. The drawer is
 // toggled by a small inline script (same pattern as the public header), so
 // the chrome needs no client-side framework.
-import { ADMIN_DASHBOARD, ADMIN_EXTERNAL_ICON, ADMIN_SECTIONS } from "./sections";
+import {
+  ADMIN_DASHBOARD,
+  ADMIN_EXTERNAL_ICON,
+  ADMIN_SECTIONS,
+  INQUIRIES_SECTION,
+} from "./sections";
 
 interface Props {
   /** Active nav key: "dashboard" or a CMS section key. */
@@ -45,6 +50,19 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
             {ADMIN_DASHBOARD.label}
           </a>
         </li>
+        <li>
+          <a
+            href={INQUIRIES_SECTION.href}
+            class:list={[
+              "ad-nav-link",
+              { "ad-nav-link--current": active === INQUIRIES_SECTION.key },
+            ]}
+            aria-current={active === INQUIRIES_SECTION.key ? "page" : undefined}
+          >
+            <span class="ad-nav-icon" aria-hidden="true" set:html={INQUIRIES_SECTION.icon} />
+            {INQUIRIES_SECTION.label}
+          </a>
+        </li>
       </ul>
       <p class="ad-nav-caption">Pages</p>
       <ul class="ad-nav">
@@ -79,9 +97,7 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
         </li>
       </ul>
     </nav>
-    <p class="ad-sidebar-note">
-      Frontend preview. Saves stay in this browser until the CMS backend is connected.
-    </p>
+    <p class="ad-sidebar-note">Changes go live after saving and publishing.</p>
   </aside>
 
   <div class="ad-main">

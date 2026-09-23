@@ -111,7 +111,7 @@ export default function FaqEditor() {
           id="faq-search"
           label="Search placeholder"
           required
-          hint="Placeholder inside the search box."
+          hint="Text inside the search box."
           error={errMsg(errors.searchPlaceholder)}
         >
           <TextInput

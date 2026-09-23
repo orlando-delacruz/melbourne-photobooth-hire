@@ -62,7 +62,7 @@ export default function ServicesEditor() {
 
       <Panel
         title="Services"
-        lede="The booth experiences. Each service links to the enquiry page; changing an id also changes its image lookup, so ids are shown read-only."
+        lede="The booth experiences shown on this page and as homepage cards."
       >
         <ArraySection
           title="Service list"

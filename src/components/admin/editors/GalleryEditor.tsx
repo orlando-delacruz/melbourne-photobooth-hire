@@ -49,10 +49,7 @@ export default function GalleryEditor() {
         <PageHeaderGroup prefix="header" register={register} errors={errors} watch={watch} />
       </Panel>
 
-      <Panel
-        title="Gallery images"
-        lede="Event photos in display order. All current images are stock photography."
-      >
+      <Panel title="Gallery images" lede="Event photos in display order.">
         <ArraySection
           title="Image list"
           count={gallery.fields.length}

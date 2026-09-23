@@ -1,30 +1,28 @@
-// Admin dashboard: overview cards per content section, provisional-content
-// flags, and honest notes about the frontend-only limitations.
+// Admin dashboard: inquiry summary cards, the latest inquiries and a
+// content-freshness table for every managed page.
 
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, ExternalLink, Flag, Info, PenLine } from "lucide-react";
 import type { CmsContent, CmsSectionKey } from "../../lib/cms/types";
 import { cmsRepository } from "../../lib/cms/repository";
 import type { SectionMeta } from "../../lib/cms/repository";
-import { PROVISIONAL_NOTES } from "../../lib/cms/provisional";
+import {
+  adminInquirySource,
+  byNewest,
+  formatInquiryDate,
+  formatInquiryDateTime,
+} from "../../lib/cms/inquiries";
+import type { AdminInquiry } from "../../lib/cms/inquiries";
 import { ADMIN_SECTIONS } from "./sections";
-import { Notice, Skeleton } from "./fields";
+import { Skeleton } from "./fields";
 
-function formatSavedAt(savedAt: string | null): string {
-  if (!savedAt) return "Not saved yet";
-  try {
-    return (
-      "Saved " +
-      new Date(savedAt).toLocaleString("en-AU", {
-        day: "numeric",
-        month: "short",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    );
-  } catch {
-    return "Saved";
-  }
+const RECENT_LIMIT = 5;
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function summarize(key: CmsSectionKey, content: CmsContent): string {
@@ -43,16 +41,15 @@ function summarize(key: CmsSectionKey, content: CmsContent): string {
       return `${content.faq.faqs.length} questions`;
     case "contact":
       return `${content.contact.steps.length} next steps`;
-    case "settings": {
-      const review = content.settings.reviewUrl ? "review link set" : "review link missing";
-      return `Brand, service area, ${review}, ${content.settings.socials.length} social links`;
-    }
+    case "settings":
+      return `${content.settings.socials.length} social links, ${content.settings.reviewUrl ? "review link set" : "review link not set"}`;
   }
 }
 
 export default function DashboardView() {
   const [content, setContent] = useState<CmsContent | null>(null);
   const [meta, setMeta] = useState<Record<CmsSectionKey, SectionMeta> | null>(null);
+  const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -62,98 +59,125 @@ export default function DashboardView() {
     cmsRepository.getMeta().then((value) => {
       if (live) setMeta(value);
     });
+    adminInquirySource.list().then((value) => {
+      if (live) setInquiries(value);
+    });
     return () => {
       live = false;
     };
   }, []);
 
-  if (!content || !meta) return <Skeleton />;
+  if (!content || !meta || !inquiries) return <Skeleton />;
 
-  const flagged = (Object.keys(PROVISIONAL_NOTES) as CmsSectionKey[]).filter(
-    (key) => PROVISIONAL_NOTES[key].length > 0,
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const total = inquiries.length;
+  const today = inquiries.filter((inquiry) => isSameDay(new Date(inquiry.submittedAt), now)).length;
+  const weekly = inquiries.filter((inquiry) => new Date(inquiry.submittedAt) >= weekAgo).length;
+  const pagesUpdated = (Object.keys(meta) as CmsSectionKey[]).filter(
+    (key) => meta[key].savedAt !== null,
+  ).length;
+
+  const recent = [...inquiries].sort(byNewest).slice(0, RECENT_LIMIT);
+  const contentSections = ADMIN_SECTIONS.filter(
+    (section): section is (typeof ADMIN_SECTIONS)[number] & { key: CmsSectionKey } =>
+      section.key !== "inquiries",
   );
 
   return (
     <div className="ad-stack">
-      <Notice tone="info" title="Frontend preview, no backend yet.">
-        <p>
-          Edits save in this browser only so you can review the full editing experience. The public
-          website is unchanged until the CMS backend is connected. Sign-in arrives with the backend
-          as well; these pages stay out of search results.
-        </p>
-      </Notice>
-
-      <ul className="ad-cards">
-        {ADMIN_SECTIONS.map((section) => (
-          <li key={section.key}>
-            <article className="ad-card">
-              <div className="ad-card-head">
-                <span
-                  className="ad-card-icon"
-                  aria-hidden="true"
-                  dangerouslySetInnerHTML={{ __html: section.icon }}
-                />
-                <h2>{section.label}</h2>
-              </div>
-              <p>{section.blurb}</p>
-              <p className="ad-card-meta">{summarize(section.key, content)}</p>
-              <p className="ad-card-meta">
-                {meta[section.key].savedAt ? (
-                  <span>
-                    <CheckCircle2 size={13} aria-hidden="true" />{" "}
-                    {formatSavedAt(meta[section.key].savedAt)}
-                  </span>
-                ) : (
-                  <span>
-                    <AlertCircle size={13} aria-hidden="true" /> {formatSavedAt(null)}
-                  </span>
-                )}
-              </p>
-              <p className="ad-card-links">
-                <a className="ad-button ad-button--secondary" href={section.href}>
-                  <PenLine size={15} aria-hidden="true" />
-                  Edit
-                </a>
-                {section.publicHref ? (
-                  <a
-                    className="ad-button ad-button--tertiary"
-                    href={section.publicHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View page
-                    <ExternalLink size={14} aria-hidden="true" />
-                  </a>
-                ) : null}
-              </p>
-            </article>
-          </li>
-        ))}
+      <ul className="ad-summary">
+        <li className="ad-summary-card">
+          <p className="ad-summary-label">Total Inquiries</p>
+          <p className="ad-summary-value">{total}</p>
+        </li>
+        <li className="ad-summary-card">
+          <p className="ad-summary-label">Today&rsquo;s Inquiries</p>
+          <p className="ad-summary-value">{today}</p>
+        </li>
+        <li className="ad-summary-card">
+          <p className="ad-summary-label">Weekly Inquiries</p>
+          <p className="ad-summary-value">{weekly}</p>
+        </li>
+        <li className="ad-summary-card">
+          <p className="ad-summary-label">Pages Updated</p>
+          <p className="ad-summary-value">{pagesUpdated}</p>
+        </li>
       </ul>
 
-      <section className="ad-panel" aria-label="Awaiting client confirmation">
-        <h2>Content awaiting client confirmation</h2>
-        <p className="ad-panel-lede">
-          These values mirror the provisional website content. Confirm each area with the client
-          before it is treated as final.
-        </p>
-        <ul className="ad-flag-list">
-          {flagged.map((key) =>
-            PROVISIONAL_NOTES[key].map((note) => (
-              <li key={`${key}-${note}`}>
-                <Flag size={15} aria-hidden="true" />
-                <span>
-                  <strong>{ADMIN_SECTIONS.find((section) => section.key === key)?.label}: </strong>
-                  {note}
-                </span>
-              </li>
-            )),
-          )}
-        </ul>
-        <p className="ad-hint ad-panel-foot">
-          <Info size={14} aria-hidden="true" /> Ratings render only for testimonials that carry one;
-          unverified ratings must never be published as fact.
-        </p>
+      <section className="ad-panel" aria-label="Recent inquiries">
+        <div className="ad-panel-head">
+          <div>
+            <h2>Recent inquiries</h2>
+            <p className="ad-panel-lede">The latest enquiries from the website contact form.</p>
+          </div>
+          <a className="ad-button ad-button--secondary ad-panel-action" href="/admin/inquiries">
+            View all
+          </a>
+        </div>
+        {recent.length === 0 ? (
+          <div className="ad-empty">
+            <h3>No inquiries yet</h3>
+            <p>Enquiries from the website contact form will appear here.</p>
+          </div>
+        ) : (
+          <div className="ad-table-wrap">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Event date</th>
+                  <th scope="col">Event type</th>
+                  <th scope="col">Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recent.map((inquiry) => (
+                  <tr key={inquiry.id}>
+                    <td>{inquiry.name}</td>
+                    <td>{formatInquiryDate(inquiry.eventDate)}</td>
+                    <td>{inquiry.eventType || "Not specified"}</td>
+                    <td>{formatInquiryDateTime(inquiry.submittedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="ad-panel" aria-label="Website content">
+        <div className="ad-panel-head">
+          <div>
+            <h2>Website content</h2>
+            <p className="ad-panel-lede">Content pages and when each was last updated.</p>
+          </div>
+        </div>
+        <div className="ad-table-wrap">
+          <table className="ad-table">
+            <thead>
+              <tr>
+                <th scope="col">Page</th>
+                <th scope="col">Content</th>
+                <th scope="col">Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {contentSections.map((section) => {
+                const savedAt = meta[section.key]?.savedAt ?? null;
+                return (
+                  <tr key={section.key}>
+                    <td>
+                      <a href={section.href}>{section.label}</a>
+                    </td>
+                    <td className="ad-table-muted">{summarize(section.key, content)}</td>
+                    <td>{savedAt ? formatInquiryDateTime(savedAt) : "Not updated yet"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

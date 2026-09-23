@@ -71,10 +71,7 @@ export default function PackagesEditor() {
         <PageHeaderGroup prefix="header" register={register} errors={errors} watch={watch} />
       </Panel>
 
-      <Panel
-        title="Plans"
-        lede="Package cards. Prices are provisional until the client confirms them."
-      >
+      <Panel title="Plans" lede="Package cards shown in order on the packages page.">
         <SectionHeadingGroup prefix="plansHeading" register={register} errors={errors} />
         <ArraySection
           title="Package list"

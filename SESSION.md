@@ -112,6 +112,7 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 - Public pages untouched; only `astro.config.mjs` modified plus docs.
 - `npm run check` → 0 errors; `npm run build` → 19 pages; `npm run format` → clean; preview smoke test → all 9 admin routes 200, sitemap holds only the 9 public pages.
 - **Not verified:** real browser rendering/interaction at 375/768/1024/1440 (no browser tooling available); CMS save flows exercised only via code review, not a live browser session.
+- **Production-readiness pass (2026-09-22):** removed all developer-facing copy from the admin UI; added `/admin/login` (form validates, then explains sign-in is not connected; no fake auth) and `/admin/inquiries` (read-only table, mock `AdminInquirySource` with 6 sample records in `src/lib/cms/inquiries.ts`); reworked the dashboard to four summary cards (Total/Today's/Weekly Inquiries, Pages Updated), a recent-inquiries table (max 5 + View All) and a Website Content freshness table; sidebar gained an Inquiries link.
 
 ---
 
