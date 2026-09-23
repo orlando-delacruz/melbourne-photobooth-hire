@@ -458,6 +458,54 @@
   color: var(--color-accent-strong);
 }
 
+.ad-button--danger {
+  color: var(--color-error);
+}
+
+.ad-table-rowlink {
+  cursor: pointer;
+}
+
+.ad-detail-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.ad-detail-row {
+  display: grid;
+  gap: var(--space-3xs);
+  padding-block: var(--space-2xs);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.ad-detail-row:last-child {
+  border-bottom: 0;
+}
+
+.ad-detail-row dt {
+  color: var(--color-ink-faint);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.ad-detail-row dd {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  white-space: pre-wrap;
+}
+
+.ad-inquiry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+}
+
 .ad-button--tertiary {
   background: transparent;
   color: var(--color-ink-soft);
@@ -1232,6 +1280,46 @@
   .ad-login-card {
     animation: none;
   }
+}
+
+/* ── Highlight toggle ───────────────────────────────────────────────────── */
+
+.ad-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.ad-toggle input {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-accent-strong);
+}
+
+.ad-toggle span {
+  font-size: var(--text-small);
+}
+
+.ad-radio {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.ad-radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  min-height: 44px;
+  cursor: pointer;
+  font-size: var(--text-small);
+}
+
+.ad-radio-option input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--color-accent-strong);
 }
 
 /* ── Responsive shell ───────────────────────────────────────────────────── */

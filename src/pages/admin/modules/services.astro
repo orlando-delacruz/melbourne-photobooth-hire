@@ -1,0 +1,19 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminShell from "../../../components/admin/AdminShell.astro";
+import ServicesModuleEditor from "../../../components/admin/editors/ServicesModuleEditor";
+import { MODULE_SECTIONS } from "../../../components/admin/sections";
+
+const section = MODULE_SECTIONS.find((item) => item.key === "mod-services")!;
+---
+
+<AdminLayout title={`${section.label} module`}>
+  <AdminShell
+    active={section.key}
+    title={`${section.label} module`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <ServicesModuleEditor client:load />
+  </AdminShell>
+</AdminLayout>

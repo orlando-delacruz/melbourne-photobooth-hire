@@ -2,7 +2,7 @@
 // call-to-action band and SEO metadata.
 
 import { useFieldArray } from "react-hook-form";
-import { aboutSchema } from "../../../lib/cms/schemas";
+import { aboutPageSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/repository";
 import SaveBar from "../SaveBar";
 import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
@@ -20,7 +20,7 @@ import { useSectionEditor } from "../useSectionEditor";
 
 export default function AboutEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
-    useSectionEditor("about", aboutSchema);
+    useSectionEditor("about", aboutPageSchema);
   const {
     register,
     control,
@@ -31,11 +31,11 @@ export default function AboutEditor() {
     formState: { errors, isDirty },
   } = form;
 
-  const values = useFieldArray({ control, name: "about.values" });
-  const stats = useFieldArray({ control, name: "about.stats" });
+  const values = useFieldArray({ control, name: "values" });
+  const stats = useFieldArray({ control, name: "stats" });
 
-  const storyPath = "about.story" as const;
-  const story = watch(storyPath) ?? [];
+  const storyPath = "story" as const;
+  const story = (watch(storyPath) ?? []) as string[];
   const commitStory = (next: string[]) =>
     setValue(storyPath, next, { shouldDirty: true, shouldValidate: true });
   const moveStory = (index: number, direction: -1 | 1) => {
@@ -62,7 +62,13 @@ export default function AboutEditor() {
       ) : null}
 
       <Panel title="Page header" lede="Banner at the top of the about page.">
-        <PageHeaderGroup prefix="header" register={register} errors={errors} watch={watch} />
+        <PageHeaderGroup
+          prefix="header"
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
       </Panel>
 
       <Panel title="Story" lede="Business story beside the photo.">
@@ -113,7 +119,7 @@ export default function AboutEditor() {
           emptyBody="The stats band is hidden while the list is empty."
         >
           {stats.fields.map((field, index) => {
-            const base = `about.stats.${index}` as const;
+            const base = `stats.${index}` as const;
             const value = watch(`${base}.value`) || `Stat ${index + 1}`;
             return (
               <ItemCard
@@ -125,7 +131,7 @@ export default function AboutEditor() {
                 onMoveUp={() => stats.move(index, index - 1)}
                 onMoveDown={() => stats.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("about.stats");
+                  const current = getValues("stats");
                   stats.insert(index + 1, { ...current[index] });
                 }}
                 onRemove={() => confirmRemove(String(value), () => stats.remove(index))}
@@ -176,7 +182,7 @@ export default function AboutEditor() {
           emptyBody="The values grid is hidden while the list is empty."
         >
           {values.fields.map((field, index) => {
-            const base = `about.values.${index}` as const;
+            const base = `values.${index}` as const;
             const title = watch(`${base}.title`) || `Value ${index + 1}`;
             return (
               <ItemCard
@@ -189,7 +195,7 @@ export default function AboutEditor() {
                 onMoveUp={() => values.move(index, index - 1)}
                 onMoveDown={() => values.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("about.values");
+                  const current = getValues("values");
                   values.insert(index + 1, { ...current[index], id: createId("value") });
                 }}
                 onRemove={() => confirmRemove(String(title), () => values.remove(index))}

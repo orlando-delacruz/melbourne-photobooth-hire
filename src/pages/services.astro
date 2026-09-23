@@ -4,6 +4,7 @@ import Button from "../components/Button.astro";
 import PageHeader from "../components/PageHeader.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
+import CmsEcho from "../components/islands/CmsEcho";
 import { getContent } from "../lib/content/repository";
 
 const { services, serviceImages, ctaImage } = getContent();
@@ -50,7 +51,12 @@ const checkSvg =
 
   <div class="services">
     {services.map((service, index) => (
-      <section class="service section" id={service.id} aria-labelledby={`service-${service.id}`}>
+      <section
+        class="service section"
+        id={service.id}
+        aria-labelledby={`service-${service.id}`}
+        data-cms-id={service.id}
+      >
         <Reveal client:visible className="service-cell service-cell--media" variant="blur">
           <div class="service-media">
             {serviceImages?.[service.id] ? (
@@ -116,6 +122,7 @@ const checkSvg =
     imageSrc={ctaImage?.src}
     imageAlt={ctaImage?.alt}
   />
+  <CmsEcho page="services" client:idle />
 </BaseLayout>
 
 <style>

@@ -2,9 +2,9 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminShell from "../../components/admin/AdminShell.astro";
 import AboutEditor from "../../components/admin/editors/AboutEditor";
-import { sectionByKey } from "../../components/admin/sections";
+import { CMS_SECTIONS } from "../../components/admin/sections";
 
-const section = sectionByKey("about");
+const section = CMS_SECTIONS.find((item) => item.key === "about")!;
 ---
 
 <AdminLayout title={`Edit ${section.label}`}>

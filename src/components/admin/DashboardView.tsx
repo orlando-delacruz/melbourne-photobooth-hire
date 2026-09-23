@@ -1,10 +1,11 @@
-// Admin dashboard: inquiry summary cards, the latest inquiries and a
-// content-freshness table for every managed page.
+// Admin dashboard: inquiry summary cards, the latest inquiries, a
+// content-freshness table for every managed page and a modules overview.
 
 import { useEffect, useState } from "react";
-import type { CmsContent, CmsSectionKey } from "../../lib/cms/types";
+import type { CmsContent, CmsPageKey } from "../../lib/cms/types";
 import { cmsRepository } from "../../lib/cms/repository";
 import type { SectionMeta } from "../../lib/cms/repository";
+import type { StoreSectionKey } from "../../lib/cms/types";
 import {
   adminInquirySource,
   byNewest,
@@ -12,7 +13,7 @@ import {
   formatInquiryDateTime,
 } from "../../lib/cms/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
-import { ADMIN_SECTIONS } from "./sections";
+import { CMS_SECTIONS, MODULE_SECTIONS } from "./sections";
 import { Skeleton } from "./fields";
 
 const RECENT_LIMIT = 5;
@@ -25,30 +26,35 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function summarize(key: CmsSectionKey, content: CmsContent): string {
+function summarizePage(key: CmsPageKey, content: CmsContent): string {
   switch (key) {
-    case "home":
-      return `${content.home.hero.stats.length} hero stats, ${content.home.intro.promises.length} promises, ${content.home.showcase.images.length} showcase images, ${content.home.processSection.steps.length} steps, ${content.home.reviewsSection.testimonials.length} reviews, ${content.home.eventTypesSection.eventTypes.length} event types`;
+    case "home": {
+      const page = content.pages.home;
+      return `${page.hero.stats.length} hero stats, ${page.intro.promises.length} promises, ${page.steps.length} process steps, ${page.testimonials.length} reviews, ${page.eventTypes.length} event types`;
+    }
     case "services":
-      return `${content.services.services.length} booth services`;
+      return "Page header, enquiry band and SEO; items live in Modules";
     case "packages":
-      return `${content.packages.packages.length} packages, ${content.packages.addOns.length} add-ons, ${content.packages.bookingPolicies.length} policies`;
+      return `${content.pages.packages.addOns.length} add-ons, ${content.pages.packages.bookingPolicies.length} policies`;
     case "gallery":
-      return `${content.gallery.gallery.length} images`;
+      return "Page header, empty state, enquiry band and SEO";
     case "about":
-      return `${content.about.about.story.length} story paragraphs, ${content.about.about.values.length} values, ${content.about.about.stats.length} stats`;
+      return `${content.pages.about.story.length} story paragraphs, ${content.pages.about.values.length} values, ${content.pages.about.stats.length} stats`;
     case "faq":
-      return `${content.faq.faqs.length} questions`;
+      return "Page header, search and support copy; questions live in Modules";
     case "contact":
-      return `${content.contact.steps.length} next steps`;
-    case "settings":
-      return `${content.settings.socials.length} social links, ${content.settings.reviewUrl ? "review link set" : "review link not set"}`;
+      return `${content.pages.contact.steps.length} next steps`;
   }
+}
+
+function summarizeModules(content: CmsContent): string {
+  const modules = content.modules;
+  return `${modules.services.length} services, ${modules.packages.length} packages, ${modules.gallery.length} images, ${modules.faqs.length} questions`;
 }
 
 export default function DashboardView() {
   const [content, setContent] = useState<CmsContent | null>(null);
-  const [meta, setMeta] = useState<Record<CmsSectionKey, SectionMeta> | null>(null);
+  const [meta, setMeta] = useState<Record<StoreSectionKey, SectionMeta> | null>(null);
   const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
 
   useEffect(() => {
@@ -74,15 +80,15 @@ export default function DashboardView() {
   const total = inquiries.length;
   const today = inquiries.filter((inquiry) => isSameDay(new Date(inquiry.submittedAt), now)).length;
   const weekly = inquiries.filter((inquiry) => new Date(inquiry.submittedAt) >= weekAgo).length;
-  const pagesUpdated = (Object.keys(meta) as CmsSectionKey[]).filter(
-    (key) => meta[key].savedAt !== null,
+  const pageKeys = [
+    ...CMS_SECTIONS.map((section) => section.key as CmsPageKey),
+    "settings",
+  ] as const;
+  const pagesUpdated = pageKeys.filter(
+    (key) => meta[key as StoreSectionKey]?.savedAt !== null,
   ).length;
 
   const recent = [...inquiries].sort(byNewest).slice(0, RECENT_LIMIT);
-  const contentSections = ADMIN_SECTIONS.filter(
-    (section): section is (typeof ADMIN_SECTIONS)[number] & { key: CmsSectionKey } =>
-      section.key !== "inquiries",
-  );
 
   return (
     <div className="ad-stack">
@@ -163,14 +169,66 @@ export default function DashboardView() {
               </tr>
             </thead>
             <tbody>
-              {contentSections.map((section) => {
-                const savedAt = meta[section.key]?.savedAt ?? null;
+              {CMS_SECTIONS.map((section) => {
+                const savedAt = meta[section.key as StoreSectionKey]?.savedAt ?? null;
                 return (
                   <tr key={section.key}>
                     <td>
                       <a href={section.href}>{section.label}</a>
                     </td>
-                    <td className="ad-table-muted">{summarize(section.key, content)}</td>
+                    <td className="ad-table-muted">
+                      {summarizePage(section.key as CmsPageKey, content)}
+                    </td>
+                    <td>{savedAt ? formatInquiryDateTime(savedAt) : "Not updated yet"}</td>
+                  </tr>
+                );
+              })}
+              <tr key="settings">
+                <td>
+                  <a href="/admin/settings">Site settings</a>
+                </td>
+                <td className="ad-table-muted">
+                  {content.settings.socials.length} social links,{" "}
+                  {content.settings.reviewUrl ? "review link set" : "review link not set"}
+                </td>
+                <td>
+                  {meta.settings?.savedAt
+                    ? formatInquiryDateTime(meta.settings.savedAt)
+                    : "Not updated yet"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="ad-panel" aria-label="Content modules">
+        <div className="ad-panel-head">
+          <div>
+            <h2>Content modules</h2>
+            <p className="ad-panel-lede">
+              Reusable items rendered on the public site and highlighted sections of the homepage.
+            </p>
+          </div>
+        </div>
+        <div className="ad-table-wrap">
+          <table className="ad-table">
+            <thead>
+              <tr>
+                <th scope="col">Module</th>
+                <th scope="col">Content</th>
+                <th scope="col">Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MODULE_SECTIONS.map((section) => {
+                const savedAt = meta[section.key as StoreSectionKey]?.savedAt ?? null;
+                return (
+                  <tr key={section.key}>
+                    <td>
+                      <a href={section.href}>{section.label}</a>
+                    </td>
+                    <td className="ad-table-muted">{summarizeModules(content)}</td>
                     <td>{savedAt ? formatInquiryDateTime(savedAt) : "Not updated yet"}</td>
                   </tr>
                 );

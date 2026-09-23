@@ -5,6 +5,7 @@
 import type { FieldErrors } from "react-hook-form";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { AdField, ImageField, TextArea, TextInput } from "./fields";
+import type { CmsImage } from "../../lib/cms/types";
 import { errMsg } from "./useSectionEditor";
 
 export { errMsg };
@@ -19,6 +20,7 @@ interface GroupProps {
   register: AnyRegister;
   errors: FieldErrors;
   watch?: AnyWatch;
+  setValue?: (name: string, value: unknown, options?: Record<string, unknown>) => void;
 }
 
 export function errorAt(errors: FieldErrors, path: string): string | undefined {
@@ -68,7 +70,7 @@ export function optionalSelect(register: AnyRegister, name: string) {
   });
 }
 
-export function PageHeaderGroup({ prefix, register, errors, watch }: GroupProps) {
+export function PageHeaderGroup({ prefix, register, errors, watch, setValue }: GroupProps) {
   return (
     <div className="ad-stack">
       <AdField
@@ -115,11 +117,17 @@ export function PageHeaderGroup({ prefix, register, errors, watch }: GroupProps)
       <ImageField
         legend="Header image."
         hint="Used as the page banner background."
-        srcProps={register(`${prefix}.imageSrc`)}
-        srcError={errorAt(errors, `${prefix}.imageSrc`)}
-        altProps={register(`${prefix}.imageAlt`)}
-        altError={errorAt(errors, `${prefix}.imageAlt`)}
-        previewSrc={watch ? String(watch(`${prefix}.imageSrc`) ?? "") : ""}
+        value={
+          (watch ? watch(`${prefix}.image`) : undefined) ??
+          ({
+            key: null,
+            src: "",
+            alt: "",
+          } as CmsImage)
+        }
+        onChange={(next) => setValue?.(`${prefix}.image`, next, { shouldDirty: true })}
+        error={errorAt(errors, `${prefix}.image.alt`)}
+        altError={errorAt(errors, `${prefix}.image.alt`)}
       />
     </div>
   );
@@ -171,7 +179,7 @@ export function SectionHeadingGroup({ prefix, register, errors }: GroupProps) {
   );
 }
 
-export function CtaBandGroup({ prefix, register, errors, watch }: GroupProps) {
+export function CtaBandGroup({ prefix, register, errors, watch, setValue }: GroupProps) {
   return (
     <div className="ad-stack">
       <div className="ad-grid-2">
@@ -246,17 +254,23 @@ export function CtaBandGroup({ prefix, register, errors, watch }: GroupProps) {
       <ImageField
         legend="Band image."
         hint="Background of the call-to-action band."
-        srcProps={register(`${prefix}.imageSrc`)}
-        srcError={errorAt(errors, `${prefix}.imageSrc`)}
-        altProps={register(`${prefix}.imageAlt`)}
-        altError={errorAt(errors, `${prefix}.imageAlt`)}
-        previewSrc={watch ? String(watch(`${prefix}.imageSrc`) ?? "") : ""}
+        value={
+          (watch ? watch(`${prefix}.image`) : undefined) ??
+          ({
+            key: null,
+            src: "",
+            alt: "",
+          } as CmsImage)
+        }
+        onChange={(next) => setValue?.(`${prefix}.image`, next, { shouldDirty: true })}
+        error={errorAt(errors, `${prefix}.image.alt`)}
+        altError={errorAt(errors, `${prefix}.image.alt`)}
       />
     </div>
   );
 }
 
-export function SeoGroup({ prefix, register, errors }: GroupProps) {
+export function SeoGroup({ prefix, register, errors, watch, setValue }: GroupProps) {
   return (
     <div className="ad-stack">
       <AdField
@@ -287,21 +301,21 @@ export function SeoGroup({ prefix, register, errors }: GroupProps) {
           {...register(`${prefix}.seoDescription`)}
         />
       </AdField>
-      <AdField
-        id={`${prefix}-ogImage`}
-        label="Social share image"
-        required
-        hint="Full image URL used when the page is shared."
-        error={errorAt(errors, `${prefix}.ogImage`)}
-      >
-        <TextInput
-          id={`${prefix}-ogImage`}
-          type="url"
-          inputMode="url"
-          error={errorAt(errors, `${prefix}.ogImage`)}
-          {...register(`${prefix}.ogImage`)}
-        />
-      </AdField>
+      <ImageField
+        legend="Social share image."
+        hint="Used when the page is shared or embedded."
+        value={
+          (watch ? watch(`${prefix}.ogImage`) : undefined) ??
+          ({
+            key: null,
+            src: "",
+            alt: "",
+          } as CmsImage)
+        }
+        onChange={(next) => setValue?.(`${prefix}.ogImage`, next, { shouldDirty: true })}
+        error={errorAt(errors, `${prefix}.ogImage.alt`)}
+        altError={errorAt(errors, `${prefix}.ogImage.alt`)}
+      />
     </div>
   );
 }

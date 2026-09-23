@@ -1,10 +1,8 @@
 // Admin inquiries: frontend-only stage.
 //
-// The public enquiry form does not store submissions yet, so this module
-// provides the admin-side data contract plus a mock source with sample
-// records, following the same pattern as the CMS content seed. The source
-// interface is shaped like the future backend API so a real adapter can
-// replace it without touching the views.
+// Sample records seeded until the backend stores real submissions; deletions
+// persist per browser by id so the list stays accurate between sessions. The
+// source interface is shaped like the future backend API.
 
 import type { InquiryInput } from "../validation/inquiry";
 
@@ -14,8 +12,16 @@ export interface AdminInquiry extends InquiryInput {
   submittedAt: string;
 }
 
-export interface AdminInquirySource {
-  list(): Promise<AdminInquiry[]>;
+const DELETED_KEY = "mph-inq-deleted";
+
+function readDeleted(): string[] {
+  try {
+    const raw = window.localStorage.getItem(DELETED_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 function isoDaysAgo(days: number, hour: number, minute: number): string {
@@ -106,9 +112,37 @@ const SAMPLE_INQUIRIES: AdminInquiry[] = [
   },
 ];
 
+/** Full record for the detail view, including optional fields. */
+export interface AdminInquiryRecord extends AdminInquiry {
+  venue: string;
+  guests: string;
+  mobile: string;
+  message: string;
+}
+
+export interface AdminInquirySource {
+  list(): Promise<AdminInquiry[]>;
+  get(id: string): Promise<AdminInquiry | null>;
+  remove(id: string): Promise<void>;
+}
+
 class MockAdminInquirySource implements AdminInquirySource {
   async list(): Promise<AdminInquiry[]> {
-    return SAMPLE_INQUIRIES.map((inquiry) => ({ ...inquiry }));
+    const deleted = readDeleted();
+    return SAMPLE_INQUIRIES.filter((inquiry) => !deleted.includes(inquiry.id)).map((inquiry) => ({
+      ...inquiry,
+    }));
+  }
+
+  async get(id: string): Promise<AdminInquiry | null> {
+    const found = await this.list();
+    return found.find((inquiry) => inquiry.id === id) ?? null;
+  }
+
+  async remove(id: string): Promise<void> {
+    const deleted = readDeleted();
+    if (!deleted.includes(id)) deleted.push(id);
+    window.localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
   }
 }
 
@@ -142,4 +176,9 @@ export function formatInquiryDateTime(value: string): string {
   } catch {
     return value;
   }
+}
+
+/** Gmail compose deep link: opens a fresh Gmail message with the recipient prefilled. */
+export function gmailComposeUrl(to: string, subject: string): string {
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}`;
 }

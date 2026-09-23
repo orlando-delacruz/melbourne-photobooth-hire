@@ -2,15 +2,15 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminShell from "../../components/admin/AdminShell.astro";
 import SettingsEditor from "../../components/admin/editors/SettingsEditor";
-import { sectionByKey } from "../../components/admin/sections";
+import { SETTINGS_SECTION } from "../../components/admin/sections";
 
-const section = sectionByKey("settings");
+const section = SETTINGS_SECTION;
 ---
 
-<AdminLayout title={`Edit ${section.label}`}>
+<AdminLayout title="Site settings">
   <AdminShell
     active={section.key}
-    title={`Edit ${section.label}`}
+    title={section.label}
     lede={section.blurb}
     publicHref={section.publicHref}
   >

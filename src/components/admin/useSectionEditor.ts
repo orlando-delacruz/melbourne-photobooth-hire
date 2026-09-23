@@ -7,7 +7,8 @@ import { useForm } from "react-hook-form";
 import type { FieldErrors, FieldValues, UseFormReturn } from "react-hook-form";
 import type * as z from "zod";
 import { zodResolver } from "../../lib/validation/inquiry";
-import type { CmsContent, CmsSectionKey } from "../../lib/cms/types";
+import type { StoreSectionKey } from "../../lib/cms/types";
+import type { SectionMeta } from "../../lib/cms/repository";
 import { cmsRepository } from "../../lib/cms/repository";
 import { firstErrorPath, flattenErrors } from "./fields";
 
@@ -18,8 +19,11 @@ export interface EditorNotice {
   list?: string[];
 }
 
-interface SectionEditor<K extends CmsSectionKey> {
-  form: UseFormReturn<CmsContent[K]>;
+export function useSectionEditor<K extends StoreSectionKey>(
+  section: K,
+  schema: z.ZodType<unknown>,
+): {
+  form: UseFormReturn<FieldValues>;
   loaded: boolean;
   saving: boolean;
   notice: EditorNotice | null;
@@ -29,33 +33,28 @@ interface SectionEditor<K extends CmsSectionKey> {
   onInvalid: (fieldErrors: FieldErrors) => void;
   onDiscard: () => void;
   onResetSection: () => void;
-}
-
-export function useSectionEditor<K extends CmsSectionKey>(
-  section: K,
-  schema: z.ZodType<CmsContent[K]>,
-): SectionEditor<K> {
-  const [loaded, setLoaded] = useState<CmsContent[K] | null>(null);
+} {
+  const [loaded, setLoaded] = useState<unknown>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<EditorNotice | null>(null);
 
-  const form = useForm<CmsContent[K] & FieldValues>({
-    resolver: zodResolver(schema as z.ZodType<CmsContent[K] & FieldValues>),
+  const form = useForm<FieldValues>({
+    resolver: zodResolver(schema as z.ZodType<FieldValues>),
     mode: "onChange",
-  }) as UseFormReturn<CmsContent[K]>;
+  });
   const { reset, setFocus } = form;
   const isDirty = form.formState.isDirty;
 
   useEffect(() => {
     let live = true;
-    cmsRepository.loadSection(section).then((value) => {
+    cmsRepository.loadSection(section).then((value: unknown) => {
       if (!live) return;
       setLoaded(value);
-      reset(value);
+      reset(value as never);
     });
-    cmsRepository.getMeta().then((meta) => {
-      if (live) setSavedAt(meta[section].savedAt);
+    cmsRepository.getMeta().then((meta: Record<StoreSectionKey, SectionMeta>) => {
+      if (live) setSavedAt(meta[section]?.savedAt ?? null);
     });
     return () => {
       live = false;
@@ -90,7 +89,7 @@ export function useSectionEditor<K extends CmsSectionKey>(
         setNotice({
           tone: "error",
           title: "Could not save this section.",
-          body: "Your edits are still in the form. Check the browser storage is available and try again.",
+          body: "Your edits are still in the form. Please try again.",
         });
       })
       .finally(() => setSaving(false));
@@ -122,7 +121,7 @@ export function useSectionEditor<K extends CmsSectionKey>(
   const onDiscard = useCallback(() => {
     if (!loaded) return;
     if (window.confirm("Discard unsaved changes and reload the saved values?")) {
-      reset(loaded);
+      reset(loaded as never);
       setNotice(null);
     }
   }, [loaded, reset]);
@@ -135,7 +134,7 @@ export function useSectionEditor<K extends CmsSectionKey>(
     ) {
       cmsRepository.resetSection(section).then((value) => {
         setLoaded(value);
-        reset(value);
+        reset(value as never);
         setSavedAt(null);
         setNotice({
           tone: "success",

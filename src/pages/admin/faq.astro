@@ -1,10 +1,10 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminShell from "../../components/admin/AdminShell.astro";
-import FaqEditor from "../../components/admin/editors/FaqEditor";
-import { sectionByKey } from "../../components/admin/sections";
+import FaqPageEditor from "../../components/admin/editors/FaqPageEditor";
+import { CMS_SECTIONS } from "../../components/admin/sections";
 
-const section = sectionByKey("faq");
+const section = CMS_SECTIONS.find((item) => item.key === "faq")!;
 ---
 
 <AdminLayout title={`Edit ${section.label}`}>
@@ -14,6 +14,6 @@ const section = sectionByKey("faq");
     lede={section.blurb}
     publicHref={section.publicHref}
   >
-    <FaqEditor client:load />
+    <FaqPageEditor client:load />
   </AdminShell>
 </AdminLayout>

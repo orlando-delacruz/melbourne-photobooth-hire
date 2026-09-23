@@ -1,10 +1,10 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminShell from "../../components/admin/AdminShell.astro";
-import PackagesEditor from "../../components/admin/editors/PackagesEditor";
-import { sectionByKey } from "../../components/admin/sections";
+import PackagesPageEditor from "../../components/admin/editors/PackagesPageEditor";
+import { CMS_SECTIONS } from "../../components/admin/sections";
 
-const section = sectionByKey("packages");
+const section = CMS_SECTIONS.find((item) => item.key === "packages")!;
 ---
 
 <AdminLayout title={`Edit ${section.label}`}>
@@ -14,6 +14,6 @@ const section = sectionByKey("packages");
     lede={section.blurb}
     publicHref={section.publicHref}
   >
-    <PackagesEditor client:load />
+    <PackagesPageEditor client:load />
   </AdminShell>
 </AdminLayout>

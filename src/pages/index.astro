@@ -9,6 +9,7 @@ import GalleryTrigger from "../components/GalleryTrigger.astro";
 import ReviewsMarquee from "../components/ReviewsMarquee.astro";
 import Reveal from "../components/islands/Reveal";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
+import CmsEcho from "../components/islands/CmsEcho";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
 
@@ -22,9 +23,15 @@ const {
   heroBackgroundImage,
   heroStats,
   serviceImages,
-  showcaseImages,
+  gallery,
   ctaImage,
 } = getContent();
+
+// Homepage sections render highlighted module items only.
+const highlightedServices = services.filter((service) => service.highlight !== false);
+const highlightedPackages = packages.filter((pkg) => pkg.highlight !== false);
+const highlightedGallery = gallery.filter((item) => item.highlight !== false);
+const highlightedFaqs = faqs.filter((faq) => faq.highlight !== false);
 
 const stepIconPaths: Record<string, string> = {
   message:
@@ -156,7 +163,7 @@ function eventIconSvg(label: string, size = 16): string {
       size="lg"
     />
     <div class="booths-grid">
-      {services.map((service, index) => (
+      {highlightedServices.map((service, index) => (
         <Reveal client:visible delay={index * 0.08}>
           <Card
             tone="dark"
@@ -170,13 +177,14 @@ function eventIconSvg(label: string, size = 16): string {
             imageAlt={serviceImages?.[service.id]?.alt}
             href="/services"
             ctaLabel="Explore the booths"
+            cmsId={service.id}
           />
         </Reveal>
       ))}
     </div>
   </section>
 
-  {showcaseImages && showcaseImages.length > 0 ? (
+  {highlightedGallery.length > 0 ? (
     <section class="section on-dark" aria-labelledby="showcase-heading">
       <Reveal client:visible variant="mask">
         <div class="showcase-head">
@@ -194,10 +202,10 @@ function eventIconSvg(label: string, size = 16): string {
           </p>
         </div>
         <ul class="showcase-grid">
-          {showcaseImages.map((item, index) => (
+          {highlightedGallery.map((item, index) => (
             <li>
               <Reveal client:visible delay={index * 0.07} variant="blur">
-                <figure class="showcase-item">
+                <figure class="showcase-item" data-cms-id={item.id}>
                   <GalleryTrigger src={item.src} caption={item.caption}>
                     <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
                   </GalleryTrigger>
@@ -221,7 +229,7 @@ function eventIconSvg(label: string, size = 16): string {
       size="lg"
     />
     <div class="card-grid">
-      {packages.map((pkg) => (
+      {highlightedPackages.map((pkg) => (
         <Reveal client:visible>
           <Card
             tone="dark"
@@ -231,9 +239,10 @@ function eventIconSvg(label: string, size = 16): string {
             price={pkg.priceLabel}
             description={pkg.summary}
             items={pkg.inclusions}
-            featured={pkg.badge === "Most popular"}
+            featured={pkg.featured}
             href="/contact"
             ctaLabel="Enquire about this package"
+            cmsId={pkg.id}
           />
         </Reveal>
       ))}
@@ -297,7 +306,7 @@ function eventIconSvg(label: string, size = 16): string {
       size="lg"
     />
     <Reveal client:visible>
-      <Accordion items={faqs.slice(0, 4)} tone="dark" />
+      <Accordion items={highlightedFaqs.slice(0, 4)} tone="dark" />
     </Reveal>
     <p class="faq-cta">
       <Button href="/faq" variant="secondary" tone="dark" arrow>
@@ -339,6 +348,7 @@ function eventIconSvg(label: string, size = 16): string {
   />
 
   <GalleryLightbox client:idle />
+  <CmsEcho page="home" client:idle />
 </BaseLayout>
 
 <style>

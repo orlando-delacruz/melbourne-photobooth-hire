@@ -1,37 +1,13 @@
 // Site settings editor: brand, service area, review and Messenger links,
-// social profiles, footer call-to-action and shared imagery. Empty link
-// fields mean the matching public element stays hidden.
+// social profiles and the footer call-to-action. Empty link fields mean the
+// matching public element stays hidden.
 
 import { useFieldArray } from "react-hook-form";
 import { settingsSchema } from "../../../lib/cms/schemas";
 import SaveBar from "../SaveBar";
-import {
-  AdField,
-  ArraySection,
-  ImageField,
-  ItemCard,
-  Notice,
-  Skeleton,
-  TextArea,
-  TextInput,
-} from "../fields";
+import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, errMsg, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
-
-const SHARED_IMAGES = [
-  {
-    key: "premium",
-    label: "Premium booth image",
-    hint: "Services header, packages header and homepage card.",
-  },
-  {
-    key: "roaming",
-    label: "Roaming booth image",
-    hint: "About and contact headers and homepage card.",
-  },
-  { key: "video360", label: "360 booth image", hint: "Gallery header and homepage card." },
-  { key: "cta", label: "Call-to-action image", hint: "Background of every enquiry band." },
-] as const;
 
 export default function SettingsEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -222,26 +198,6 @@ export default function SettingsEditor() {
             {...register("footerCta.label")}
           />
         </AdField>
-      </Panel>
-
-      <Panel
-        title="Shared imagery"
-        lede="Images reused across page headers, cards and enquiry bands."
-      >
-        <div className="ad-stack">
-          {SHARED_IMAGES.map(({ key, label, hint }) => (
-            <ImageField
-              key={key}
-              legend={`${label}.`}
-              hint={hint}
-              srcProps={register(`sharedImages.${key}.src`)}
-              srcError={errorAt(errors, `sharedImages.${key}.src`)}
-              altProps={register(`sharedImages.${key}.alt`)}
-              altError={errorAt(errors, `sharedImages.${key}.alt`)}
-              previewSrc={String(watch(`sharedImages.${key}.src`) ?? "")}
-            />
-          ))}
-        </div>
       </Panel>
 
       <SaveBar

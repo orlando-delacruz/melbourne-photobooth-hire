@@ -6,6 +6,7 @@ import PageHeader from "../components/PageHeader.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
+import CmsEcho from "../components/islands/CmsEcho";
 import { getContent } from "../lib/content/repository";
 
 const { packages, addOns, bookingPolicies, ctaImage, serviceImages } = getContent();
@@ -121,9 +122,10 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
               price={pkg.priceLabel}
               description={pkg.summary}
               items={pkg.inclusions}
-              featured={pkg.badge === "Most popular"}
+              featured={pkg.featured}
               href="/contact"
               ctaLabel="Enquire now"
+              cmsId={pkg.id}
             />
           </Reveal>
         ))}
@@ -225,6 +227,7 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
     imageSrc={ctaImage?.src}
     imageAlt={ctaImage?.alt}
   />
+  <CmsEcho page="packages" client:idle />
 </BaseLayout>
 
 <style>

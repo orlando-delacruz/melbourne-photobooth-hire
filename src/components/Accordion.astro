@@ -14,7 +14,7 @@ const { items, tone = "light" } = Astro.props;
 
 <div class:list={["accordion", `accordion--${tone}`, { "on-dark": tone === "dark" }]}>
   {items.map((item) => (
-    <details class="accordion__item">
+    <details class="accordion__item" data-cms-id={item.id}>
       <summary class="accordion__summary">
         <span class="accordion__question">{item.question}</span>
         <span class="accordion__marker" aria-hidden="true"></span>

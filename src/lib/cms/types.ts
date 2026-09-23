@@ -1,44 +1,37 @@
-// CMS content model: frontend-only phase.
+// CMS content model: restructured (DEC-018).
 //
-// Page-organized mirror of the content currently rendered by the public
-// website. Seed values are taken verbatim from the public pages and the
-// provisional mock content; the public site does not read this model yet.
-// A future backend adapter reshapes these sections per surface
-// (see docs/ROADMAP.md Phase 4).
+// Page-level CMS content is separated from reusable item collections:
+// - `pages` + `settings` hold static, page-scoped copy only.
+// - `modules` hold the reusable Services, Packages, Gallery and FAQ items and
+//   are the single source of truth. Public pages render these collections and
+//   the homepage renders their highlighted subset.
 //
-// Entity shapes (Service, Package, Testimonial, ...) are shared with the
-// public content seam in ../content/types so the models cannot drift apart.
+// Seed values mirror the content currently rendered by the public pages.
+// The public site reads the same seam at build time and reflects saved admin
+// state client-side (see the CmsEcho island).
 
-import type {
-  AboutContent,
-  AddOn,
-  Faq,
-  GalleryItem,
-  HeroStat,
-  Package,
-  ProcessStep,
-  SampleImage,
-  Service,
-  Testimonial,
-} from "../content/types";
+export type CmsPageKey = "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact";
 
-export type CmsSectionKey =
-  "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact" | "settings";
+export type StoreSectionKey =
+  CmsPageKey | "settings" | "mod-services" | "mod-packages" | "mod-gallery" | "mod-faqs";
 
 /** Editable SEO metadata for one public page. Mirrors BaseLayout props. */
 export interface PageMeta {
   seoTitle: string;
   seoDescription: string;
-  ogImage: string;
+  ogImage: CmsImage;
 }
 
-/** Editable copy for the PageHeader banner (title, eyebrow, lede, image). */
-export interface PageHeaderContent {
-  title: string;
-  eyebrow: string;
-  lede: string;
-  imageSrc: string;
-  imageAlt: string;
+/**
+ * An image managed through file uploads.
+ * `key` references the blob in the local image store; `src` is the fallback
+ * remote URL from the seeded content (used until the image is replaced).
+ */
+export interface CmsImage {
+  key: string | null;
+  src: string;
+  alt: string;
+  caption?: string;
 }
 
 /** Editable copy for a SectionHeading block (eyebrow, title, lede). */
@@ -55,8 +48,7 @@ export interface CtaBandContent {
   lede: string;
   primaryLabel: string;
   secondaryLabel: string;
-  imageSrc: string;
-  imageAlt: string;
+  image: CmsImage;
 }
 
 /** Editable fallback copy shown when a list has no items. */
@@ -66,7 +58,7 @@ export interface EmptyStateContent {
   actionLabel: string;
 }
 
-// ── Home ────────────────────────────────────────────────────────────────────
+// ── Page-level: Home ────────────────────────────────────────────────────────
 
 export interface HeroContent {
   eyebrow: string;
@@ -74,8 +66,7 @@ export interface HeroContent {
   supporting: string;
   primaryLabel: string;
   secondaryLabel: string;
-  backgroundSrc: string;
-  backgroundAlt: string;
+  background: CmsImage;
   stats: HeroStat[];
 }
 
@@ -92,92 +83,131 @@ export interface IntroContent {
   aboutLabel: string;
 }
 
-export interface HomeContent {
+export interface HomePageContent {
   hero: HeroContent;
   intro: IntroContent;
-  /** Heading and card CTA only; the service list is edited under Services. */
-  servicesSection: { heading: SectionHeadingContent; cardCtaLabel: string };
-  showcase: { heading: SectionHeadingContent; galleryLabel: string; images: SampleImage[] };
-  /** Heading and CTA only; packages are edited under Packages. */
-  packagesSection: { heading: SectionHeadingContent; compareLabel: string };
-  processSection: { heading: SectionHeadingContent; steps: ProcessStep[] };
-  reviewsSection: { heading: SectionHeadingContent; testimonials: Testimonial[] };
-  /** Heading and CTA only; the FAQ list is edited under FAQ. */
-  faqSection: { heading: SectionHeadingContent; readAllLabel: string };
-  eventTypesSection: { heading: SectionHeadingContent; eventTypes: string[] };
+  servicesHeading: SectionHeadingContent;
+  servicesCardLabel: string;
+  showcaseHeading: SectionHeadingContent;
+  showcaseLabel: string;
+  packagesHeading: SectionHeadingContent;
+  packagesCompareLabel: string;
+  processHeading: SectionHeadingContent;
+  steps: ProcessStep[];
+  reviewsHeading: SectionHeadingContent;
+  reviewsHighlightHint?: undefined;
+  testimonials: TestimonialContent[];
+  faqHeading: SectionHeadingContent;
+  faqCtaLabel: string;
+  eventTypesHeading: SectionHeadingContent;
+  eventTypes: string[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
 
-// ── Services ────────────────────────────────────────────────────────────────
+export interface HeroStat {
+  value: string;
+  label: string;
+  icon?: "camera" | "clock" | "qrcode";
+}
 
-export interface ServicesContent {
+export interface ProcessStep {
+  id: string;
+  title: string;
+  summary: string;
+  icon?: "message" | "palette" | "sparkles";
+}
+
+export interface TestimonialContent {
+  id: string;
+  quote: string;
+  name: string;
+  eventType: string;
+  rating?: number;
+}
+
+// ── Page-level: Services / Packages / Gallery ───────────────────────────────
+
+export interface ServicesPageContent {
   header: PageHeaderContent;
-  services: Service[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
 
-// ── Packages ────────────────────────────────────────────────────────────────
+export interface PageHeaderContent {
+  title: string;
+  eyebrow: string;
+  lede: string;
+  image: CmsImage;
+}
 
-export interface PackagesContent {
+export interface PackagesPageContent {
   header: PageHeaderContent;
   plansHeading: SectionHeadingContent;
   emptyState: EmptyStateContent;
   footNote: string;
   checkDateLabel: string;
-  packages: Package[];
-  /** Fallback list shown when no single inclusion is shared by all plans. */
   included: { eyebrow: string; heading: string; lede: string; standardItems: string[] };
   addonsHeading: SectionHeadingContent;
-  addOns: AddOn[];
+  addOns: AddOnContent[];
   policies: { eyebrow: string; heading: string; lede: string };
   bookingPolicies: string[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
 
-// ── Gallery ─────────────────────────────────────────────────────────────────
+export interface AddOnContent {
+  id: string;
+  name: string;
+  detail: string;
+}
 
-export interface GalleryContent {
+export interface GalleryPageContent {
   header: PageHeaderContent;
   emptyState: EmptyStateContent;
-  gallery: GalleryItem[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
 
-// ── About ───────────────────────────────────────────────────────────────────
+// ── Page-level: About / FAQ / Contact ───────────────────────────────────────
 
 export interface AboutPageContent {
   header: PageHeaderContent;
   storyEyebrow: string;
   storyHeading: string;
-  about: AboutContent;
+  story: string[];
+  about: { eyebrow: string; headline: string; lede: string };
   valuesHeading: SectionHeadingContent;
-  /** The first half of the "next step" paragraph comes from Site Settings. */
-  next: { heading: string; suffix: string; servicesLabel: string; enquireLabel: string };
+  values: AboutValue[];
+  stats: AboutStat[];
+  next: {
+    heading: string;
+    suffix: string;
+    servicesLabel: string;
+    enquireLabel: string;
+  };
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
 
-// ── FAQ ─────────────────────────────────────────────────────────────────────
+export interface AboutValue {
+  id: string;
+  title: string;
+  detail: string;
+}
 
-export interface FaqContent {
+export interface AboutStat {
+  value: string;
+  label: string;
+}
+
+export interface FaqPageContent {
   header: PageHeaderContent;
   searchPlaceholder: string;
   emptyCopy: string;
   support: { heading: string; body: string; label: string };
-  faqs: Faq[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
-}
-
-// ── Contact ─────────────────────────────────────────────────────────────────
-
-export interface ContactStep {
-  title: string;
-  detail: string;
 }
 
 export interface ContactContent {
@@ -193,7 +223,70 @@ export interface ContactContent {
   seo: PageMeta;
 }
 
-// ── Site settings ───────────────────────────────────────────────────────────
+export interface ContactStep {
+  title: string;
+  detail: string;
+}
+
+// ── Modules ─────────────────────────────────────────────────────────────────
+
+export type BadgeType = "none" | "basic" | "most-popular" | "best-value" | "custom";
+
+/** Canonical display text for the provided badge options. */
+export const BADGE_LABELS: Record<Exclude<BadgeType, "none">, string> = {
+  basic: "Basic",
+  "most-popular": "Most Popular",
+  "best-value": "Best Value",
+  custom: "Custom",
+};
+
+export interface ServiceItem {
+  id: string;
+  name: string;
+  badge?: string;
+  tagline?: string;
+  summary: string;
+  highlights: string[];
+  icon?: "camera" | "users" | "video";
+  image: CmsImage;
+  highlight: boolean;
+}
+
+export interface PackageItem {
+  id: string;
+  name: string;
+  summary: string;
+  durationLabel: string;
+  priceLabel: string;
+  badgeType: BadgeType;
+  customBadge: string;
+  inclusions: string[];
+  image: CmsImage;
+  highlight: boolean;
+}
+
+export interface GalleryItem {
+  id: string;
+  image: CmsImage;
+  caption: string;
+  highlight: boolean;
+}
+
+export interface FaqItem {
+  id: string;
+  question: string;
+  answer: string;
+  highlight: boolean;
+}
+
+export interface CmsModules {
+  services: ServiceItem[];
+  packages: PackageItem[];
+  gallery: GalleryItem[];
+  faqs: FaqItem[];
+}
+
+// ── Settings ────────────────────────────────────────────────────────────────
 
 export interface SocialLink {
   label: string;
@@ -203,30 +296,24 @@ export interface SocialLink {
 export interface SiteSettingsContent {
   brandName: string;
   serviceAreaStatement: string;
-  /** Empty until the client provides the Google Business Profile review URL. */
   reviewUrl: string;
-  /** Placeholder until the client provides the Messenger page destination. */
   messengerUrl: string;
-  /** Empty: no social links are rendered on the public site yet. */
   socials: SocialLink[];
   footerCta: { title: string; lede: string; label: string };
-  sharedImages: {
-    premium: SampleImage;
-    roaming: SampleImage;
-    video360: SampleImage;
-    cta: SampleImage;
-  };
 }
 
 // ── Root ────────────────────────────────────────────────────────────────────
 
 export interface CmsContent {
-  home: HomeContent;
-  services: ServicesContent;
-  packages: PackagesContent;
-  gallery: GalleryContent;
-  about: AboutPageContent;
-  faq: FaqContent;
-  contact: ContactContent;
+  pages: {
+    home: HomePageContent;
+    services: ServicesPageContent;
+    packages: PackagesPageContent;
+    gallery: GalleryPageContent;
+    about: AboutPageContent;
+    faq: FaqPageContent;
+    contact: ContactContent;
+  };
   settings: SiteSettingsContent;
+  modules: CmsModules;
 }

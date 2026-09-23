@@ -1,8 +1,9 @@
 // Shared admin form primitives. Token-backed classes from styles/admin.css
 // (prefix `ad-`), lucide icons, and the inquiry-form error conventions.
 
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import type {
+  ChangeEvent,
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
@@ -19,7 +20,9 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import type { FieldErrors, UseFormRegisterReturn } from "react-hook-form";
+import type { FieldErrors } from "react-hook-form";
+import type { CmsImage } from "../../lib/cms/types";
+import { deleteImage, getImageUrl, IMAGE_ACCEPT, putImage } from "../../lib/cms/images";
 
 /** Flatten RHF nested errors to "path: message" lines for the summary. */
 export function flattenErrors(errors: FieldErrors, prefix = ""): string[] {
@@ -142,33 +145,96 @@ export const AdSelect = forwardRef<HTMLSelectElement, SelectProps>(function AdSe
   );
 });
 
-// ── Image field (URL + alt + optional caption, with live preview) ───────────
+// ── Image upload (file picker + preview, replace/remove) ────────────────────
+//
+// Image content never uses URL typing: admins choose a real local file, which
+// is stored through the image store and previewed immediately. Seeded remote
+// imagery (before its first replacement) previews from its original URL.
 
 interface ImageFieldProps {
   legend: string;
-  srcProps: UseFormRegisterReturn;
-  srcError?: string;
-  altProps: UseFormRegisterReturn;
+  value: CmsImage;
+  onChange: (next: CmsImage) => void;
+  error?: string;
   altError?: string;
-  captionProps?: UseFormRegisterReturn;
-  captionError?: string;
-  previewSrc: string;
+  includeCaption?: boolean;
   hint?: string;
 }
 
 export function ImageField({
   legend,
-  srcProps,
-  srcError,
-  altProps,
+  value,
+  onChange,
+  error,
   altError,
-  captionProps,
-  captionError,
-  previewSrc,
+  includeCaption,
   hint,
 }: ImageFieldProps) {
-  const [broken, setBroken] = useState(false);
-  const showPreview = previewSrc.trim() !== "" && !broken;
+  const [preview, setPreview] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const inputId = `file-${legend.replace(/\s+/g, "-").toLowerCase()}`;
+
+  useEffect(() => {
+    let live = true;
+    if (value.key || value.src) {
+      setLoading(true);
+      const source = value.key ? getImageUrl(value.key) : Promise.resolve(value.src);
+      source
+        .then((url) => {
+          if (live) setPreview(url);
+        })
+        .catch(() => {
+          if (live) setPreview("");
+        })
+        .finally(() => {
+          if (live) setLoading(false);
+        });
+    } else {
+      setPreview("");
+    }
+    return () => {
+      live = false;
+    };
+  }, [value.key, value.src]);
+
+  const onFileSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      setLocalError(null);
+      const id = await putImage(file, "img");
+      const next: CmsImage = {
+        key: id,
+        src: "",
+        alt: value.alt,
+        caption: value.caption,
+      };
+      onChange(next);
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : "Image could not be stored.");
+    }
+  };
+
+  const onRemove = async () => {
+    if (value.key) {
+      try {
+        await deleteImage(value.key);
+      } catch {
+        // Blob removal is best-effort; the record edit proceeds.
+      }
+    }
+    onChange({
+      key: null,
+      src: "",
+      alt: value.alt === value.src ? "" : value.alt,
+      caption: value.caption,
+    });
+  };
+
+  const showPreview = preview !== "" && !loading;
+
   return (
     <fieldset className="ad-image-group">
       <legend className="ad-image-legend">
@@ -180,7 +246,7 @@ export function ImageField({
           className={showPreview ? "ad-image-preview" : "ad-image-preview ad-image-preview--empty"}
         >
           {showPreview ? (
-            <img src={previewSrc} alt="" onError={() => setBroken(true)} />
+            <img src={preview} alt="" />
           ) : (
             <span>
               <ImageIcon size={20} aria-hidden="true" />
@@ -188,40 +254,53 @@ export function ImageField({
           )}
         </div>
         <div className="ad-image-fields">
-          <AdField
-            id={srcProps.name}
-            label="Image URL"
-            required
-            hint="Full URL starting with https://"
-            error={srcError}
-          >
-            <TextInput
-              id={srcProps.name}
-              type="url"
-              inputMode="url"
-              error={srcError}
-              {...srcProps}
+          <div className="ad-image-actions">
+            <label className="ad-button ad-button--secondary" htmlFor={inputId}>
+              <ImageIcon size={16} aria-hidden="true" />
+              {value.key || value.src ? "Replace" : "Upload image"}
+            </label>
+            <input
+              id={inputId}
+              type="file"
+              accept={IMAGE_ACCEPT}
               onChange={(event) => {
-                setBroken(false);
-                srcProps.onChange(event);
+                void onFileSelected(event as ChangeEvent<HTMLInputElement>);
               }}
+              hidden
             />
-          </AdField>
+            {value.key || value.src ? (
+              <button
+                type="button"
+                className="ad-button ad-button--tertiary"
+                onClick={() => void onRemove()}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                Remove
+              </button>
+            ) : null}
+          </div>
+          {localError || error ? <p className="ad-error">{localError ?? error}</p> : null}
           <AdField
-            id={altProps.name}
+            id={`${inputId}-alt`}
             label="Alt text"
             hint="Describes the image for search and screen readers"
             error={altError}
           >
-            <TextInput id={altProps.name} type="text" error={altError} {...altProps} />
+            <TextInput
+              id={`${inputId}-alt`}
+              type="text"
+              value={value.alt}
+              error={altError}
+              onChange={(event) => onChange({ ...value, alt: event.target.value })}
+            />
           </AdField>
-          {captionProps ? (
-            <AdField id={captionProps.name} label="Caption" error={captionError}>
+          {includeCaption ? (
+            <AdField id={`${inputId}-caption`} label="Caption">
               <TextInput
-                id={captionProps.name}
+                id={`${inputId}-caption`}
                 type="text"
-                error={captionError}
-                {...captionProps}
+                value={value.caption ?? ""}
+                onChange={(event) => onChange({ ...value, caption: event.target.value })}
               />
             </AdField>
           ) : null}

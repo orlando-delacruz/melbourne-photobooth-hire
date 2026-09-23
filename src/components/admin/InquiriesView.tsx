@@ -1,17 +1,32 @@
-// Admin inquiries: read-only list of enquiries from the website contact form.
+// Admin inquiries: clickable rows open a detail view with the full record, a
+// Gmail response action and a guarded delete. The list updates in place.
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, Mail, Trash2 } from "lucide-react";
 import {
   adminInquirySource,
   byNewest,
   formatInquiryDate,
   formatInquiryDateTime,
+  gmailComposeUrl,
 } from "../../lib/cms/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
-import { Skeleton } from "./fields";
+import { Notice, Skeleton } from "./fields";
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="ad-detail-row">
+      <dt>{label}</dt>
+      <dd>{value || "-"}</dd>
+    </div>
+  );
+}
 
 export default function InquiriesView() {
   const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [notice, setNotice] = useState<{ tone: "success" | "error"; title: string } | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -23,9 +38,90 @@ export default function InquiriesView() {
     };
   }, []);
 
-  if (!inquiries) return <Skeleton />;
+  const selected = inquiries?.find((inquiry) => inquiry.id === selectedId) ?? null;
 
+  const onDelete = useCallback(async () => {
+    if (!selected) return;
+    if (!window.confirm(`Delete the enquiry from "${selected.name}"? This cannot be undone.`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await adminInquirySource.remove(selected.id);
+      const remaining = await adminInquirySource.list();
+      setInquiries(remaining);
+      setSelectedId(null);
+      setNotice({ tone: "success", title: "Inquiry deleted." });
+    } catch {
+      setNotice({ tone: "error", title: "Could not delete this inquiry. Please try again." });
+    } finally {
+      setDeleting(false);
+    }
+  }, [selected]);
+
+  if (!inquiries) return <Skeleton />;
   const sorted = [...inquiries].sort(byNewest);
+
+  if (selected) {
+    return (
+      <div className="ad-stack">
+        {notice ? <Notice tone={notice.tone} title={notice.title} /> : null}
+        <p>
+          <button
+            type="button"
+            className="ad-button ad-button--secondary"
+            onClick={() => setSelectedId(null)}
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            Back to inquiries
+          </button>
+        </p>
+        <section className="ad-panel" aria-label={`Inquiry from ${selected.name}`}>
+          <div className="ad-panel-head">
+            <div>
+              <h2>{selected.name}</h2>
+              <p className="ad-panel-lede">
+                Submitted {formatInquiryDateTime(selected.submittedAt)}.
+              </p>
+            </div>
+          </div>
+          <dl className="ad-detail-list">
+            <DetailRow label="Email" value={selected.email} />
+            <DetailRow label="Phone" value={selected.mobile ?? ""} />
+            <DetailRow label="Event date" value={formatInquiryDate(selected.eventDate)} />
+            <DetailRow label="Event type" value={selected.eventType ?? ""} />
+            <DetailRow label="Venue" value={selected.venue ?? ""} />
+            <DetailRow label="Guests" value={selected.guests ?? ""} />
+            <DetailRow label="Photobooth" value={selected.photobooth ?? ""} />
+            <DetailRow label="Message" value={selected.message ?? ""} />
+          </dl>
+          <p className="ad-inquiry-actions">
+            <a
+              className="ad-button ad-button--primary"
+              href={gmailComposeUrl(
+                selected.email,
+                `Re: Your photobooth enquiry for ${formatInquiryDate(selected.eventDate)}`,
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Mail size={16} aria-hidden="true" />
+              Respond to Email
+            </a>
+            <button
+              type="button"
+              className="ad-button ad-button--secondary ad-button--danger"
+              onClick={() => void onDelete()}
+              disabled={deleting}
+            >
+              <Trash2 size={16} aria-hidden="true" />
+              {deleting ? "Deleting..." : "Delete inquiry"}
+            </button>
+          </p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <section className="ad-panel" aria-label="All inquiries">
@@ -38,6 +134,7 @@ export default function InquiriesView() {
           </p>
         </div>
       </div>
+      {notice ? <Notice tone={notice.tone} title={notice.title} /> : null}
       {sorted.length === 0 ? (
         <div className="ad-empty">
           <h3>No inquiries yet</h3>
@@ -62,7 +159,19 @@ export default function InquiriesView() {
             </thead>
             <tbody>
               {sorted.map((inquiry) => (
-                <tr key={inquiry.id}>
+                <tr
+                  key={inquiry.id}
+                  className="ad-table-rowlink"
+                  tabIndex={0}
+                  onClick={() => setSelectedId(inquiry.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedId(inquiry.id);
+                    }
+                  }}
+                  aria-label={`View inquiry from ${inquiry.name}`}
+                >
                   <td>{inquiry.name}</td>
                   <td className="ad-hide-sm">{inquiry.email}</td>
                   <td>{formatInquiryDate(inquiry.eventDate)}</td>

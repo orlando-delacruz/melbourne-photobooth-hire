@@ -5,8 +5,10 @@
 import {
   ADMIN_DASHBOARD,
   ADMIN_EXTERNAL_ICON,
-  ADMIN_SECTIONS,
+  CMS_SECTIONS,
+  MODULE_SECTIONS,
   INQUIRIES_SECTION,
+  SETTINGS_SECTION,
 } from "./sections";
 
 interface Props {
@@ -64,9 +66,24 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
           </a>
         </li>
       </ul>
-      <p class="ad-nav-caption">Pages</p>
+      <p class="ad-nav-caption">Website CMS</p>
       <ul class="ad-nav">
-        {ADMIN_SECTIONS.filter((section) => section.key !== "settings").map((section) => (
+        {CMS_SECTIONS.map((section) => (
+          <li>
+            <a
+              href={section.href}
+              class:list={["ad-nav-link", { "ad-nav-link--current": active === section.key }]}
+              aria-current={active === section.key ? "page" : undefined}
+            >
+              <span class="ad-nav-icon" aria-hidden="true" set:html={section.icon} />
+              {section.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <p class="ad-nav-caption">Modules</p>
+      <ul class="ad-nav">
+        {MODULE_SECTIONS.map((section) => (
           <li>
             <a
               href={section.href}
@@ -83,16 +100,15 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
       <ul class="ad-nav">
         <li>
           <a
-            href="/admin/settings"
-            class:list={["ad-nav-link", { "ad-nav-link--current": active === "settings" }]}
-            aria-current={active === "settings" ? "page" : undefined}
+            href={SETTINGS_SECTION.href}
+            class:list={[
+              "ad-nav-link",
+              { "ad-nav-link--current": active === SETTINGS_SECTION.key },
+            ]}
+            aria-current={active === SETTINGS_SECTION.key ? "page" : undefined}
           >
-            <span
-              class="ad-nav-icon"
-              aria-hidden="true"
-              set:html={ADMIN_SECTIONS.find((section) => section.key === "settings")?.icon ?? ""}
-            />
-            Site settings
+            <span class="ad-nav-icon" aria-hidden="true" set:html={SETTINGS_SECTION.icon} />
+            {SETTINGS_SECTION.label}
           </a>
         </li>
       </ul>

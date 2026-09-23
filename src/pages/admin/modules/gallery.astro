@@ -1,0 +1,19 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminShell from "../../../components/admin/AdminShell.astro";
+import GalleryModuleEditor from "../../../components/admin/editors/GalleryModuleEditor";
+import { MODULE_SECTIONS } from "../../../components/admin/sections";
+
+const section = MODULE_SECTIONS.find((item) => item.key === "mod-gallery")!;
+---
+
+<AdminLayout title={`${section.label} module`}>
+  <AdminShell
+    active={section.key}
+    title={`${section.label} module`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <GalleryModuleEditor client:load />
+  </AdminShell>
+</AdminLayout>

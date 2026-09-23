@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader.astro";
 import CtaBand from "../components/CtaBand.astro";
 import GalleryTrigger from "../components/GalleryTrigger.astro";
 import Reveal from "../components/islands/Reveal";
+import CmsEcho from "../components/islands/CmsEcho";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
 import { getContent } from "../lib/content/repository";
 
@@ -41,7 +42,7 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
         {gallery.map((item, index) => (
           <li>
             <Reveal client:visible delay={Math.min(index, 5) * 0.05} variant="blur">
-              <figure class="gallery-item">
+              <figure class="gallery-item" data-cms-id={item.id}>
                 <GalleryTrigger src={item.src} caption={item.caption}>
                   <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
                 </GalleryTrigger>
@@ -68,6 +69,7 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
   />
 
   <GalleryLightbox client:idle />
+  <CmsEcho page="gallery" client:idle />
 </BaseLayout>
 
 <style>

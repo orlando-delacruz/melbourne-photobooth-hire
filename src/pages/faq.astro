@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader.astro";
 import Accordion from "../components/Accordion.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
+import CmsEcho from "../components/islands/CmsEcho";
 import { getContent } from "../lib/content/repository";
 
 const { faqs, ctaImage } = getContent();
@@ -90,6 +91,7 @@ const chatIcon =
     imageSrc={ctaImage?.src}
     imageAlt={ctaImage?.alt}
   />
+  <CmsEcho page="faq" client:idle />
 </BaseLayout>
 
 <script>

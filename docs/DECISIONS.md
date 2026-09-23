@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Seventeen decision records exist (DEC-001 through DEC-017). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Eighteen decision records exist (DEC-001 through DEC-018). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -272,6 +272,7 @@ Seventeen decision records exist (DEC-001 through DEC-017). Existing selections,
 | DEC-015 | Homepage pass 2: no light panels, premium cards, motion  | Accepted   | 2026-09-16 |
 | DEC-016 | SEO technical foundation: domain, canonicals, sitemap    | Accepted   | 2026-09-16 |
 | DEC-017 | CMS frontend: Astro admin routes with local mock store    | Accepted   | 2026-09-22 |
+| DEC-018 | CMS split: page CMS vs item modules + highlights + uploads | Accepted   | 2026-09-23 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -569,6 +570,26 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS-001..013, REQ-CON-001..005), `docs/ROADMAP.md` (Phases 2-4), `docs/ARCHITECTURE.md` (Astro-first, ContentSource seam), `docs/UI-UX.md` (admin flows), `docs/DESIGN-SYSTEM.md` (Section 26 admin system), `docs/DATA-MODEL.md` (CMS modules Confirmation Required).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Supabase adapter replacing the mock repository and inquiry source (Phase 3), including server-side auth gating `/admin` behind the existing `/admin/login` flow; wiring confirmed content into public rendering per surface (Phase 4); client confirmation of prices, testimonials, imagery, review/Messenger links and socials.
+
+### DEC-018 — CMS split: page CMS vs item modules, highlights, uploads, echo
+
+- **ID:** DEC-018
+- **Title:** CMS split: page-level CMS vs dedicated item modules with highlights, file uploads and a public echo
+- **Status:** Accepted
+- **Date:** 2026-09-23
+- **Context:** The frontend-only CMS stored reusable Services/Packages/Gallery/FAQ items inside page sections, images were remote URL strings, inquiries were read-only, and saved admin state never reached public pages. The task requires dedicated modules with CRUD + Highlight On/Off, real file uploads, package badges (Basic/Most Popular/Best Value/custom), inquiry detail/response/delete, and homepage sections driven by highlighted module items — still with no backend.
+- **Decision:**
+  1. **Data split.** `CmsContent.pages` holds page-level copy only; `CmsContent.modules` holds the four item collections with `highlight` flags, package `badgeType`/`customBadge`, and file-backed `CmsImage` values. All current content is seeded into modules (every item highlight ON, badge strings mapped) so the seeded render matches the public site. The public seam builds `SiteContent` from the modules (`cmsSource`), so modules are the source of truth at build as well as in the admin.
+  2. **Uploads without a backend.** New `src/lib/cms/images.ts`: IndexedDB blob store (PNG/JPEG/WebP, 2 MB cap), preview via object URLs, replace/remove, and garbage collection against the previous saved section. Zero new dependencies.
+  3. **Public echo.** A single `CmsEcho` island on the five module-consuming public pages applies saved admin state after first paint (highlight visibility, badge text + Most-Popular featured treatment, uploaded image sources). SSR renders the build-time snapshot, so crawlable content is preserved; the echo is idempotent when nothing was saved. Homepage sections render highlighted module items (services, packages, gallery showcase, first-4 FAQs).
+  4. **Inquiries.** Clickable rows open a detail view (full record), Respond to Email uses the Gmail compose deep link with the sender prefilled, Delete runs a confirmation step and updates the list in place; deletions persist per browser.
+  5. **Navigation.** Sidebar groups exactly as specified: Website CMS (Homepage, Services Page, Packages, Gallery, About, FAQ, Contact) and Modules (Services, Packages, Gallery, FAQs); module routes live under `/admin/modules/*`.
+- **Alternatives considered:** Server-rendered wiring of admin state into public pages — rejected; no backend exists and the site builds statically, so per-browser echo is the truthful minimum. Blob URLs in localStorage instead of IndexedDB — rejected; quota too small for real image files. A second homepage copy of module items — rejected; the requirement forbids it and the echo reads the modules directly.
+- **Rationale:** Smallest architecture that satisfies the module/highlight/upload/badge/inquiry requirements inside the established conventions, with every interface (repository, image store, inquiry source) shaped like its future backend API.
+- **Consequences:** Admin state (edits, uploads, deletions) persists per browser only; uploaded and edited content appears on public pages in the editing browser until the Phase 3 backend. Seed badge labels normalize to canonical display text ("Most Popular", "Best Value").
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS, REQ-CON), `docs/ROADMAP.md` (Phases 2-4), `docs/ARCHITECTURE.md` (Astro-first), `docs/DATA-MODEL.md`, DEC-017 (superseded in part).
+- **Supersedes / Superseded by:** Partially supersedes DEC-017 (standalone-CMS data model, read-only inquiries, URL-based images).
+- **Open questions or follow-up:** Supabase adapter (Phase 3) for content, images, inquiries and auth; client confirmation of all provisional content.
 
 ## 22. Related Documentation
 

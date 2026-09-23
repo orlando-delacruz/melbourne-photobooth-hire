@@ -1,12 +1,11 @@
-// CMS validation schemas: frontend-only phase.
+// CMS validation schemas (DEC-018).
 //
 // Zod v4 schemas mirroring src/lib/cms/types.ts. Messages follow the
-// inquiry-form convention: short, plain-language, field-specific.
-// Prices stay plain strings (for example "$350 total") exactly as rendered.
+// inquiry-form convention: short, plain-language, field-specific. Prices stay
+// plain strings, exactly as rendered.
 
 import * as z from "zod";
-
-const URL_RE = /^https?:\/\/\S+$/i;
+import { IMAGE_MAX_BYTES } from "./images";
 
 /** Short required text such as names, titles and labels. */
 function shortText(label: string, max = 200) {
@@ -31,7 +30,9 @@ function optionalText(max = 500) {
   return z.string().trim().max(max, `Must be ${max} characters or fewer.`).optional();
 }
 
-/** Required URL such as image sources. */
+const URL_RE = /^https?:\/\/\S+$/i;
+
+/** Required URL such as review, Messenger and social links. */
 function requiredUrl(label: string) {
   return z
     .string()
@@ -43,7 +44,7 @@ function requiredUrl(label: string) {
     );
 }
 
-/** Optional URL such as review, Messenger and social links. Empty keeps the matching public element hidden. */
+/** Optional URL such as review, Messenger and social links. Blank keeps the matching public element hidden. */
 function optionalUrl(label: string) {
   return z
     .string()
@@ -55,18 +56,46 @@ function optionalUrl(label: string) {
     );
 }
 
+const imageSchema = z.object({
+  key: z.string().max(120).nullable(),
+  src: z
+    .string()
+    .trim()
+    .max(2000, "Image must be 2000 characters or fewer.")
+    .refine(
+      (value) => value.startsWith("/") || URL_RE.test(value) || value === "",
+      "Image must start with http://, https:// or /.",
+    ),
+  alt: shortText("the image alt text", 300),
+  caption: optionalText(200),
+});
+
+// Packages may ship without an image (the public card does not render one);
+// the field still supports upload/replace/remove like every other image.
+const optionalImageSchema = z.object({
+  key: z.string().max(120).nullish(),
+  src: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine(
+      (value) => value === "" || value.startsWith("/") || URL_RE.test(value),
+      "Image must start with http:// or https://, or be uploaded.",
+    ),
+  alt: z.string().trim().max(300).optional(),
+});
+
 const pageMetaSchema = z.object({
   seoTitle: shortText("the SEO title", 120),
   seoDescription: longText("the meta description", 400),
-  ogImage: requiredUrl("the social share image URL"),
+  ogImage: imageSchema,
 });
 
 const pageHeaderSchema = z.object({
   title: shortText("the page title"),
   eyebrow: shortText("the eyebrow"),
   lede: longText("the introduction", 600),
-  imageSrc: requiredUrl("the header image URL"),
-  imageAlt: shortText("the header image alt text", 300),
+  image: imageSchema,
 });
 
 const sectionHeadingSchema = z.object({
@@ -81,8 +110,7 @@ const ctaBandSchema = z.object({
   lede: longText("the supporting text", 600),
   primaryLabel: shortText("the primary button label", 60),
   secondaryLabel: shortText("the secondary button label", 60),
-  imageSrc: requiredUrl("the image URL"),
-  imageAlt: shortText("the image alt text", 300),
+  image: imageSchema,
 });
 
 const emptyStateSchema = z.object({
@@ -91,95 +119,12 @@ const emptyStateSchema = z.object({
   actionLabel: shortText("the button label", 60),
 });
 
-const sampleImageSchema = z.object({
-  src: requiredUrl("the image URL"),
-  alt: shortText("the image alt text", 300),
-  caption: optionalText(200),
-});
-
-// ── Shared entities (shapes match the public content seam) ──────────────────
-
-const serviceSchema = z.object({
-  id: z.string(),
-  name: shortText("the service name"),
-  badge: optionalText(60),
-  icon: z.enum(["camera", "users", "video"]).optional(),
-  tagline: optionalText(200),
-  summary: longText("the service summary", 1000),
-  highlights: z.array(shortText("each highlight", 200)).max(12),
-});
-
-const packageSchema = z.object({
-  id: z.string(),
-  name: shortText("the package name"),
-  badge: optionalText(60),
-  summary: longText("the package summary", 1000),
-  durationLabel: shortText("the duration", 60),
-  priceLabel: shortText("the price", 60),
-  inclusions: z.array(shortText("each inclusion", 200)).max(30),
-});
-
-const addOnSchema = z.object({
-  id: z.string(),
-  name: shortText("the add-on name"),
-  detail: longText("the add-on detail", 600),
-});
-
-const faqSchema = z.object({
-  id: z.string(),
-  question: shortText("the question", 300),
-  answer: longText("the answer"),
-});
-
-const testimonialSchema = z.object({
-  id: z.string(),
-  quote: longText("the testimonial", 2000),
-  name: shortText("the guest name", 120),
-  eventType: shortText("the event type", 120),
-  rating: z.number().int().min(1).max(5).optional(),
-});
-
-const galleryItemSchema = z.object({
-  id: z.string(),
-  src: requiredUrl("the image URL"),
-  alt: shortText("the image alt text", 300),
-  caption: optionalText(200),
-});
-
-const processStepSchema = z.object({
-  id: z.string(),
-  icon: z.enum(["message", "palette", "sparkles"]).optional(),
-  title: shortText("the step title"),
-  summary: longText("the step summary", 1000),
-});
-
-const heroStatSchema = z.object({
-  value: shortText("the stat value", 40),
-  label: shortText("the stat label", 120),
-  icon: z.enum(["camera", "clock", "qrcode"]).optional(),
-});
-
-const aboutValueSchema = z.object({
-  id: z.string(),
-  title: shortText("the value title"),
-  detail: longText("the value detail", 1000),
-});
-
-const aboutStatSchema = z.object({
-  value: shortText("the stat value", 40),
-  label: shortText("the stat label", 120),
-});
-
-const aboutContentSchema = z.object({
-  eyebrow: shortText("the eyebrow"),
-  headline: shortText("the headline"),
-  lede: longText("the introduction", 600),
-  story: z.array(longText("each story paragraph", 3000)).max(12),
-  values: z.array(aboutValueSchema).max(12),
-  stats: z.array(aboutStatSchema).max(12),
-});
-
 // ── Sections ────────────────────────────────────────────────────────────────
+
+const statSchema = z.object({
+  value: shortText("the stat value", 40),
+  label: shortText("the stat label", 120),
+});
 
 export const homeSchema = z.object({
   hero: z.object({
@@ -188,9 +133,17 @@ export const homeSchema = z.object({
     supporting: longText("the hero supporting text", 600),
     primaryLabel: shortText("the primary button label", 60),
     secondaryLabel: shortText("the secondary button label", 60),
-    backgroundSrc: requiredUrl("the hero image URL"),
-    backgroundAlt: shortText("the hero image alt text", 300),
-    stats: z.array(heroStatSchema).min(1, "Add at least one hero stat.").max(6),
+    background: imageSchema,
+    stats: z
+      .array(
+        z.object({
+          value: shortText("each stat value", 40),
+          label: shortText("each stat label", 120),
+          icon: z.enum(["camera", "clock", "qrcode"]).optional(),
+        }),
+      )
+      .min(1, "Add at least one hero stat.")
+      .max(6),
   }),
   intro: z.object({
     eyebrow: shortText("the eyebrow"),
@@ -206,56 +159,59 @@ export const homeSchema = z.object({
       .max(6),
     aboutLabel: shortText("the button label", 60),
   }),
-  servicesSection: z.object({
-    heading: sectionHeadingSchema,
-    cardCtaLabel: shortText("the card button label", 60),
-  }),
-  showcase: z.object({
-    heading: sectionHeadingSchema,
-    galleryLabel: shortText("the button label", 60),
-    images: z.array(sampleImageSchema).max(12),
-  }),
-  packagesSection: z.object({
-    heading: sectionHeadingSchema,
-    compareLabel: shortText("the button label", 60),
-  }),
-  processSection: z.object({
-    heading: sectionHeadingSchema,
-    steps: z.array(processStepSchema).min(1, "Add at least one step.").max(12),
-  }),
-  reviewsSection: z.object({
-    heading: sectionHeadingSchema,
-    testimonials: z.array(testimonialSchema).max(30),
-  }),
-  faqSection: z.object({
-    heading: sectionHeadingSchema,
-    readAllLabel: shortText("the button label", 60),
-  }),
-  eventTypesSection: z.object({
-    heading: sectionHeadingSchema,
-    eventTypes: z
-      .array(shortText("each event type", 80))
-      .min(1, "Add at least one event type.")
-      .max(30),
-  }),
+  servicesHeading: sectionHeadingSchema,
+  servicesCardLabel: shortText("the card button label", 60),
+  showcaseHeading: sectionHeadingSchema,
+  showcaseLabel: shortText("the button label", 60),
+  packagesHeading: sectionHeadingSchema,
+  packagesCompareLabel: shortText("the button label", 60),
+  processHeading: sectionHeadingSchema,
+  steps: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: shortText("the step title"),
+        summary: longText("the step summary", 1000),
+        icon: z.enum(["message", "palette", "sparkles"]).optional(),
+      }),
+    )
+    .min(1, "Add at least one step.")
+    .max(12),
+  reviewsHeading: sectionHeadingSchema,
+  testimonials: z
+    .array(
+      z.object({
+        id: z.string(),
+        quote: longText("the testimonial", 2000),
+        name: shortText("the guest name", 120),
+        eventType: shortText("the event type", 120),
+        rating: z.number().int().min(1).max(5).optional(),
+      }),
+    )
+    .max(30),
+  faqHeading: sectionHeadingSchema,
+  faqCtaLabel: shortText("the button label", 60),
+  eventTypesHeading: sectionHeadingSchema,
+  eventTypes: z
+    .array(shortText("each event type", 80))
+    .min(1, "Add at least one event type.")
+    .max(30),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
 
-export const servicesSchema = z.object({
+export const servicesPageSchema = z.object({
   header: pageHeaderSchema,
-  services: z.array(serviceSchema).min(1, "Add at least one service.").max(12),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
 
-export const packagesSchema = z.object({
+export const packagesPageSchema = z.object({
   header: pageHeaderSchema,
   plansHeading: sectionHeadingSchema,
   emptyState: emptyStateSchema,
   footNote: longText("the note below the plans", 600),
   checkDateLabel: shortText("the button label", 60),
-  packages: z.array(packageSchema).min(1, "Add at least one package.").max(12),
   included: z.object({
     eyebrow: shortText("the eyebrow"),
     heading: shortText("the heading"),
@@ -263,7 +219,15 @@ export const packagesSchema = z.object({
     standardItems: z.array(shortText("each inclusion", 200)).max(30),
   }),
   addonsHeading: sectionHeadingSchema,
-  addOns: z.array(addOnSchema).max(20),
+  addOns: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: shortText("the add-on name"),
+        detail: longText("the add-on detail", 600),
+      }),
+    )
+    .max(20),
   policies: z.object({
     eyebrow: shortText("the eyebrow"),
     heading: shortText("the heading"),
@@ -274,20 +238,34 @@ export const packagesSchema = z.object({
   seo: pageMetaSchema,
 });
 
-export const gallerySchema = z.object({
+export const galleryPageSchema = z.object({
   header: pageHeaderSchema,
   emptyState: emptyStateSchema,
-  gallery: z.array(galleryItemSchema).max(60),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
 
-export const aboutSchema = z.object({
+export const aboutPageSchema = z.object({
   header: pageHeaderSchema,
   storyEyebrow: shortText("the eyebrow"),
   storyHeading: shortText("the story heading"),
-  about: aboutContentSchema,
+  story: z.array(longText("each story paragraph", 3000)).max(12),
+  about: z.object({
+    eyebrow: shortText("the eyebrow"),
+    headline: shortText("the headline"),
+    lede: longText("the introduction", 600),
+  }),
   valuesHeading: sectionHeadingSchema,
+  values: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: shortText("the value title"),
+        detail: longText("the value detail", 1000),
+      }),
+    )
+    .max(12),
+  stats: z.array(statSchema).max(12),
   next: z.object({
     heading: shortText("the heading"),
     suffix: shortText("the closing line", 200),
@@ -307,7 +285,6 @@ export const faqPageSchema = z.object({
     body: longText("the supporting text", 600),
     label: shortText("the button label", 60),
   }),
-  faqs: z.array(faqSchema).max(60),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
@@ -351,10 +328,74 @@ export const settingsSchema = z.object({
     lede: longText("the footer text", 400),
     label: shortText("the button label", 60),
   }),
-  sharedImages: z.object({
-    premium: sampleImageSchema,
-    roaming: sampleImageSchema,
-    video360: sampleImageSchema,
-    cta: sampleImageSchema,
-  }),
 });
+
+// ── Modules ─────────────────────────────────────────────────────────────────
+
+export const servicesModuleSchema = z
+  .array(
+    z.object({
+      id: z.string(),
+      name: shortText("the service name"),
+      badge: optionalText(60),
+      tagline: optionalText(200),
+      summary: longText("the service summary", 1000),
+      highlights: z.array(shortText("each highlight", 200)).max(12),
+      icon: z.enum(["camera", "users", "video"]).optional(),
+      image: imageSchema,
+      highlight: z.boolean(),
+    }),
+  )
+  .min(1, "Add at least one service.");
+
+export const packagesModuleSchema = z
+  .array(
+    z
+      .object({
+        id: z.string(),
+        name: shortText("the package name"),
+        summary: longText("the package summary", 1000),
+        durationLabel: shortText("the duration", 60),
+        priceLabel: shortText("the price", 60),
+        badgeType: z.enum(["none", "basic", "most-popular", "best-value", "custom"]),
+        customBadge: shortText("the custom badge text", 60),
+        inclusions: z.array(shortText("each inclusion", 200)).max(30),
+        image: optionalImageSchema,
+        highlight: z.boolean(),
+      })
+      .superRefine((value, ctx) => {
+        if (value.badgeType === "custom" && value.customBadge.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            path: ["customBadge"],
+            message: "Enter the custom badge text, or choose a built-in badge.",
+          });
+        }
+      }),
+  )
+  .min(1, "Add at least one package.");
+
+export const galleryModuleSchema = z
+  .array(
+    z.object({
+      id: z.string(),
+      image: imageSchema,
+      caption: optionalText(200),
+      highlight: z.boolean(),
+    }),
+  )
+  .max(60);
+
+export const faqsModuleSchema = z
+  .array(
+    z.object({
+      id: z.string(),
+      question: shortText("the question", 300),
+      answer: longText("the answer"),
+      highlight: z.boolean(),
+    }),
+  )
+  .max(60);
+
+/** Re-exported for editors: image meta plus the max size from the store. */
+export { IMAGE_MAX_BYTES };

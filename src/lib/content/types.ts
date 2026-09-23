@@ -15,6 +15,8 @@ export interface Service {
   tagline?: string;
   highlights?: string[];
   icon?: "camera" | "users" | "video";
+  /** False when an admin highlight toggle removes the item from homepage sections. */
+  highlight?: boolean;
 }
 
 export interface Package {
@@ -25,6 +27,10 @@ export interface Package {
   priceLabel: string;
   inclusions: string[];
   badge?: string;
+  /** Data-driven emphasis: true only for the Most Popular badge type. */
+  featured?: boolean;
+  /** False when an admin highlight toggle removes the item from homepage sections. */
+  highlight?: boolean;
 }
 
 export interface AddOn {
@@ -58,12 +64,16 @@ export interface GalleryItem {
   src: string;
   alt: string;
   caption?: string;
+  /** False when an admin highlight toggle removes the item from the homepage showcase. */
+  highlight?: boolean;
 }
 
 export interface Faq {
   id: string;
   question: string;
   answer: string;
+  /** False when an admin highlight toggle removes the item from the homepage teaser. */
+  highlight?: boolean;
 }
 
 export interface SiteSettings {

@@ -1,11 +1,10 @@
-// Home page editor: hero, intro, section headings, showcase, process steps,
-// reviews, event types, call-to-action band and SEO metadata. The service,
-// package and FAQ lists shown on the homepage are edited under their own
-// sections; this editor owns the home-only copy around them.
+// Home page editor (Website CMS): hero, intro, headings, steps, reviews and
+// event types. The services, packages, showcase images and FAQ items shown on
+// the homepage are managed in Modules; this editor owns the home-only copy.
 
 import { useFieldArray } from "react-hook-form";
 import { homeSchema } from "../../../lib/cms/schemas";
-import { createId, slugId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/repository";
 import SaveBar from "../SaveBar";
 import {
   AdField,
@@ -32,6 +31,7 @@ import {
   optionalSelect,
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import type { CmsImage } from "../../../lib/cms/types";
 
 export default function HomeEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -48,12 +48,11 @@ export default function HomeEditor() {
 
   const stats = useFieldArray({ control, name: "hero.stats" });
   const promises = useFieldArray({ control, name: "intro.promises" });
-  const showcase = useFieldArray({ control, name: "showcase.images" });
-  const steps = useFieldArray({ control, name: "processSection.steps" });
-  const testimonials = useFieldArray({ control, name: "reviewsSection.testimonials" });
+  const steps = useFieldArray({ control, name: "steps" });
+  const testimonials = useFieldArray({ control, name: "testimonials" });
 
-  const eventTypesPath = "eventTypesSection.eventTypes" as const;
-  const eventTypes = watch(eventTypesPath) ?? [];
+  const eventTypesPath = "eventTypes" as const;
+  const eventTypes = (watch(eventTypesPath) as string[]) ?? [];
   const commitEventTypes = (next: string[]) =>
     setValue(eventTypesPath, next, { shouldDirty: true, shouldValidate: true });
   const moveEventType = (index: number, direction: -1 | 1) => {
@@ -71,6 +70,8 @@ export default function HomeEditor() {
     if (window.confirm(`Remove "${label}"?`)) remove();
   };
 
+  const heroImage = (watch("hero.background") as CmsImage) ?? { key: null, src: "", alt: "" };
+
   return (
     <form onSubmit={handleSubmit(onSave, onInvalid)} noValidate aria-label="Home page editor">
       {notice ? (
@@ -81,11 +82,20 @@ export default function HomeEditor() {
 
       <Panel title="Hero" lede="Top of the homepage: headline, supporting text, buttons and stats.">
         <div className="ad-grid-2">
-          <AdField id="hero-eyebrow" label="Eyebrow" required error={errMsg(errors.hero?.eyebrow)}>
+          <AdField
+            id="hero-eyebrow"
+            label="Eyebrow"
+            required
+            error={errMsg(
+              (errors as never as { hero?: { eyebrow?: { message?: string } } }).hero?.eyebrow,
+            )}
+          >
             <TextInput
               id="hero-eyebrow"
               type="text"
-              error={errMsg(errors.hero?.eyebrow)}
+              error={errMsg(
+                (errors as never as { hero?: { eyebrow?: { message?: string } } }).hero?.eyebrow,
+              )}
               {...register("hero.eyebrow")}
             />
           </AdField>
@@ -93,12 +103,16 @@ export default function HomeEditor() {
             id="hero-headline"
             label="Headline"
             required
-            error={errMsg(errors.hero?.headline)}
+            error={errMsg(
+              (errors as never as { hero?: { headline?: { message?: string } } }).hero?.headline,
+            )}
           >
             <TextInput
               id="hero-headline"
               type="text"
-              error={errMsg(errors.hero?.headline)}
+              error={errMsg(
+                (errors as never as { hero?: { headline?: { message?: string } } }).hero?.headline,
+              )}
               {...register("hero.headline")}
             />
           </AdField>
@@ -107,12 +121,17 @@ export default function HomeEditor() {
           id="hero-supporting"
           label="Supporting text"
           required
-          error={errMsg(errors.hero?.supporting)}
+          error={errMsg(
+            (errors as never as { hero?: { supporting?: { message?: string } } }).hero?.supporting,
+          )}
         >
           <TextArea
             id="hero-supporting"
             rows={3}
-            error={errMsg(errors.hero?.supporting)}
+            error={errMsg(
+              (errors as never as { hero?: { supporting?: { message?: string } } }).hero
+                ?.supporting,
+            )}
             {...register("hero.supporting")}
           />
         </AdField>
@@ -121,12 +140,18 @@ export default function HomeEditor() {
             id="hero-primary"
             label="Primary button label"
             required
-            error={errMsg(errors.hero?.primaryLabel)}
+            error={errMsg(
+              (errors as never as { hero?: { primaryLabel?: { message?: string } } }).hero
+                ?.primaryLabel,
+            )}
           >
             <TextInput
               id="hero-primary"
               type="text"
-              error={errMsg(errors.hero?.primaryLabel)}
+              error={errMsg(
+                (errors as never as { hero?: { primaryLabel?: { message?: string } } }).hero
+                  ?.primaryLabel,
+              )}
               {...register("hero.primaryLabel")}
             />
           </AdField>
@@ -134,23 +159,28 @@ export default function HomeEditor() {
             id="hero-secondary"
             label="Secondary button label"
             required
-            error={errMsg(errors.hero?.secondaryLabel)}
+            error={errMsg(
+              (errors as never as { hero?: { secondaryLabel?: { message?: string } } }).hero
+                ?.secondaryLabel,
+            )}
           >
             <TextInput
               id="hero-secondary"
               type="text"
-              error={errMsg(errors.hero?.secondaryLabel)}
+              error={errMsg(
+                (errors as never as { hero?: { secondaryLabel?: { message?: string } } }).hero
+                  ?.secondaryLabel,
+              )}
               {...register("hero.secondaryLabel")}
             />
           </AdField>
         </div>
         <ImageField
           legend="Hero background image."
-          srcProps={register("hero.backgroundSrc")}
-          srcError={errMsg(errors.hero?.backgroundSrc)}
-          altProps={register("hero.backgroundAlt")}
-          altError={errMsg(errors.hero?.backgroundAlt)}
-          previewSrc={String(watch("hero.backgroundSrc") ?? "")}
+          value={heroImage}
+          onChange={(next) => setValue("hero.background", next, { shouldDirty: true })}
+          error={errorAt(errors, "hero.background")}
+          altError={errorAt(errors, "hero.background.alt")}
         />
         <ArraySection
           title="Hero stats"
@@ -173,7 +203,7 @@ export default function HomeEditor() {
                 onMoveUp={() => stats.move(index, index - 1)}
                 onMoveDown={() => stats.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("hero.stats");
+                  const current = getValues("hero.stats") as { value: string; label: string }[];
                   stats.insert(index + 1, { ...current[index] });
                 }}
                 onRemove={() => confirmRemove(String(title), () => stats.remove(index))}
@@ -226,27 +256,37 @@ export default function HomeEditor() {
       </Panel>
 
       <Panel title="Intro" lede="The experience section below the hero.">
-        <AdField id="intro-eyebrow" label="Eyebrow" required error={errMsg(errors.intro?.eyebrow)}>
+        <AdField
+          id="intro-eyebrow"
+          label="Eyebrow"
+          required
+          error={errorAt(errors, "intro.eyebrow")}
+        >
           <TextInput
             id="intro-eyebrow"
             type="text"
-            error={errMsg(errors.intro?.eyebrow)}
+            error={errorAt(errors, "intro.eyebrow")}
             {...register("intro.eyebrow")}
           />
         </AdField>
-        <AdField id="intro-heading" label="Heading" required error={errMsg(errors.intro?.heading)}>
+        <AdField
+          id="intro-heading"
+          label="Heading"
+          required
+          error={errorAt(errors, "intro.heading")}
+        >
           <TextInput
             id="intro-heading"
             type="text"
-            error={errMsg(errors.intro?.heading)}
+            error={errorAt(errors, "intro.heading")}
             {...register("intro.heading")}
           />
         </AdField>
-        <AdField id="intro-body" label="Body text" required error={errMsg(errors.intro?.body)}>
+        <AdField id="intro-body" label="Body text" required error={errorAt(errors, "intro.body")}>
           <TextArea
             id="intro-body"
             rows={4}
-            error={errMsg(errors.intro?.body)}
+            error={errorAt(errors, "intro.body")}
             {...register("intro.body")}
           />
         </AdField>
@@ -271,7 +311,10 @@ export default function HomeEditor() {
                 onMoveUp={() => promises.move(index, index - 1)}
                 onMoveDown={() => promises.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("intro.promises");
+                  const current = getValues("intro.promises") as {
+                    title: string;
+                    detail: string;
+                  }[];
                   promises.insert(index + 1, { ...current[index] });
                 }}
                 onRemove={() => confirmRemove(String(title), () => promises.remove(index))}
@@ -310,12 +353,12 @@ export default function HomeEditor() {
           id="intro-about"
           label="About button label"
           required
-          error={errMsg(errors.intro?.aboutLabel)}
+          error={errorAt(errors, "intro.aboutLabel")}
         >
           <TextInput
             id="intro-about"
             type="text"
-            error={errMsg(errors.intro?.aboutLabel)}
+            error={errorAt(errors, "intro.aboutLabel")}
             {...register("intro.aboutLabel")}
           />
         </AdField>
@@ -323,103 +366,66 @@ export default function HomeEditor() {
 
       <Panel
         title="Services section"
-        lede="Heading and card button. The service list itself is edited under Services."
+        lede="Heading and card button. The service list comes from the Services module."
       >
-        <SectionHeadingGroup prefix="servicesSection.heading" register={register} errors={errors} />
+        <SectionHeadingGroup prefix="servicesHeading" register={register} errors={errors} />
         <AdField
           id="services-card-cta"
           label="Card button label"
           required
-          error={errMsg(errors.servicesSection?.cardCtaLabel)}
+          error={errorAt(errors, "servicesCardLabel")}
         >
           <TextInput
             id="services-card-cta"
             type="text"
-            error={errMsg(errors.servicesSection?.cardCtaLabel)}
-            {...register("servicesSection.cardCtaLabel")}
+            error={errorAt(errors, "servicesCardLabel")}
+            {...register("servicesCardLabel")}
           />
         </AdField>
       </Panel>
 
-      <Panel title="Showcase" lede="Styled-moments image row linking to the gallery.">
-        <SectionHeadingGroup prefix="showcase.heading" register={register} errors={errors} />
+      <Panel
+        title="Showcase"
+        lede="Heading and link. The images come from highlighted Gallery items."
+      >
+        <SectionHeadingGroup prefix="showcaseHeading" register={register} errors={errors} />
         <AdField
           id="showcase-label"
           label="Gallery button label"
           required
-          error={errMsg(errors.showcase?.galleryLabel)}
+          error={errorAt(errors, "showcaseLabel")}
         >
           <TextInput
             id="showcase-label"
             type="text"
-            error={errMsg(errors.showcase?.galleryLabel)}
-            {...register("showcase.galleryLabel")}
+            error={errorAt(errors, "showcaseLabel")}
+            {...register("showcaseLabel")}
           />
         </AdField>
-        <ArraySection
-          title="Showcase images"
-          count={showcase.fields.length}
-          addLabel="Add image"
-          onAdd={() => showcase.append({ src: "", alt: "", caption: "" })}
-          emptyTitle="No showcase images"
-          emptyBody="Showcase images appear in a row; each links to the gallery."
-        >
-          {showcase.fields.map((field, index) => {
-            const base = `showcase.images.${index}` as const;
-            const caption = watch(`${base}.caption`) || `Image ${index + 1}`;
-            return (
-              <ItemCard
-                key={field.id}
-                index={index}
-                title={String(caption)}
-                disableUp={index === 0}
-                disableDown={index === showcase.fields.length - 1}
-                onMoveUp={() => showcase.move(index, index - 1)}
-                onMoveDown={() => showcase.move(index, index + 1)}
-                onDuplicate={() => {
-                  const current = getValues("showcase.images");
-                  showcase.insert(index + 1, { ...current[index] });
-                }}
-                onRemove={() => confirmRemove(String(caption), () => showcase.remove(index))}
-              >
-                <ImageField
-                  legend="Showcase image."
-                  srcProps={register(`${base}.src`)}
-                  srcError={errorAt(errors, `${base}.src`)}
-                  altProps={register(`${base}.alt`)}
-                  altError={errorAt(errors, `${base}.alt`)}
-                  captionProps={register(`${base}.caption`)}
-                  captionError={errorAt(errors, `${base}.caption`)}
-                  previewSrc={String(watch(`${base}.src`) ?? "")}
-                />
-              </ItemCard>
-            );
-          })}
-        </ArraySection>
       </Panel>
 
       <Panel
         title="Packages section"
-        lede="Heading and link. The package cards are edited under Packages."
+        lede="Heading and link. The package cards come from the Packages module."
       >
-        <SectionHeadingGroup prefix="packagesSection.heading" register={register} errors={errors} />
+        <SectionHeadingGroup prefix="packagesHeading" register={register} errors={errors} />
         <AdField
           id="packages-compare"
           label="Compare button label"
           required
-          error={errMsg(errors.packagesSection?.compareLabel)}
+          error={errorAt(errors, "packagesCompareLabel")}
         >
           <TextInput
             id="packages-compare"
             type="text"
-            error={errMsg(errors.packagesSection?.compareLabel)}
-            {...register("packagesSection.compareLabel")}
+            error={errorAt(errors, "packagesCompareLabel")}
+            {...register("packagesCompareLabel")}
           />
         </AdField>
       </Panel>
 
       <Panel title="Process steps" lede="The three steps from enquiry to celebration.">
-        <SectionHeadingGroup prefix="processSection.heading" register={register} errors={errors} />
+        <SectionHeadingGroup prefix="processHeading" register={register} errors={errors} />
         <ArraySection
           title="Steps"
           count={steps.fields.length}
@@ -429,7 +435,7 @@ export default function HomeEditor() {
           emptyBody="Add at least one step; the homepage shows them in order."
         >
           {steps.fields.map((field, index) => {
-            const base = `processSection.steps.${index}` as const;
+            const base = `steps.${index}` as const;
             const title = watch(`${base}.title`) || `Step ${index + 1}`;
             return (
               <ItemCard
@@ -442,10 +448,15 @@ export default function HomeEditor() {
                 onMoveUp={() => steps.move(index, index - 1)}
                 onMoveDown={() => steps.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("processSection.steps");
+                  const current = getValues("steps") as {
+                    id: string;
+                    title: string;
+                    summary: string;
+                  }[];
+                  const source = current[index];
                   steps.insert(index + 1, {
-                    ...current[index],
-                    id: slugId(current[index].title || "step", "step"),
+                    ...source,
+                    id: (source.id ?? "").includes("-") ? source.id : createId("step"),
                   });
                 }}
                 onRemove={() => confirmRemove(String(title), () => steps.remove(index))}
@@ -496,7 +507,7 @@ export default function HomeEditor() {
       </Panel>
 
       <Panel title="Reviews" lede="Testimonials shown in the homepage marquee.">
-        <SectionHeadingGroup prefix="reviewsSection.heading" register={register} errors={errors} />
+        <SectionHeadingGroup prefix="reviewsHeading" register={register} errors={errors} />
         <ArraySection
           title="Testimonials"
           count={testimonials.fields.length}
@@ -508,7 +519,7 @@ export default function HomeEditor() {
           emptyBody="The reviews section is hidden while the list is empty."
         >
           {testimonials.fields.map((field, index) => {
-            const base = `reviewsSection.testimonials.${index}` as const;
+            const base = `testimonials.${index}` as const;
             const name = watch(`${base}.name`) || `Testimonial ${index + 1}`;
             return (
               <ItemCard
@@ -521,10 +532,16 @@ export default function HomeEditor() {
                 onMoveUp={() => testimonials.move(index, index - 1)}
                 onMoveDown={() => testimonials.move(index, index + 1)}
                 onDuplicate={() => {
-                  const current = getValues("reviewsSection.testimonials");
+                  const current = getValues("testimonials") as {
+                    id: string;
+                    quote: string;
+                    name: string;
+                    eventType: string;
+                  }[];
+                  const source = current[index];
                   testimonials.insert(index + 1, {
-                    ...current[index],
-                    id: slugId(current[index].name || "testimonial", "testimonial"),
+                    ...source,
+                    id: `${source.id}${source.id.endsWith("-dup") ? "" : "-dup"}`,
                   });
                 }}
                 onRemove={() => confirmRemove(String(name), () => testimonials.remove(index))}
@@ -598,30 +615,26 @@ export default function HomeEditor() {
 
       <Panel
         title="FAQ teaser"
-        lede="Heading and link. The questions are edited under FAQ; the homepage shows the first four."
+        lede="Heading and link. The FAQ page shows all highlighted questions; the homepage shows the first four."
       >
-        <SectionHeadingGroup prefix="faqSection.heading" register={register} errors={errors} />
+        <SectionHeadingGroup prefix="faqHeading" register={register} errors={errors} />
         <AdField
           id="faq-read-all"
           label="Read-all button label"
           required
-          error={errMsg(errors.faqSection?.readAllLabel)}
+          error={errorAt(errors, "faqCtaLabel")}
         >
           <TextInput
             id="faq-read-all"
             type="text"
-            error={errMsg(errors.faqSection?.readAllLabel)}
-            {...register("faqSection.readAllLabel")}
+            error={errorAt(errors, "faqCtaLabel")}
+            {...register("faqCtaLabel")}
           />
         </AdField>
       </Panel>
 
       <Panel title="Event types" lede="Occasion chips shown at the bottom of the homepage.">
-        <SectionHeadingGroup
-          prefix="eventTypesSection.heading"
-          register={register}
-          errors={errors}
-        />
+        <SectionHeadingGroup prefix="eventTypesHeading" register={register} errors={errors} />
         <StringList
           label="Event type"
           addLabel="Add event type"
@@ -644,14 +657,26 @@ export default function HomeEditor() {
       </Panel>
 
       <Panel title="Call to action" lede="Closing enquiry band on the homepage.">
-        <CtaBandGroup prefix="ctaBand" register={register} errors={errors} watch={watch} />
+        <CtaBandGroup
+          prefix="ctaBand"
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
       </Panel>
 
       <Panel
         title="SEO"
         lede="Search result title, description and social share image for the homepage."
       >
-        <SeoGroup prefix="seo" register={register} errors={errors} />
+        <SeoGroup
+          prefix="seo"
+          register={register}
+          errors={errors}
+          watch={watch}
+          setValue={setValue}
+        />
       </Panel>
 
       <SaveBar
