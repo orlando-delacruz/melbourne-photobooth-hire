@@ -11,6 +11,7 @@ import type { StoreSectionKey } from "../../lib/cms/types";
 import type { SectionMeta } from "../../lib/cms/repository";
 import { cmsRepository } from "../../lib/cms/repository";
 import { firstErrorPath, flattenErrors } from "./fields";
+import { confirmDiscardChanges, confirmResetSection, notifyError, notifySuccess } from "./alerts";
 
 export interface EditorNotice {
   tone: "success" | "error";
@@ -79,18 +80,13 @@ export function useSectionEditor<K extends StoreSectionKey>(
       .then(({ savedAt: at }) => {
         reset(values);
         setSavedAt(at);
-        setNotice({
-          tone: "success",
-          title: "Section saved.",
-          body: "Your changes are saved and ready to publish.",
-        });
+        void notifySuccess("Section saved.");
       })
       .catch(() => {
-        setNotice({
-          tone: "error",
-          title: "Could not save this section.",
-          body: "Your edits are still in the form. Please try again.",
-        });
+        void notifyError(
+          "Could not save this section.",
+          "Your edits are still in the form. Please try again.",
+        );
       })
       .finally(() => setSaving(false));
   }, [form, reset, section]);
@@ -120,29 +116,28 @@ export function useSectionEditor<K extends StoreSectionKey>(
 
   const onDiscard = useCallback(() => {
     if (!loaded) return;
-    if (window.confirm("Discard unsaved changes and reload the saved values?")) {
+    void confirmDiscardChanges().then((confirmed) => {
+      if (!confirmed) return;
       reset(loaded as never);
       setNotice(null);
-    }
+    });
   }, [loaded, reset]);
 
   const onResetSection = useCallback(() => {
-    if (
-      window.confirm(
-        "Reset this section to the original website content? Saved edits for this section will be removed.",
-      )
-    ) {
-      cmsRepository.resetSection(section).then((value) => {
-        setLoaded(value);
-        reset(value as never);
-        setSavedAt(null);
-        setNotice({
-          tone: "success",
-          title: "Section reset.",
-          body: "This section now matches the original website content.",
+    void confirmResetSection().then((confirmed) => {
+      if (!confirmed) return;
+      cmsRepository
+        .resetSection(section)
+        .then((value) => {
+          setLoaded(value);
+          reset(value as never);
+          setSavedAt(null);
+          void notifySuccess("Section reset.");
+        })
+        .catch(() => {
+          void notifyError("Could not reset this section.", "Please try again.");
         });
-      });
-    }
+    });
   }, [reset, section]);
 
   return {

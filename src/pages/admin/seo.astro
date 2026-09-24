@@ -1,0 +1,18 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import SeoEditor from "../../components/admin/editors/SeoEditor";
+import { SEO_SECTION } from "../../components/admin/sections";
+---
+
+<AdminLayout title={`${SEO_SECTION.label} module`}>
+  <AdminShell
+    active={SEO_SECTION.key}
+    title={SEO_SECTION.label}
+    heading={`${SEO_SECTION.label} module`}
+    lede={SEO_SECTION.blurb}
+    publicHref={SEO_SECTION.publicHref}
+  >
+    <SeoEditor client:load />
+  </AdminShell>
+</AdminLayout>

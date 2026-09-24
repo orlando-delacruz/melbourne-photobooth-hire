@@ -10,7 +10,8 @@ const section = MODULE_SECTIONS.find((item) => item.key === "mod-packages")!;
 <AdminLayout title={`${section.label} module`}>
   <AdminShell
     active={section.key}
-    title={`${section.label} module`}
+    title={section.label}
+    heading={`${section.label} module`}
     lede={section.blurb}
     publicHref={section.publicHref}
   >

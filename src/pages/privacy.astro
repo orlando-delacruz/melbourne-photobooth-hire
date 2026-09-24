@@ -1,11 +1,24 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
+import { getPageSeo } from "../lib/content/cmsSource";
+
+const seo = getPageSeo("privacy");
 ---
 
 <BaseLayout
-  title="Privacy Policy | Melbourne Photobooth Hire"
-  description="How Melbourne Photobooth Hire collects, uses, stores and protects the personal information you share through this website."
+  title={seo.seoTitle || "Privacy Policy | Melbourne Photobooth Hire"}
+  description={
+    seo.seoDescription ||
+    "How Melbourne Photobooth Hire collects, uses, stores and protects the personal information you share through this website."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
     title="Privacy Policy"

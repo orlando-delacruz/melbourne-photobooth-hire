@@ -1,11 +1,24 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
+import { getPageSeo } from "../lib/content/cmsSource";
+
+const seo = getPageSeo("terms");
 ---
 
 <BaseLayout
-  title="Terms & Conditions | Melbourne Photobooth Hire"
-  description="The terms and conditions that apply to photobooth hire with Melbourne Photobooth Hire, including bookings, deposits, rescheduling and venue requirements."
+  title={seo.seoTitle || "Terms & Conditions | Melbourne Photobooth Hire"}
+  description={
+    seo.seoDescription ||
+    "The terms and conditions that apply to photobooth hire with Melbourne Photobooth Hire, including bookings, deposits, rescheduling and venue requirements."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
     title="Terms &amp; Conditions"

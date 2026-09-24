@@ -11,12 +11,12 @@ import {
   PageHeaderGroup,
   Panel,
   SectionHeadingGroup,
-  SeoGroup,
   StringList,
   errMsg,
   errorAt,
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import { confirmDestructive } from "../alerts";
 
 export default function AboutEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -50,7 +50,11 @@ export default function AboutEditor() {
   if (!loaded) return <Skeleton />;
 
   const confirmRemove = (label: string, remove: () => void) => {
-    if (window.confirm(`Remove "${label}"?`)) remove();
+    void confirmDestructive({ title: `Remove "${label}"?`, confirmText: "Remove" }).then(
+      (confirmed) => {
+        if (confirmed) remove();
+      },
+    );
   };
 
   return (
@@ -101,9 +105,12 @@ export default function AboutEditor() {
           }}
           onAdd={() => commitStory([...story, ""])}
           onRemove={(index) => {
-            if (window.confirm(`Remove paragraph ${index + 1}?`)) {
-              commitStory(story.filter((_, i) => i !== index));
-            }
+            void confirmDestructive({
+              title: `Remove paragraph ${index + 1}?`,
+              confirmText: "Remove",
+            }).then((confirmed) => {
+              if (confirmed) commitStory(story.filter((_, i) => i !== index));
+            });
           }}
           onMove={moveStory}
         />
@@ -290,13 +297,6 @@ export default function AboutEditor() {
 
       <Panel title="Call to action" lede="Closing enquiry band on the about page.">
         <CtaBandGroup prefix="ctaBand" register={register} errors={errors} watch={watch} />
-      </Panel>
-
-      <Panel
-        title="SEO"
-        lede="Search result title, description and social share image for the about page."
-      >
-        <SeoGroup prefix="seo" register={register} errors={errors} />
       </Panel>
 
       <SaveBar

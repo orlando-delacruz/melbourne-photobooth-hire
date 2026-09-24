@@ -5,7 +5,12 @@ import InquiriesView from "../../components/admin/InquiriesView";
 ---
 
 <AdminLayout title="Inquiries">
-  <AdminShell active="inquiries" title="Inquiries" lede="Enquiries from the website contact form.">
+  <AdminShell
+    active="inquiries"
+    title="Inquiries"
+    heading="Enquiries"
+    lede="Enquiries from the website contact form."
+  >
     <InquiriesView client:load />
   </AdminShell>
 </AdminLayout>

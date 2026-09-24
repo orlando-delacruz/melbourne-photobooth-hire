@@ -11,7 +11,8 @@ import {
   gmailComposeUrl,
 } from "../../lib/cms/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
-import { Notice, Skeleton } from "./fields";
+import { Skeleton } from "./fields";
+import { confirmDelete, notifyError, notifySuccess } from "./alerts";
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
@@ -26,7 +27,6 @@ export default function InquiriesView() {
   const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [notice, setNotice] = useState<{ tone: "success" | "error"; title: string } | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -42,7 +42,7 @@ export default function InquiriesView() {
 
   const onDelete = useCallback(async () => {
     if (!selected) return;
-    if (!window.confirm(`Delete the enquiry from "${selected.name}"? This cannot be undone.`)) {
+    if (!(await confirmDelete(`enquiry from ${selected.name}`))) {
       return;
     }
     setDeleting(true);
@@ -51,9 +51,9 @@ export default function InquiriesView() {
       const remaining = await adminInquirySource.list();
       setInquiries(remaining);
       setSelectedId(null);
-      setNotice({ tone: "success", title: "Inquiry deleted." });
+      void notifySuccess("Inquiry deleted.");
     } catch {
-      setNotice({ tone: "error", title: "Could not delete this inquiry. Please try again." });
+      void notifyError("Could not delete this inquiry.", "Please try again.");
     } finally {
       setDeleting(false);
     }
@@ -65,7 +65,6 @@ export default function InquiriesView() {
   if (selected) {
     return (
       <div className="ad-stack">
-        {notice ? <Notice tone={notice.tone} title={notice.title} /> : null}
         <p>
           <button
             type="button"
@@ -134,7 +133,6 @@ export default function InquiriesView() {
           </p>
         </div>
       </div>
-      {notice ? <Notice tone={notice.tone} title={notice.title} /> : null}
       {sorted.length === 0 ? (
         <div className="ad-empty">
           <h3>No inquiries yet</h3>

@@ -5,8 +5,9 @@ import { useFieldArray } from "react-hook-form";
 import { contactSchema } from "../../../lib/cms/schemas";
 import SaveBar from "../SaveBar";
 import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
-import { PageHeaderGroup, Panel, SeoGroup, errMsg, errorAt } from "../groups";
+import { PageHeaderGroup, Panel, errMsg, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import { confirmDestructive } from "../alerts";
 
 export default function ContactEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -25,7 +26,11 @@ export default function ContactEditor() {
   if (!loaded) return <Skeleton />;
 
   const confirmRemove = (label: string, remove: () => void) => {
-    if (window.confirm(`Remove "${label}"?`)) remove();
+    void confirmDestructive({ title: `Remove "${label}"?`, confirmText: "Remove" }).then(
+      (confirmed) => {
+        if (confirmed) remove();
+      },
+    );
   };
 
   return (
@@ -203,13 +208,6 @@ export default function ContactEditor() {
             {...register("formFoot")}
           />
         </AdField>
-      </Panel>
-
-      <Panel
-        title="SEO"
-        lede="Search result title, description and social share image for the contact page."
-      >
-        <SeoGroup prefix="seo" register={register} errors={errors} />
       </Panel>
 
       <SaveBar

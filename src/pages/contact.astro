@@ -3,9 +3,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import PageHeader from "../components/PageHeader.astro";
 import { getContent } from "../lib/content/repository";
+import { getEventTypes, getPageSeo } from "../lib/content/cmsSource";
 import "../styles/inquiry-form.css";
 
 const { site, serviceImages } = getContent();
+const eventTypeOptions = getEventTypes();
+const seo = getPageSeo("contact");
 
 const steps = [
   {
@@ -24,8 +27,18 @@ const steps = [
 ---
 
 <BaseLayout
-  title="Contact & Enquire | Photobooth Hire Melbourne"
-  description="Enquire about photobooth hire in Melbourne. Send your event date, venue and guest numbers and we'll confirm availability and put together a clear quote."
+  title={seo.seoTitle || "Contact & Enquire | Photobooth Hire Melbourne"}
+  description={
+    seo.seoDescription ||
+    "Enquire about photobooth hire in Melbourne. Send your event date, venue and guest numbers and we'll confirm availability and put together a clear quote."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
     title="Make an enquiry"
@@ -85,7 +98,7 @@ const steps = [
           <p>Share a few details and we'll reply with availability and a clear quote.</p>
         </div>
       </header>
-      <InquiryForm client:visible />
+      <InquiryForm client:visible eventTypes={eventTypeOptions} />
       <p class="form-foot">We use your details only to respond to this enquiry.</p>
     </div>
   </section>

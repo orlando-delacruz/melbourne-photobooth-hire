@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Eighteen decision records exist (DEC-001 through DEC-018). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Twenty-three decision records exist (DEC-001 through DEC-023). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -273,6 +273,11 @@ Eighteen decision records exist (DEC-001 through DEC-018). Existing selections, 
 | DEC-016 | SEO technical foundation: domain, canonicals, sitemap    | Accepted   | 2026-09-16 |
 | DEC-017 | CMS frontend: Astro admin routes with local mock store    | Accepted   | 2026-09-22 |
 | DEC-018 | CMS split: page CMS vs item modules + highlights + uploads | Accepted   | 2026-09-23 |
+| DEC-019 | Modules list-and-detail UX + seed/schema save-blocker fixes | Accepted   | 2026-09-24 |
+| DEC-020 | Required service badges with Most Popular highlight | Accepted   | 2026-09-24 |
+| DEC-021 | Dedicated SEO module with per-page metadata | Accepted   | 2026-09-24 |
+| DEC-022 | SweetAlert2 as the standard admin alert system | Accepted   | 2026-09-24 |
+| DEC-023 | Event Types module as the contact-form dropdown source | Accepted   | 2026-09-24 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -590,6 +595,99 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS, REQ-CON), `docs/ROADMAP.md` (Phases 2-4), `docs/ARCHITECTURE.md` (Astro-first), `docs/DATA-MODEL.md`, DEC-017 (superseded in part).
 - **Supersedes / Superseded by:** Partially supersedes DEC-017 (standalone-CMS data model, read-only inquiries, URL-based images).
 - **Open questions or follow-up:** Supabase adapter (Phase 3) for content, images, inquiries and auth; client confirmation of all provisional content.
+
+### DEC-019 — Modules list-and-detail UX plus seed/schema save-blocker fixes
+
+- **ID:** DEC-019
+- **Title:** Consistent list/detail/add/edit UX for the four item modules, with two pre-existing save blockers fixed
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The four item modules (Services, Packages, Gallery, FAQs) used an all-items-expanded bulk editor with one shared save bar. The task requires a consistent list-and-detail pattern per module: list with Add button at top, clickable rows opening a read-only detail with Edit/Delete, per-item create/edit forms with real file uploads, and confirmed deletes, while preserving Highlight flags, package badges (Most Popular featured treatment), homepage echo behavior and the separate inquiries area. Switching to per-item saves exposed two pre-existing defects that made saving seeded items impossible: (1) the services seed built `image.src` from whole image objects instead of their URL strings (a `??`/`?.` precedence mistake hidden by an `as` cast), which also rendered `src="[object Object]"` on public pages; (2) the packages schema required non-empty `customBadge` for every item while the seed stores `""` for non-custom badges and the form only shows the field for custom badges.
+- **Decision:**
+  1. **UX.** Each module editor is a state machine inside its existing `/admin/modules/*` island (same approach as the inquiries view, no new routes): list table with title plus Highlight state and the specified Add label (Add Service, Add Package, Add Gallery, Add FAQ) at the top; clickable keyboard-accessible rows opening a read-only detail (full fields, image preview, Highlight status, resolved badge text for packages) with Edit and Delete actions; create/edit forms reusing the existing field primitives and file-upload control with single-item Zod validation; delete guarded by `window.confirm` and a last-item guard on Services/Packages (the collections require at least one). Move/duplicate/reorder and whole-module reset were dropped as unrequired by the task. A small shared `ModuleCrud` helper (list hook, highlight pill, detail rows, image preview) keeps the four modules consistent.
+  2. **Seed fix.** The services seed now reads `?.src` on each image branch, so `image.src` is always a URL string; the masking `as` cast was removed.
+  3. **Schema fix.** Package `customBadge` is a plain capped string, required only when `badgeType` is `custom` via the existing `superRefine` (message and error path unchanged), matching the conditional form field and the seeded `""` values.
+- **Alternatives considered:** Nested Astro routes per item (`/modules/services/[id]`, `/new`, `/edit`) — rejected; more files and param plumbing for no user benefit in a frontend-only admin, and it would break the preserved nav context. Normalizing blank `customBadge` values at save time instead of fixing the schema — rejected; it would write invented data to satisfy an over-strict rule whose real intent is already encoded in the `superRefine`.
+- **Rationale:** Smallest change meeting the specified interaction pattern inside established conventions (no new dependencies, token CSS only, existing repository/image/validation seams untouched in shape).
+- **Consequences:** The bulk `useModuleEditor` hook is removed (page editors keep using their own hook and shared form components). Per-item saves persist whole sections through the existing repository, so blob garbage collection and the public echo keep working. All 23 seeded module items now pass their element schemas, and public service imagery renders real URLs again.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS, REQ-CON), `docs/ROADMAP.md` (Phase 2), `docs/ARCHITECTURE.md` (Astro-first, admin islands), `docs/DATA-MODEL.md`, DEC-018.
+- **Supersedes / Superseded by:** Extends DEC-018 (module editors interaction pattern only; data model unchanged).
+- **Open questions or follow-up:** Supabase adapter (Phase 3); client confirmation of all provisional content; real-browser pass of the new CRUD flows at mobile/desktop widths.
+
+### DEC-020 — Required service badges with Most Popular highlight
+
+- **ID:** DEC-020
+- **Title:** Service badges become required dropdown badges with a Most Popular featured treatment
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** Service badges were optional free text, so a service could render with no badge and there was no way to mark a headliner service. The requirement is a required badge per service (Basic, Most Popular, Best Value, or custom text) with the Most Popular service rendering a distinct highlighted card on public pages. Packages already implement exactly this badge model with a Most Popular featured treatment.
+- **Decision:**
+  1. **Model.** `ServiceItem.badge?: string` becomes required `badgeType` (`basic` | `most-popular` | `best-value` | `custom`, no bare option) plus `customBadge`, mirroring the packages model, with a `serviceBadgeText()` display resolver. The public `Service` contract gains `featured` (true only for Most Popular), resolved in `cmsSource` alongside the badge text.
+  2. **Seed.** Existing mock labels are preserved as custom badges ("Most booked", "Fan favourite"); the one badgeless service (360 Video Booth) seeds as Basic.
+  3. **Saved data.** Pre-change per-browser saves are migrated on load in the repository (text becomes a custom badge, missing text becomes Basic); nothing is discarded.
+  4. **Admin.** The services form uses a required badge dropdown with a conditional custom-text field (same options and guard messages as packages); new services default to Basic. List and detail show the resolved badge text and the featured-card state.
+  5. **Public.** The homepage passes `featured` into the existing service `Card`, reusing the packages Most Popular treatment verbatim (featured dark card, star, champagne hairline; no new CSS). Services-page sections gain a `service--featured` class whose badge pill reuses the featured champagne fill. `CmsEcho` resolves service badge/featured from `badgeType` and applies them to homepage cards and services-page pills client-side.
+- **Alternatives considered:** A service-only badge vocabulary distinct from packages — rejected; two parallel badge systems for no user benefit. A bespoke highlight style for services instead of reusing the packages treatment — rejected per the confirmed requirement to reuse it.
+- **Rationale:** Smallest change satisfying the requirement by extending the proven packages pattern; no new dependencies, routes, or design tokens.
+- **Consequences:** Services always render a badge on public pages. Setting a service to Most Popular highlights its homepage card and its services-page section at build and, after an admin save, via the echo.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-CMS, REQ-CON), `docs/ARCHITECTURE.md` (Astro-first, admin islands), `docs/DATA-MODEL.md`, DEC-018, DEC-019.
+- **Supersedes / Superseded by:** Extends DEC-018/DEC-019 (services badge shape only).
+- **Open questions or follow-up:** Supabase adapter (Phase 3); client confirmation of all provisional content including badge assignments.
+
+### DEC-021 — Dedicated SEO module with per-page metadata
+
+- **ID:** DEC-021
+- **Title:** SEO leaves Website CMS for a dedicated module editing per-page metadata
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** Every Website CMS page form carried an SEO group editing `seoTitle`/`seoDescription`/`ogImage`, but no public page consumed that data (pages render hardcoded head values), so saved SEO edits never reached the site and SEO concerns were mixed into content forms. The requirement is a dedicated top-level SEO module covering all indexable pages with per-page titles, descriptions, keywords, canonicals, OG/Twitter metadata, index/follow controls, upload-backed imagery, a search preview and character guidance, reusing the existing head architecture.
+- **Decision:**
+  1. **Store.** The existing per-page `PageMeta` is extended with planning-only `keywords` (never rendered, no `meta keywords` tag), optional `canonicalUrl` override, `ogTitle`/`ogDescription` overrides and `noindex`/`nofollow` flags, all defaulted so older saves validate unchanged. Privacy/Terms gain SEO-only `seo-privacy`/`seo-terms` sections seeded from their current head values. The 404 stays code-managed `noindex` and outside the module.
+  2. **Admin.** New top-level SEO sidebar group with `/admin/seo`, following the module list/detail pattern: page list (path, title, indexing state) opening a per-page form with SERP preview and non-blocking character counts (title 50-60, description 150-160). OG/Twitter images reuse the upload control; Twitter cards mirror OG values and OG URL/type stay derived, shown as read-only notes. The `SeoGroup` is removed from all Website CMS forms (and deleted) so SEO is edited in exactly one place.
+  3. **Public.** `BaseLayout` gains optional `canonicalUrl`, `nofollow`, `ogTitle`, `ogDescription` and `ogImageAlt` props; robots is fully derived from the toggles with existing strings preserved. All nine pages resolve their SEO through a `getPageSeo` helper with the current hardcoded strings as fallbacks, so build output is unchanged until an admin saves.
+- **Alternatives considered:** A parallel SEO-only store section per page — rejected; it would duplicate the existing `PageMeta` data and need migration. Separate Twitter title/description fields — rejected; the architecture derives them and duplication invites divergence. Editable OG type/locale — rejected; fixed by the implementation.
+- **Rationale:** Smallest change that makes saved SEO edits reach public pages inside the established seams (repository sections, upload store, head layout), with zero migration and byte-identical output until first save.
+- **Consequences:** Uploaded OG images resolve at build only via remote `src` until the Phase 3 backend serves stored blobs to SSR. Sitemap, robots.txt, JSON-LD and page content are untouched.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-SEO), `docs/ARCHITECTURE.md` (Astro-first, admin islands), `docs/DATA-MODEL.md`, DEC-016 (SEO foundation), DEC-018.
+- **Supersedes / Superseded by:** — (extends DEC-016/DEC-018 interaction only).
+- **Open questions or follow-up:** Supabase adapter (Phase 3), including server-side OG image resolution; client confirmation of all provisional SEO content.
+
+### DEC-022 — SweetAlert2 as the standard admin alert system
+
+- **ID:** DEC-022
+- **Title:** Centralized SweetAlert2 modals replace browser-native dialogs across the admin
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** Admin destructive actions used `window.confirm` in sixteen places (item deletes, sub-item removes, image removal had none, discard/reset) with inconsistent wording, while operational results used inline notices. The requirement is one consistent modal system with explicit delete confirmations, success feedback, human-readable errors and no native dialogs.
+- **Decision:**
+  1. **Dependency.** `sweetalert2` added via npm (single allowed addition). A single `src/components/admin/alerts.ts` helper owns all configurations: destructive warning confirms (focus starts on Cancel), discard/reset confirms, auto-dismissing centered success modals and error modals. A shared base guarantees `position: "center"` with the backdrop enabled for every dialog, rendering above all admin layers. SweetAlert2 loads lazily per call, code-split into its own chunk, so islands stay SSR-safe. Buttons reuse the admin `ad-button` classes plus one destructive variant; the popup follows the admin type scale.
+  2. **Confirmations** for deletes, sub-item removes, image removal, unsaved-changes discard and section reset. No pre-confirmation before routine create/save (reversible, re-editable content) and none for navigation or harmless interactions.
+  3. **Feedback split.** Operational outcomes (save/create/delete success and failure) go through SweetAlert2 toasts and error modals; form-validation summaries stay inline and untouched. Error modals carry human-readable text only, never raw errors. The existing `beforeunload` leave guard is preserved unchanged.
+- **Alternatives considered:** Confirm-before-every-save — rejected as blind over-confirmation against the spec's own restraint rule. One global toast container component — rejected; the helper covers it with less new UI.
+- **Rationale:** Smallest consistent implementation inside existing seams; zero changes to validation, routing, data contracts or public pages.
+- **Consequences:** No `window.confirm`/`alert` remains in admin code. Centered success modals replace the operational success notices; validation notices are unchanged.
+- **Related documents:** `docs/ARCHITECTURE.md` (admin islands), `docs/UI-UX.md`, DEC-018/DEC-019 (affected flows).
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Supabase adapter (Phase 3); real-browser pass of the new dialogs.
+
+### DEC-023 — Event Types module as the contact-form dropdown source
+
+- **ID:** DEC-023
+- **Title:** Dedicated Event Types module drives the inquiry form dropdown
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** Event type options lived in three unconnected places: a hardcoded `EVENT_TYPES` constant feeding the contact dropdown, a `home.eventTypes` list edited in the Homepage CMS form but never rendered anywhere, and a separate plural mock list rendering the homepage occasion chips. The requirement is one managed module as the dropdown source of truth with CRUD, ordering, and no hardcoded frontend list.
+- **Decision:**
+  1. **Module.** New `mod-event-types` collection of `{id, label}` items with the established list/detail/add/edit pattern, SweetAlert2 confirms and toasts, plus Up/Down row buttons that persist array order immediately (array order is the dropdown order; no drag-and-drop, no numeric order field).
+  2. **Seed.** The eight documented dropdown values are preserved verbatim in order; the homepage chips keep their existing plural mock list untouched.
+  3. **Dead code removed.** The `EVENT_TYPES` constant and the never-rendered `home.eventTypes` field (type, schema, seed, Homepage editor panel) are deleted; the editor keeps the event-types heading group. The dashboard summary counts the module instead.
+  4. **Public.** `getEventTypes()` exposes the build-time labels; the contact page passes them into the inquiry island (server-rendered options), which refreshes live from saved module state in the editing browser. Submission validation (`eventType` optional string) is unchanged.
+- **Alternatives considered:** Driving the homepage chips from the same module — rejected; it would visibly rewrite chip labels and exceeds the requirement. A numeric order field instead of move buttons — rejected; buttons match the existing StringList/ItemCard precedent and need no tiebreak rules.
+- **Rationale:** Smallest change giving one source of truth inside the established module, repository, echo and dialog patterns.
+- **Consequences:** An empty module degrades the dropdown to its "Select…" placeholder only. Homepage chips remain mock-driven until separately addressed.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-INQ-008..010), `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, DEC-018/DEC-019/DEC-022.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Supabase adapter (Phase 3); client confirmation of the dropdown values; real-browser pass of the module CRUD and dropdown echo.
 
 ## 22. Related Documentation
 

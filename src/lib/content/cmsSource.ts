@@ -4,9 +4,19 @@
 // admin edits (highlights, badges, uploaded images) client-side.
 
 import { cmsSeed } from "../cms/seed";
-import { BADGE_LABELS } from "../cms/types";
+import { BADGE_LABELS, serviceBadgeText } from "../cms/types";
+import type { CmsPageKey, PageMeta, SeoPageKey } from "../cms/types";
 import type { Faq, GalleryItem, Package, SampleImage, Service, SiteContent } from "./types";
 import { mockContent } from "./mock";
+
+/**
+ * Build-time contact-form event type options, in dropdown order. Managed in
+ * the admin Event Types module; the editing browser refreshes them live from
+ * saved state (see the inquiry form echo).
+ */
+export function getEventTypes(): string[] {
+  return cmsSeed.modules["event-types"].map((item) => item.label);
+}
 
 function serviceImage(id: string): SampleImage | undefined {
   const item = cmsSeed.modules.services.find((service) => service.id === id);
@@ -14,12 +24,23 @@ function serviceImage(id: string): SampleImage | undefined {
   return { src: item.image.src, alt: item.image.alt || item.name };
 }
 
+/**
+ * Build-time SEO snapshot for one public page, managed in the admin SEO
+ * module. Page sections carry the seven CMS pages; the legal pages live
+ * under the SEO-only store sections.
+ */
+export function getPageSeo(key: SeoPageKey): PageMeta {
+  if (key === "privacy" || key === "terms") return cmsSeed.seo[key];
+  return cmsSeed.pages[key as CmsPageKey].seo;
+}
+
 export function buildSiteContent(): SiteContent {
   const services: Service[] = cmsSeed.modules.services.map((item) => ({
     id: item.id,
     name: item.name,
     summary: item.summary,
-    badge: item.badge || undefined,
+    badge: serviceBadgeText(item),
+    featured: item.badgeType === "most-popular",
     tagline: item.tagline || undefined,
     highlights: item.highlights,
     icon: item.icon,

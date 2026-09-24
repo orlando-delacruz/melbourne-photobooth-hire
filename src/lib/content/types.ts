@@ -12,6 +12,8 @@ export interface Service {
   name: string;
   summary: string;
   badge?: string;
+  /** Data-driven emphasis: true only for the Most Popular badge type. */
+  featured?: boolean;
   tagline?: string;
   highlights?: string[];
   icon?: "camera" | "users" | "video";

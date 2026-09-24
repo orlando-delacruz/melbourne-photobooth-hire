@@ -12,6 +12,7 @@ import GalleryLightbox from "../components/islands/GalleryLightbox";
 import CmsEcho from "../components/islands/CmsEcho";
 import SectionHeading from "../components/SectionHeading.astro";
 import { getContent } from "../lib/content/repository";
+import { getPageSeo } from "../lib/content/cmsSource";
 
 const {
   services,
@@ -26,6 +27,7 @@ const {
   gallery,
   ctaImage,
 } = getContent();
+const seo = getPageSeo("home");
 
 // Homepage sections render highlighted module items only.
 const highlightedServices = services.filter((service) => service.highlight !== false);
@@ -89,8 +91,18 @@ function eventIconSvg(label: string, size = 16): string {
 
 <BaseLayout
   bodyClass="page-home"
-  title="Photobooth Hire Melbourne | Melbourne Photobooth Hire"
-  description="Photobooth hire in Melbourne for weddings, birthdays, corporate and school events. Open-air, roaming and 360 booths with HD prints and instant QR downloads."
+  title={seo.seoTitle || "Photobooth Hire Melbourne | Melbourne Photobooth Hire"}
+  description={
+    seo.seoDescription ||
+    "Photobooth hire in Melbourne for weddings, birthdays, corporate and school events. Open-air, roaming and 360 booths with HD prints and instant QR downloads."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
   preloadImage={heroBackgroundImage?.src}
 >
   <Hero
@@ -169,6 +181,7 @@ function eventIconSvg(label: string, size = 16): string {
             tone="dark"
             title={service.name}
             badge={service.badge}
+            featured={service.featured}
             icon={service.icon}
             tagline={service.tagline}
             description={service.summary}

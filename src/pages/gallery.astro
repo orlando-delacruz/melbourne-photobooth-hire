@@ -8,14 +8,26 @@ import Reveal from "../components/islands/Reveal";
 import CmsEcho from "../components/islands/CmsEcho";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
 import { getContent } from "../lib/content/repository";
+import { getPageSeo } from "../lib/content/cmsSource";
 
 const { gallery, ctaImage, serviceImages } = getContent();
+const seo = getPageSeo("gallery");
 const headerImage = serviceImages?.["360-video-booth"]?.src;
 ---
 
 <BaseLayout
-  title="Photobooth Gallery Melbourne | Weddings, Parties & Events"
-  description="See the booths, backdrops and moments Melbourne Photobooth Hire stages at weddings, birthdays, corporate events and school formals."
+  title={seo.seoTitle || "Photobooth Gallery Melbourne | Weddings, Parties & Events"}
+  description={
+    seo.seoDescription ||
+    "See the booths, backdrops and moments Melbourne Photobooth Hire stages at weddings, birthdays, corporate events and school formals."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
     title="Gallery"

@@ -17,6 +17,18 @@ const CTA_IMAGE = mockContent.ctaImage;
 
 const SERVICE_AREA_STATEMENT = "Based in Melbourne, serving surrounding regions.";
 
+/** Initial contact-form event types, in dropdown order. */
+const EVENT_TYPE_SEEDS = [
+  "Wedding",
+  "Birthday",
+  "Corporate Event",
+  "Engagement Party",
+  "School Formal",
+  "Christmas/End-of-Year",
+  "Private Event",
+  "Other",
+];
+
 type CmsImageSeed = CmsContent["pages"]["services"]["header"]["image"];
 
 function badgeFor(label: string | undefined): {
@@ -105,7 +117,6 @@ export const cmsSeed: CmsContent = {
         title: "Every occasion, one booth",
         lede: "Weddings, birthdays, corporate nights and everything in between.",
       },
-      eventTypes: mockContent.eventTypes,
       ctaBand: {
         eyebrow: "Ready when you are",
         headline: "Ready to book your night?",
@@ -453,11 +464,53 @@ export const cmsSeed: CmsContent = {
     },
   },
 
+  // SEO-only settings for the code-managed legal pages. Titles and
+  // descriptions mirror the hardcoded page head values; nothing else set.
+  seo: {
+    privacy: {
+      seoTitle: "Privacy Policy | Melbourne Photobooth Hire",
+      seoDescription:
+        "How Melbourne Photobooth Hire collects, uses, stores and protects the personal information you share through this website.",
+      ogImage: {
+        key: null,
+        src: "",
+        alt: "Melbourne Photobooth Hire",
+        caption: undefined,
+      },
+      keywords: "",
+      canonicalUrl: "",
+      ogTitle: "",
+      ogDescription: "",
+      noindex: false,
+      nofollow: false,
+    },
+    terms: {
+      seoTitle: "Terms & Conditions | Melbourne Photobooth Hire",
+      seoDescription:
+        "The terms and conditions that apply to photobooth hire with Melbourne Photobooth Hire, including bookings, deposits, rescheduling and venue requirements.",
+      ogImage: {
+        key: null,
+        src: "",
+        alt: "Melbourne Photobooth Hire",
+        caption: undefined,
+      },
+      keywords: "",
+      canonicalUrl: "",
+      ogTitle: "",
+      ogDescription: "",
+      noindex: false,
+      nofollow: false,
+    },
+  },
+
   modules: {
     services: mockContent.services.map((service) => ({
       id: service.id,
       name: service.name,
-      badge: service.badge ?? "",
+      // Every service carries a badge: existing labels are kept as custom
+      // badges, and the one badgeless service seeds as Basic.
+      badgeType: service.badge ? ("custom" as const) : ("basic" as const),
+      customBadge: service.badge ?? "",
       tagline: service.tagline ?? "",
       summary: service.summary,
       highlights: service.highlights ?? [],
@@ -465,9 +518,9 @@ export const cmsSeed: CmsContent = {
       image: {
         key: null,
         src:
-          (service.id === "premium-photobooth" ? PREMIUM_IMAGE : undefined) ??
-          (service.id === "roaming-photobooth" ? ROAMING_IMAGE : undefined) ??
-          (service.id === "360-video-booth" ? VIDEO360_IMAGE : undefined)?.src ??
+          (service.id === "premium-photobooth" ? PREMIUM_IMAGE?.src : undefined) ??
+          (service.id === "roaming-photobooth" ? ROAMING_IMAGE?.src : undefined) ??
+          (service.id === "360-video-booth" ? VIDEO360_IMAGE?.src : undefined) ??
           "",
         alt:
           (service.id === "premium-photobooth" ? PREMIUM_IMAGE : undefined)?.alt ??
@@ -475,7 +528,7 @@ export const cmsSeed: CmsContent = {
           (service.id === "360-video-booth" ? VIDEO360_IMAGE : undefined)?.alt ??
           service.name,
         caption: undefined,
-      } as CmsImageSeed,
+      },
       highlight: true,
     })),
     packages: mockContent.packages.map((pkg) => ({
@@ -506,6 +559,13 @@ export const cmsSeed: CmsContent = {
       question: faq.question,
       answer: faq.answer,
       highlight: true,
+    })),
+    // Contact-form dropdown options, preserving the documented candidate
+    // values in order (formerly REQ-INQ-009 constants). Array order is the
+    // dropdown order.
+    "event-types": EVENT_TYPE_SEEDS.map((label, index) => ({
+      id: `event-type-${index + 1}`,
+      label,
     })),
   },
 };

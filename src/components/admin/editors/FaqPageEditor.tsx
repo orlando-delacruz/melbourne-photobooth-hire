@@ -4,7 +4,7 @@
 import { faqPageSchema } from "../../../lib/cms/schemas";
 import SaveBar from "../SaveBar";
 import { AdField, Notice, Skeleton, TextArea, TextInput } from "../fields";
-import { CtaBandGroup, PageHeaderGroup, Panel, SeoGroup, errorAt } from "../groups";
+import { CtaBandGroup, PageHeaderGroup, Panel, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
 
 export default function FaqPageEditor() {
@@ -113,16 +113,6 @@ export default function FaqPageEditor() {
       <Panel title="Call to action" lede="Closing enquiry band on the FAQ page.">
         <CtaBandGroup
           prefix="ctaBand"
-          register={register}
-          errors={errors}
-          watch={watch}
-          setValue={setValue}
-        />
-      </Panel>
-
-      <Panel title="SEO" lede="Search result title, description and social share image.">
-        <SeoGroup
-          prefix="seo"
           register={register}
           errors={errors}
           watch={watch}

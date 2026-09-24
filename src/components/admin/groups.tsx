@@ -270,56 +270,6 @@ export function CtaBandGroup({ prefix, register, errors, watch, setValue }: Grou
   );
 }
 
-export function SeoGroup({ prefix, register, errors, watch, setValue }: GroupProps) {
-  return (
-    <div className="ad-stack">
-      <AdField
-        id={`${prefix}-seoTitle`}
-        label="SEO title"
-        required
-        hint="Shown in search results and the browser tab."
-        error={errorAt(errors, `${prefix}.seoTitle`)}
-      >
-        <TextInput
-          id={`${prefix}-seoTitle`}
-          type="text"
-          error={errorAt(errors, `${prefix}.seoTitle`)}
-          {...register(`${prefix}.seoTitle`)}
-        />
-      </AdField>
-      <AdField
-        id={`${prefix}-seoDescription`}
-        label="Meta description"
-        required
-        hint="Summary shown in search results."
-        error={errorAt(errors, `${prefix}.seoDescription`)}
-      >
-        <TextArea
-          id={`${prefix}-seoDescription`}
-          rows={3}
-          error={errorAt(errors, `${prefix}.seoDescription`)}
-          {...register(`${prefix}.seoDescription`)}
-        />
-      </AdField>
-      <ImageField
-        legend="Social share image."
-        hint="Used when the page is shared or embedded."
-        value={
-          (watch ? watch(`${prefix}.ogImage`) : undefined) ??
-          ({
-            key: null,
-            src: "",
-            alt: "",
-          } as CmsImage)
-        }
-        onChange={(next) => setValue?.(`${prefix}.ogImage`, next, { shouldDirty: true })}
-        error={errorAt(errors, `${prefix}.ogImage.alt`)}
-        altError={errorAt(errors, `${prefix}.ogImage.alt`)}
-      />
-    </div>
-  );
-}
-
 export function Panel({
   title,
   lede,

@@ -13,14 +13,45 @@
 export type CmsPageKey = "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact";
 
 export type StoreSectionKey =
-  CmsPageKey | "settings" | "mod-services" | "mod-packages" | "mod-gallery" | "mod-faqs";
+  | CmsPageKey
+  | "settings"
+  | "mod-services"
+  | "mod-packages"
+  | "mod-gallery"
+  | "mod-faqs"
+  | "mod-event-types"
+  | "seo-privacy"
+  | "seo-terms";
+
+/** Pages with dedicated SEO settings: the CMS pages plus code-managed legal pages. */
+export type SeoPageKey = CmsPageKey | "privacy" | "terms";
 
 /** Editable SEO metadata for one public page. Mirrors BaseLayout props. */
 export interface PageMeta {
   seoTitle: string;
   seoDescription: string;
   ogImage: CmsImage;
+  /** Internal planning aid only. Never rendered as a meta tag. */
+  keywords?: string;
+  /** Absolute-URL override for the canonical link. Empty follows the page URL. */
+  canonicalUrl?: string;
+  /** Optional overrides; empty falls back to the SEO title and description. */
+  ogTitle?: string;
+  ogDescription?: string;
+  /** Search-engine controls, rendered as the robots directive. */
+  noindex?: boolean;
+  nofollow?: boolean;
 }
+
+/** Defaults for PageMeta fields added after the initial CMS shape. */
+export const PAGE_META_DEFAULTS = {
+  keywords: "",
+  canonicalUrl: "",
+  ogTitle: "",
+  ogDescription: "",
+  noindex: false,
+  nofollow: false,
+} as const;
 
 /**
  * An image managed through file uploads.
@@ -100,7 +131,6 @@ export interface HomePageContent {
   faqHeading: SectionHeadingContent;
   faqCtaLabel: string;
   eventTypesHeading: SectionHeadingContent;
-  eventTypes: string[];
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
@@ -240,16 +270,34 @@ export const BADGE_LABELS: Record<Exclude<BadgeType, "none">, string> = {
   custom: "Custom",
 };
 
+/** Badge options for services. Every service carries one; there is no bare option. */
+export type ServiceBadgeType = "basic" | "most-popular" | "best-value" | "custom";
+
+/** Canonical display text for the service badge options. */
+export const SERVICE_BADGE_LABELS: Record<ServiceBadgeType, string> = {
+  basic: "Basic",
+  "most-popular": "Most Popular",
+  "best-value": "Best Value",
+  custom: "Custom",
+};
+
 export interface ServiceItem {
   id: string;
   name: string;
-  badge?: string;
+  badgeType: ServiceBadgeType;
+  customBadge: string;
   tagline?: string;
   summary: string;
   highlights: string[];
   icon?: "camera" | "users" | "video";
   image: CmsImage;
   highlight: boolean;
+}
+
+/** Display text for a service badge: the built-in label, or the custom text. */
+export function serviceBadgeText(item: Pick<ServiceItem, "badgeType" | "customBadge">): string {
+  if (item.badgeType === "custom") return item.customBadge || "Custom";
+  return SERVICE_BADGE_LABELS[item.badgeType];
 }
 
 export interface PackageItem {
@@ -279,11 +327,18 @@ export interface FaqItem {
   highlight: boolean;
 }
 
+/** One contact-form event type option. Array order is the display order. */
+export interface EventTypeItem {
+  id: string;
+  label: string;
+}
+
 export interface CmsModules {
   services: ServiceItem[];
   packages: PackageItem[];
   gallery: GalleryItem[];
   faqs: FaqItem[];
+  "event-types": EventTypeItem[];
 }
 
 // ── Settings ────────────────────────────────────────────────────────────────
@@ -316,4 +371,9 @@ export interface CmsContent {
   };
   settings: SiteSettingsContent;
   modules: CmsModules;
+  /** SEO-only settings for the code-managed legal pages. */
+  seo: {
+    privacy: PageMeta;
+    terms: PageMeta;
+  };
 }

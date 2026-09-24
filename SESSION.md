@@ -2,9 +2,9 @@
 
 > How this works: when the user says **"hand-off context SESSION.md"**, update this file with a fresh summary of the current chat session (what was asked, what changed, decisions, state, open items). Keep it concise but include the small key details another agent needs to continue safely.
 
-- **Last updated:** 2026-09-16
+- **Last updated:** 2026-09-24
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `develop` (1 local commit ahead of `origin/develop`; all work in this session is **uncommitted**)
+- **Branch:** `develop` (HEAD `964066f` "cleanup: admin ui modules"; working tree **clean**, in sync with `origin/develop` — all CMS work committed)
 - **Mode:** frontend-only. No backend, API, or database work was done.
 
 ---
@@ -101,7 +101,7 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 - **All imagery is Pexels stock**, pricing/policies are provisional Shot&Prints-derived reference values. Production blocked until client-confirmed.
 - Marquee WCAG 2.2.2: no visible pause control (client choice); pause is via hover/keyboard focus + reduced-motion. Flagged in DEC-015.
 - `docs/*.md` still contain em-dashes (documentation only; not cleaned).
-- **No commits made this session.** Everything is in the working tree on `develop`.
+- **All work committed.** HEAD `964066f` on `develop`, tree clean, in sync with `origin/develop`.
 
 ---
 
@@ -117,6 +117,7 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 - **Admin-wide responsive + polish pass (2026-09-22):** icon buttons raised to 44px touch targets; `:active` press feedback on buttons; string lists and repeatable item heads reflow to single-column actions on narrow screens; save bar stacks on phones with iOS safe-area inset; inquiries table hides Email/Guests columns ≤640px (`ad-hide-sm`); champagne hairline signature added to panels and summary cards; editor panels unified onto the shared flexed panel head; desktop table row hover. Public site untouched.
 - **Admin width-overflow fix (2026-09-23):** all admin pages overflowed their viewport by 40px (whole-page horizontal pan) because the admin layer lacks the public `global.css` `box-sizing: border-box` reset, so `.ad-content`'s `width: 100%` plus horizontal padding computed as content-box. Fixed with a scoped reset (`.ad-body *` → `border-box`) in `admin.css`. Verified by headless-browser measurement: `scrollWidth == clientWidth` on all 11 admin routes at 320/375/640/768/1024/1440, plus true-375px screenshots of login, dashboard, services editor and inquiries (no clipping; login card, summary cards, mobile save-bar stack and pruned table columns all render as designed).
 - **CMS restructure pass (2026-09-23, DEC-018):** split page-level CMS from item modules; full CRUD + highlight toggles for Services/Packages/Gallery/FAQs under `/admin/modules/*` with the spec sidebar groups; real file uploads via an IndexedDB blob store (`src/lib/cms/images.ts`, PNG/JPEG/WebP ≤ 2 MB) with preview/replace/remove and blob GC on save — zero URL text inputs remain; package badge radio (None/Basic/Most Popular/Best Value/Custom-with-guard) driving the public card treatment from badge data; inquiries gained clickable detail view, Gmail compose response, and confirmed delete with in-place list update; public pages consume module data at build plus a `CmsEcho` island applying saved highlights/badges/uploaded images client-side; storage key bumped to `mph-cms-v2` (no blind migration). Public presentation preserved; uploads and admin saves stay per-browser until the Phase 3 backend.
+- **Final verification (2026-09-24, all in a real headless browser):** `check` 0/0/0, `format` clean, `build` complete; all 24 routes (9 public + 15 admin) return 200; echo proven (highlight-OFF hides card, custom badge swaps text + drops featured/star, zero console errors); inquiry detail/Gmail-link/delete-with-persistence proven; full FAQ CRUD (add/type/save/toggle/delete/reload) proven with validation correctly blocking empty saves; real PNG upload proven (blob preview → saved key → success notice); zero horizontal pan on all admin + public routes at 320/375/768/1024; screenshots reviewed (modules editor, inquiry flow, dashboard, homepage states); test localStorage/IndexedDB state cleaned afterwards. Test scripts live only in the OS temp dir, not the repo.
 
 ---
 

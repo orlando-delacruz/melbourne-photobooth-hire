@@ -162,6 +162,62 @@
   flex-shrink: 0;
 }
 
+/* ── Collapsible nav group (Pages) ────────────────────────────────────── */
+
+.ad-nav-group {
+  display: grid;
+  gap: 2px;
+}
+
+.ad-nav-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 44px;
+  margin: var(--space-sm) 0 var(--space-2xs);
+  padding: var(--space-2xs) var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-on-ink-faint);
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-quick) var(--ease-default),
+    color var(--motion-quick) var(--ease-default);
+}
+
+.ad-nav-toggle:hover {
+  background: rgba(244, 238, 224, 0.07);
+  color: var(--color-on-ink);
+}
+
+.ad-nav-toggle--active {
+  color: var(--color-accent-on-dark);
+}
+
+.ad-nav-toggle > span:first-child {
+  margin-right: auto;
+}
+
+.ad-nav-chevron {
+  flex-shrink: 0;
+  transition: transform var(--motion-quick) var(--ease-default);
+}
+
+.ad-nav-group[data-open="false"] .ad-nav-chevron {
+  transform: rotate(-90deg);
+}
+
+.ad-nav-group[data-open="false"] > .ad-nav {
+  display: none;
+}
+
 .ad-sidebar-note {
   margin: auto var(--space-xs) 0;
   padding: var(--space-sm);
@@ -207,9 +263,25 @@
   line-height: var(--leading-snug);
 }
 
-.ad-topbar-title p {
+/* ── Page content header ──────────────────────────────────────────────── */
+
+.ad-page-head {
+  margin: 0 0 var(--space-md);
+  max-width: var(--text-max-width);
+}
+
+.ad-page-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+}
+
+.ad-page-head p {
   margin: var(--space-3xs) 0 0;
-  color: var(--color-ink-faint);
+  color: var(--color-ink-soft);
   font-size: var(--text-small);
 }
 
@@ -460,6 +532,32 @@
 
 .ad-button--danger {
   color: var(--color-error);
+}
+
+/* Destructive SweetAlert2 confirm: solid error treatment. */
+.ad-button--destructive {
+  background: var(--color-error);
+  color: var(--color-ivory);
+}
+
+.ad-button--destructive:hover {
+  background: var(--color-error);
+  filter: brightness(0.92);
+}
+
+/* Keep SweetAlert2 modals and toasts on the admin type scale. */
+.swal2-popup {
+  font-family: var(--font-body);
+}
+
+/* SweetAlert2 container sits above every admin layer (sidebar, topbar,
+// save bar) so centered modals are never hidden behind admin UI. */
+.swal2-container.ad-swal-container {
+  z-index: 2000;
+}
+
+.swal2-popup .ad-button {
+  margin: 0 0.25em;
 }
 
 .ad-table-rowlink {
@@ -886,6 +984,12 @@
       "reset discard";
     gap: var(--space-2xs);
     padding: var(--space-sm);
+  }
+
+  /* Grid children must be allowed to shrink so labels never push past the
+    viewport on narrow phones. */
+  .ad-savebar > * {
+    min-width: 0;
   }
 
   .ad-savebar .ad-dirty,
@@ -1322,6 +1426,132 @@
   accent-color: var(--color-accent-strong);
 }
 
+/* ── Module list/detail (Services, Packages, Gallery, FAQs) ───────────── */
+
+.ad-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  padding: 0.25em 0.75em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-ivory);
+  color: var(--color-ink-soft);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ad-pill-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.ad-pill--on {
+  border-color: #7bc79a;
+  background: #eef7f0;
+  color: #1f6b3f;
+}
+
+.ad-pill--off {
+  border-color: var(--color-border-strong);
+  background: var(--color-ivory);
+  color: var(--color-ink-faint);
+}
+
+.ad-thumb {
+  display: inline-flex;
+  width: 3.5rem;
+  height: 2.625rem;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-ink-raised);
+  flex-shrink: 0;
+}
+
+.ad-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ad-thumb--empty {
+  background: var(--color-ivory-deep);
+}
+
+.ad-detail-media {
+  margin: 0 0 var(--space-sm);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-ivory);
+}
+
+.ad-detail-media img {
+  display: block;
+  width: 100%;
+  max-height: 22rem;
+  object-fit: cover;
+}
+
+.ad-detail-media figcaption {
+  padding: var(--space-2xs) var(--space-sm);
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+}
+
+.ad-detail-media--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  color: var(--color-ink-faint);
+  font-size: var(--text-small);
+}
+
+.ad-table strong {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* ── SEO search preview ───────────────────────────────────────────────── */
+
+.ad-serp {
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.ad-serp-title {
+  margin: 0;
+  color: #1a0dab;
+  font-size: var(--text-body);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.ad-serp-url {
+  margin: var(--space-3xs) 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
+}
+
+.ad-serp-description {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
 /* ── Responsive shell ───────────────────────────────────────────────────── */
 
 @media (max-width: 1023px) {
@@ -1375,5 +1605,10 @@
   .ad-button,
   .ad-icon-button {
     transform: none;
+  }
+
+  .ad-nav-toggle,
+  .ad-nav-chevron {
+    transition: none;
   }
 }

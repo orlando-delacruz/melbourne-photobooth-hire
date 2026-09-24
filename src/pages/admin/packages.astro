@@ -10,7 +10,8 @@ const section = CMS_SECTIONS.find((item) => item.key === "packages")!;
 <AdminLayout title={`Edit ${section.label}`}>
   <AdminShell
     active={section.key}
-    title={`Edit ${section.label}`}
+    title={section.label}
+    heading={`Edit ${section.label}`}
     lede={section.blurb}
     publicHref={section.publicHref}
   >

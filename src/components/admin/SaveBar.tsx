@@ -1,6 +1,8 @@
-// Sticky save bar for admin section editors: dirty state, save, discard
-// and reset-to-original actions. Save persists to the local mock store;
-// discard and reset ask for confirmation before throwing work away.
+// Sticky save bar for admin section editors: save, discard and
+// reset-to-original actions. The bar only renders while the form has unsaved
+// changes (or a save in flight), so it never reserves layout space otherwise.
+// Save persists to the local mock store; discard and reset ask for
+// confirmation before throwing work away.
 
 import { RotateCcw, Save } from "lucide-react";
 
@@ -34,6 +36,9 @@ export default function SaveBar({
   onDiscard,
   onResetSection,
 }: SaveBarProps) {
+  // Hidden when clean: no reserved space, nothing to tab into. Dirty state
+  // comes from the section form, so UI-only interactions never trigger it.
+  if (!dirty && !saving) return null;
   return (
     <div className="ad-savebar" role="group" aria-label="Save actions">
       <p className={`ad-dirty${dirty ? "" : " ad-dirty--clean"}`}>

@@ -39,7 +39,13 @@ export type SectionValue<K extends StoreSectionKey> = K extends StoreSectionKey
             ? CmsContent["modules"]["gallery"]
             : K extends "mod-faqs"
               ? CmsContent["modules"]["faqs"]
-              : never
+              : K extends "mod-event-types"
+                ? CmsContent["modules"]["event-types"]
+                : K extends "seo-privacy"
+                  ? CmsContent["seo"]["privacy"]
+                  : K extends "seo-terms"
+                    ? CmsContent["seo"]["terms"]
+                    : never
   : never;
 
 export const STORE_SECTIONS: StoreSectionKey[] = [
@@ -55,6 +61,9 @@ export const STORE_SECTIONS: StoreSectionKey[] = [
   "mod-packages",
   "mod-gallery",
   "mod-faqs",
+  "mod-event-types",
+  "seo-privacy",
+  "seo-terms",
 ];
 
 /** Public content sections shown in the dashboard's Website Content table. */
@@ -104,7 +113,30 @@ function seedFor(key: StoreSectionKey): unknown {
     const moduleKey = key.slice(4) as keyof CmsContent["modules"];
     return cmsSeed.modules[moduleKey];
   }
+  if (key.startsWith("seo-")) {
+    const seoKey = key.slice(4) as keyof CmsContent["seo"];
+    return cmsSeed.seo[seoKey];
+  }
   return cmsSeed.pages[key as keyof CmsContent["pages"]];
+}
+
+const SERVICE_BADGE_TYPES = ["basic", "most-popular", "best-value", "custom"] as const;
+
+/** Migrates one service item from the legacy free-text `badge` shape. */
+function normalizeServiceItem(item: unknown): unknown {
+  if (!item || typeof item !== "object") return item;
+  const record = item as Record<string, unknown>;
+  if (SERVICE_BADGE_TYPES.includes(record.badgeType as (typeof SERVICE_BADGE_TYPES)[number])) {
+    return item;
+  }
+  const legacy = typeof record.badge === "string" ? record.badge.trim() : "";
+  const { badge: _dropped, ...rest } = record;
+  void _dropped;
+  return {
+    ...rest,
+    badgeType: legacy === "" ? "basic" : "custom",
+    customBadge: legacy,
+  };
 }
 
 class MockCmsRepository implements CmsRepository {
@@ -120,11 +152,18 @@ class MockCmsRepository implements CmsRepository {
         contact: (await this.loadSection("contact")) as CmsContent["pages"]["contact"],
       },
       settings: (await this.loadSection("settings")) as CmsContent["settings"],
+      seo: {
+        privacy: (await this.loadSection("seo-privacy")) as CmsContent["seo"]["privacy"],
+        terms: (await this.loadSection("seo-terms")) as CmsContent["seo"]["terms"],
+      },
       modules: {
         services: (await this.loadSection("mod-services")) as CmsContent["modules"]["services"],
         packages: (await this.loadSection("mod-packages")) as CmsContent["modules"]["packages"],
         gallery: (await this.loadSection("mod-gallery")) as CmsContent["modules"]["gallery"],
         faqs: (await this.loadSection("mod-faqs")) as CmsContent["modules"]["faqs"],
+        "event-types": (await this.loadSection(
+          "mod-event-types",
+        )) as CmsContent["modules"]["event-types"],
       },
     };
   }
@@ -132,7 +171,15 @@ class MockCmsRepository implements CmsRepository {
   async loadSection(key: StoreSectionKey): Promise<unknown> {
     const stored = readStored();
     const override = stored.sections[key];
-    return clone((override ?? seedFor(key)) as unknown);
+    const value = clone((override ?? seedFor(key)) as unknown);
+    // Services badges changed from free text (`badge?: string`) to a required
+    // dropdown (`badgeType` + `customBadge`). Saved pre-change items are
+    // migrated on load so nothing is lost: text becomes a custom badge,
+    // missing text becomes Basic.
+    if (key === "mod-services" && Array.isArray(value)) {
+      return (value as unknown[]).map(normalizeServiceItem);
+    }
+    return value;
   }
 
   async saveSection(key: StoreSectionKey, value: unknown): Promise<{ savedAt: string }> {

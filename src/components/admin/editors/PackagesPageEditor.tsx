@@ -11,12 +11,12 @@ import {
   PageHeaderGroup,
   Panel,
   SectionHeadingGroup,
-  SeoGroup,
   StringList,
   errMsg,
   errorAt,
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import { confirmDestructive } from "../alerts";
 
 export default function PackagesPageEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -202,9 +202,12 @@ export default function PackagesPageEditor() {
           }}
           onAdd={() => commitInclusions([...inclusions, ""])}
           onRemove={(index) => {
-            if (window.confirm(`Remove inclusion ${index + 1}?`)) {
-              commitInclusions(inclusions.filter((_, i) => i !== index));
-            }
+            void confirmDestructive({
+              title: `Remove inclusion ${index + 1}?`,
+              confirmText: "Remove",
+            }).then((confirmed) => {
+              if (confirmed) commitInclusions(inclusions.filter((_, i) => i !== index));
+            });
           }}
           onMove={(index, direction) => {
             const next = [...inclusions];
@@ -248,7 +251,12 @@ export default function PackagesPageEditor() {
                   });
                 }}
                 onRemove={() => {
-                  if (window.confirm(`Remove "${String(title)}"?`)) addOns.remove(index);
+                  void confirmDestructive({
+                    title: `Remove "${String(title)}"?`,
+                    confirmText: "Remove",
+                  }).then((confirmed) => {
+                    if (confirmed) addOns.remove(index);
+                  });
                 }}
               >
                 <AdField
@@ -336,9 +344,12 @@ export default function PackagesPageEditor() {
           }}
           onAdd={() => commitPolicies([...policies, ""])}
           onRemove={(index) => {
-            if (window.confirm(`Remove policy ${index + 1}?`)) {
-              commitPolicies(policies.filter((_, i) => i !== index));
-            }
+            void confirmDestructive({
+              title: `Remove policy ${index + 1}?`,
+              confirmText: "Remove",
+            }).then((confirmed) => {
+              if (confirmed) commitPolicies(policies.filter((_, i) => i !== index));
+            });
           }}
           onMove={movePolicy}
         />
@@ -347,16 +358,6 @@ export default function PackagesPageEditor() {
       <Panel title="Call to action" lede="Closing enquiry band on the packages page.">
         <CtaBandGroup
           prefix="ctaBand"
-          register={register}
-          errors={errors}
-          watch={watch}
-          setValue={setValue}
-        />
-      </Panel>
-
-      <Panel title="SEO" lede="Search result title, description and social share image.">
-        <SeoGroup
-          prefix="seo"
           register={register}
           errors={errors}
           watch={watch}

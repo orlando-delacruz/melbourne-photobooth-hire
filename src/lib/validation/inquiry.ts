@@ -10,18 +10,6 @@ import * as z from "zod";
  * REQ-INQ-010. Final confirmation is required before production use.
  */
 
-/** Candidate event types (REQ-INQ-009). Requires client confirmation. */
-export const EVENT_TYPES = [
-  "Wedding",
-  "Birthday",
-  "Corporate Event",
-  "Engagement Party",
-  "School Formal",
-  "Christmas/End-of-Year",
-  "Private Event",
-  "Other",
-] as const;
-
 /** Candidate photobooth options (REQ-INQ-010). Requires client confirmation. */
 export const PHOTOBOOTHS = ["Premium", "Roaming", "360", "Not Sure"] as const;
 

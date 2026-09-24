@@ -1,13 +1,14 @@
 // CmsEcho: applies saved CMS module state to the public pages after first
 // paint (DEC-018). SSR HTML renders the build-time module snapshot so content
 // stays crawlable; the echo then hides non-highlighted items, applies the
-// data-driven package badge treatment and swaps in uploaded images. With no
-// saved edits the pass is a no-op.
+// data-driven service/package badge treatment (Most Popular cards render
+// featured) and swaps in uploaded images. With no saved edits the pass is a
+// no-op.
 
 import { useEffect } from "react";
 import { cmsRepository } from "../../lib/cms/repository";
 import { getImageUrl } from "../../lib/cms/images";
-import { BADGE_LABELS } from "../../lib/cms/types";
+import { BADGE_LABELS, serviceBadgeText } from "../../lib/cms/types";
 
 const STAR_SVG = `<svg class="card-badge-star" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`;
 
@@ -51,8 +52,8 @@ export default function CmsEcho({ page }: { page: string }) {
         for (const item of content.modules.services) {
           byId.set(item.id, {
             highlight: item.highlight,
-            badge: item.badge ?? "",
-            featured: false,
+            badge: serviceBadgeText(item),
+            featured: item.badgeType === "most-popular",
             imageKey: item.image.key,
             imageSrc: item.image.src,
           });
@@ -98,6 +99,12 @@ export default function CmsEcho({ page }: { page: string }) {
           if (!entry.highlight) return;
           if (el.classList.contains("card")) {
             renderBadge(el, entry.badge, entry.featured);
+          }
+          // Services page sections carry their badge in a dedicated pill.
+          const serviceBadge = el.querySelector<HTMLElement>(".service-badge");
+          if (serviceBadge) {
+            serviceBadge.textContent = entry.badge;
+            el.classList.toggle("service--featured", entry.featured);
           }
           const img = el.querySelector("img");
           if (!img) return;

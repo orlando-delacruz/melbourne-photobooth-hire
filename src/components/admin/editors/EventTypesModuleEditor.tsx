@@ -1,14 +1,15 @@
-// FAQs module: list -> detail -> edit/delete, list -> Add FAQ -> create.
-// Highlighted questions feed the homepage teaser (first four).
+// Event Types module: list -> detail -> edit/delete, list -> Add Event Type
+// -> create. Array order is the contact-form dropdown order, adjusted with
+// the row move buttons. Labels feed the public inquiry form.
 
 import { useState } from "react";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
-import type { FaqItem } from "../../../lib/cms/types";
-import { faqsModuleSchema } from "../../../lib/cms/schemas";
+import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
+import type { EventTypeItem } from "../../../lib/cms/types";
+import { eventTypesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/repository";
-import { AdField, Notice, Skeleton, TextArea, TextInput } from "../fields";
+import { AdField, Notice, Skeleton, TextInput } from "../fields";
 import { Panel } from "../groups";
-import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";
+import { DetailRow, toFieldErrors, useModuleList } from "../ModuleCrud";
 import { notifySuccess } from "../alerts";
 
 type View =
@@ -17,14 +18,14 @@ type View =
   | { name: "create" }
   | { name: "edit"; id: string };
 
-function blankFaq(): FaqItem {
-  return { id: createId("faq"), question: "", answer: "", highlight: true };
+function blankEventType(): EventTypeItem {
+  return { id: createId("event-type"), label: "" };
 }
 
-export default function FaqsModuleEditor() {
-  const store = useModuleList<FaqItem>("mod-faqs");
+export default function EventTypesModuleEditor() {
+  const store = useModuleList<EventTypeItem>("mod-event-types");
   const [view, setView] = useState<View>({ name: "list" });
-  const [draft, setDraft] = useState<FaqItem | null>(null);
+  const [draft, setDraft] = useState<EventTypeItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
 
   if (!store.loaded || !store.items) return <Skeleton />;
@@ -36,13 +37,13 @@ export default function FaqsModuleEditor() {
       : null) ?? null;
 
   const openCreate = () => {
-    setDraft(blankFaq());
+    setDraft(blankEventType());
     setErrors(new Map());
     store.setNotice(null);
     setView({ name: "create" });
   };
 
-  const openEdit = (item: FaqItem) => {
+  const openEdit = (item: EventTypeItem) => {
     setDraft({ ...item });
     setErrors(new Map());
     store.setNotice(null);
@@ -58,7 +59,7 @@ export default function FaqsModuleEditor() {
 
   const saveDraft = async () => {
     if (!draft) return;
-    const parsed = faqsModuleSchema.element.safeParse(draft);
+    const parsed = eventTypesModuleSchema.element.safeParse(draft);
     if (!parsed.success) {
       const { map, lines } = toFieldErrors(parsed.error.issues);
       setErrors(map);
@@ -73,7 +74,7 @@ export default function FaqsModuleEditor() {
       return;
     }
     const isEdit = view.name === "edit";
-    const saved = parsed.data as FaqItem;
+    const saved = parsed.data as EventTypeItem;
     const next = isEdit
       ? items.map((item) => (item.id === draft.id ? saved : item))
       : [...items, saved];
@@ -81,14 +82,24 @@ export default function FaqsModuleEditor() {
     if (!ok) return;
     setDraft(null);
     setErrors(new Map());
-    void notifySuccess(isEdit ? "FAQ updated." : "FAQ added.");
+    void notifySuccess(isEdit ? "Event type updated." : "Event type added.");
     setView({ name: "list" });
   };
 
   const deleteSelected = async () => {
     if (!selected) return;
-    const ok = await store.removeById(selected.id, selected.question.slice(0, 70) || "this FAQ");
+    const ok = await store.removeById(selected.id, selected.label || "this event type");
     if (ok) setView({ name: "list" });
+  };
+
+  const moveAndSave = async (id: string, direction: -1 | 1) => {
+    const index = items.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    await store.persist(next);
   };
 
   if ((view.name === "create" || view.name === "edit") && draft) {
@@ -104,51 +115,31 @@ export default function FaqsModuleEditor() {
         <p>
           <button type="button" className="ad-button ad-button--secondary" onClick={cancelForm}>
             <ArrowLeft size={16} aria-hidden="true" />
-            {isEdit ? "Back to detail" : "Back to FAQs"}
+            {isEdit ? "Back to detail" : "Back to event types"}
           </button>
         </p>
         <Panel
-          title={isEdit ? "Edit FAQ" : "Add FAQ"}
+          title={isEdit ? "Edit event type" : "Add Event Type"}
           lede={
             isEdit
-              ? "Update the question, answer and highlight, then save."
-              : "Write the new question and answer, then save."
+              ? "Update the label shown in the contact form dropdown, then save."
+              : "Add a new option for the contact form dropdown, then save."
           }
         >
-          <AdField id="faq-question" label="Question" required error={err("question")}>
-            <TextInput
-              id="faq-question"
-              type="text"
-              value={draft.question}
-              error={err("question")}
-              onChange={(e) => setDraft({ ...draft, question: e.target.value })}
-            />
-          </AdField>
-          <AdField id="faq-answer" label="Answer" required error={err("answer")}>
-            <TextArea
-              id="faq-answer"
-              rows={5}
-              value={draft.answer}
-              error={err("answer")}
-              onChange={(e) => setDraft({ ...draft, answer: e.target.value })}
-            />
-          </AdField>
           <AdField
-            id="faq-highlight"
-            label="Highlighted for homepage"
+            id="et-label"
+            label="Label"
             required
-            hint="Turned-on questions are eligible for the homepage teaser (first four)."
-            error={err("highlight")}
+            hint="Shown exactly as written in the contact form dropdown."
+            error={err("label")}
           >
-            <label className="ad-toggle">
-              <input
-                id="faq-highlight"
-                type="checkbox"
-                checked={draft.highlight}
-                onChange={(e) => setDraft({ ...draft, highlight: e.target.checked })}
-              />
-              <span>{draft.highlight ? "Eligible for homepage" : "Not on homepage"}</span>
-            </label>
+            <TextInput
+              id="et-label"
+              type="text"
+              value={draft.label}
+              error={err("label")}
+              onChange={(e) => setDraft({ ...draft, label: e.target.value })}
+            />
           </AdField>
           <p className="ad-inquiry-actions">
             <button
@@ -157,7 +148,7 @@ export default function FaqsModuleEditor() {
               disabled={store.busy}
               onClick={() => void saveDraft()}
             >
-              {store.busy ? "Saving..." : isEdit ? "Save changes" : "Add FAQ"}
+              {store.busy ? "Saving..." : isEdit ? "Save changes" : "Add event type"}
             </button>
             <button type="button" className="ad-button ad-button--secondary" onClick={cancelForm}>
               Cancel
@@ -169,6 +160,7 @@ export default function FaqsModuleEditor() {
   }
 
   if (view.name === "detail" && selected) {
+    const position = items.findIndex((item) => item.id === selected.id) + 1;
     return (
       <div className="ad-stack">
         {store.notice ? (
@@ -183,25 +175,21 @@ export default function FaqsModuleEditor() {
             onClick={() => setView({ name: "list" })}
           >
             <ArrowLeft size={16} aria-hidden="true" />
-            Back to FAQs
+            Back to event types
           </button>
         </p>
-        <section className="ad-panel" aria-label={selected.question}>
+        <section className="ad-panel" aria-label={selected.label}>
           <div className="ad-panel-head">
             <div>
-              <h2>{selected.question}</h2>
-              <p className="ad-panel-lede">FAQ detail.</p>
+              <h2>{selected.label}</h2>
+              <p className="ad-panel-lede">Contact form dropdown option.</p>
             </div>
-            <span className="ad-panel-action">
-              <HighlightPill on={selected.highlight} />
-            </span>
           </div>
           <dl className="ad-detail-list">
-            <DetailRow label="Question" value={selected.question} />
-            <DetailRow label="Answer" value={selected.answer} />
+            <DetailRow label="Label" value={selected.label} />
             <DetailRow
-              label="Homepage"
-              value={selected.highlight ? "Eligible for homepage" : "Not on homepage"}
+              label="Dropdown position"
+              value={position > 0 ? `${position} of ${items.length}` : "-"}
             />
           </dl>
           <p className="ad-inquiry-actions">
@@ -235,38 +223,39 @@ export default function FaqsModuleEditor() {
           {store.notice.body ? <p>{store.notice.body}</p> : null}
         </Notice>
       ) : null}
-      <section className="ad-panel" aria-label="All FAQs">
+      <section className="ad-panel" aria-label="All event types">
         <div className="ad-panel-head">
           <div>
-            <h2>All FAQs</h2>
+            <h2>All event types</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "question" : "questions"}. Select a row to view
-              the full answer, then edit or delete it.
+              {items.length} {items.length === 1 ? "option" : "options"} in dropdown order. Select a
+              row for detail, or use the arrows to reorder.
             </p>
           </div>
           <span className="ad-panel-action">
             <button type="button" className="ad-button ad-button--primary" onClick={openCreate}>
               <Plus size={16} aria-hidden="true" />
-              Add FAQ
+              Add Event Type
             </button>
           </span>
         </div>
         {items.length === 0 ? (
           <div className="ad-empty">
-            <h3>No questions</h3>
-            <p>Add the first question with the Add FAQ button above.</p>
+            <h3>No event types</h3>
+            <p>Add the first dropdown option with the Add Event Type button above.</p>
           </div>
         ) : (
           <div className="ad-table-wrap">
             <table className="ad-table">
               <thead>
                 <tr>
-                  <th scope="col">Question</th>
-                  <th scope="col">Highlight</th>
+                  <th scope="col">Position</th>
+                  <th scope="col">Label</th>
+                  <th scope="col">Reorder</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <tr
                     key={item.id}
                     className="ad-table-rowlink"
@@ -278,19 +267,41 @@ export default function FaqsModuleEditor() {
                         setView({ name: "detail", id: item.id });
                       }
                     }}
-                    aria-label={`View ${item.question.slice(0, 70) || "FAQ"}`}
+                    aria-label={`View ${item.label || "event type"}`}
                   >
+                    <td>{index + 1}</td>
                     <td>
-                      <strong>{(item.question || "Untitled question").slice(0, 90)}</strong>
-                      {item.answer ? (
-                        <span className="ad-table-muted ad-hide-sm">
-                          <br />
-                          {item.answer.slice(0, 110)}
-                        </span>
-                      ) : null}
+                      <strong>{item.label || "Untitled event type"}</strong>
                     </td>
                     <td>
-                      <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                      <span className="ad-string-actions">
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === 0 || store.busy}
+                          aria-label={`Move ${item.label || "event type"} up`}
+                          title="Move up"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, -1);
+                          }}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === items.length - 1 || store.busy}
+                          aria-label={`Move ${item.label || "event type"} down`}
+                          title="Move down"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, 1);
+                          }}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

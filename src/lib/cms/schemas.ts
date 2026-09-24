@@ -85,11 +85,33 @@ const optionalImageSchema = z.object({
   alt: z.string().trim().max(300).optional(),
 });
 
-const pageMetaSchema = z.object({
+export const pageMetaSchema = z.object({
   seoTitle: shortText("the SEO title", 120),
   seoDescription: longText("the meta description", 400),
   ogImage: imageSchema,
+  // Internal planning aid; never rendered. Capped but optional.
+  keywords: z.string().trim().max(500, "Keywords must be 500 characters or fewer.").default(""),
+  // Absolute-URL override; empty follows the page URL.
+  canonicalUrl: z
+    .string()
+    .trim()
+    .max(2000, "Canonical URL must be 2000 characters or fewer.")
+    .refine(
+      (value) => value === "" || URL_RE.test(value),
+      "Enter a valid canonical URL starting with http:// or https://, or leave it blank.",
+    )
+    .default(""),
+  ogTitle: z.string().trim().max(120, "OG title must be 120 characters or fewer.").default(""),
+  ogDescription: z
+    .string()
+    .trim()
+    .max(400, "OG description must be 400 characters or fewer.")
+    .default(""),
+  noindex: z.boolean().default(false),
+  nofollow: z.boolean().default(false),
 });
+
+export type PageMetaInput = z.input<typeof pageMetaSchema>;
 
 const pageHeaderSchema = z.object({
   title: shortText("the page title"),
@@ -192,10 +214,6 @@ export const homeSchema = z.object({
   faqHeading: sectionHeadingSchema,
   faqCtaLabel: shortText("the button label", 60),
   eventTypesHeading: sectionHeadingSchema,
-  eventTypes: z
-    .array(shortText("each event type", 80))
-    .min(1, "Add at least one event type.")
-    .max(30),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
@@ -334,17 +352,31 @@ export const settingsSchema = z.object({
 
 export const servicesModuleSchema = z
   .array(
-    z.object({
-      id: z.string(),
-      name: shortText("the service name"),
-      badge: optionalText(60),
-      tagline: optionalText(200),
-      summary: longText("the service summary", 1000),
-      highlights: z.array(shortText("each highlight", 200)).max(12),
-      icon: z.enum(["camera", "users", "video"]).optional(),
-      image: imageSchema,
-      highlight: z.boolean(),
-    }),
+    z
+      .object({
+        id: z.string(),
+        name: shortText("the service name"),
+        badgeType: z.enum(["basic", "most-popular", "best-value", "custom"]),
+        // Blank unless a custom badge is used; the superRefine below requires
+        // text only when badgeType is "custom" (the form hides this field
+        // otherwise).
+        customBadge: z.string().trim().max(60, "Custom badge text must be 60 characters or fewer."),
+        tagline: optionalText(200),
+        summary: longText("the service summary", 1000),
+        highlights: z.array(shortText("each highlight", 200)).max(12),
+        icon: z.enum(["camera", "users", "video"]).optional(),
+        image: imageSchema,
+        highlight: z.boolean(),
+      })
+      .superRefine((value, ctx) => {
+        if (value.badgeType === "custom" && value.customBadge.trim() === "") {
+          ctx.addIssue({
+            code: "custom",
+            path: ["customBadge"],
+            message: "Enter the custom badge text, or choose a built-in badge.",
+          });
+        }
+      }),
   )
   .min(1, "Add at least one service.");
 
@@ -358,7 +390,10 @@ export const packagesModuleSchema = z
         durationLabel: shortText("the duration", 60),
         priceLabel: shortText("the price", 60),
         badgeType: z.enum(["none", "basic", "most-popular", "best-value", "custom"]),
-        customBadge: shortText("the custom badge text", 60),
+        // Blank unless a custom badge is used; the superRefine below requires
+        // text only when badgeType is "custom" (the form hides this field
+        // otherwise, and seeded non-custom packages store "").
+        customBadge: z.string().trim().max(60, "Custom badge text must be 60 characters or fewer."),
         inclusions: z.array(shortText("each inclusion", 200)).max(30),
         image: optionalImageSchema,
         highlight: z.boolean(),
@@ -396,6 +431,15 @@ export const faqsModuleSchema = z
     }),
   )
   .max(60);
+
+export const eventTypesModuleSchema = z
+  .array(
+    z.object({
+      id: z.string(),
+      label: shortText("the event type label", 80),
+    }),
+  )
+  .max(30);
 
 /** Re-exported for editors: image meta plus the max size from the store. */
 export { IMAGE_MAX_BYTES };

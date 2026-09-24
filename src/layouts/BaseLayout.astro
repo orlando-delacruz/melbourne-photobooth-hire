@@ -29,8 +29,17 @@ interface Props {
   preloadImage?: string;
   /** Social share image; defaults to the hero background image. */
   ogImage?: string;
+  /** Alt text for the social share image; defaults to the brand or hero alt. */
+  ogImageAlt?: string;
+  /** Absolute-URL canonical override; defaults to the page URL. */
+  canonicalUrl?: string;
   /** Keep a page out of search results (for example the 404 page). */
   noindex?: boolean;
+  /** Keep crawlers from following this page's links. */
+  nofollow?: boolean;
+  /** OG overrides; default to the page title and description. */
+  ogTitle?: string;
+  ogDescription?: string;
   /** Extra Schema.org nodes for this page, rendered alongside the site graph. */
   structuredData?: Record<string, unknown>[];
 }
@@ -40,20 +49,30 @@ const {
   bodyClass = "",
   preloadImage,
   ogImage,
+  ogImageAlt,
+  canonicalUrl: canonicalOverride,
   noindex = false,
+  nofollow = false,
+  ogTitle,
+  ogDescription,
   structuredData = [],
 } = Astro.props;
 const { site, heroBackgroundImage } = getContent();
 const currentPath = Astro.url.pathname;
 
 const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
-// Canonical URLs are normalised without a trailing slash (root keeps "/").
+// Canonical URLs are normalised without a trailing slash (root keeps "/"),
+// unless the SEO module sets an absolute-URL override for the page.
 const canonicalPath = currentPath.replace(/\/+$/, "") || "/";
-const canonicalUrl = new URL(canonicalPath, siteOrigin).href;
+const canonicalUrl = canonicalOverride ?? new URL(canonicalPath, siteOrigin).href;
+
+const socialTitle = ogTitle || title;
+const socialDescription = ogDescription || description;
 
 const socialImageSrc = ogImage ?? heroBackgroundImage?.src;
 const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
-const socialImageAlt = ogImage ? site.brandName : heroBackgroundImage?.alt;
+const socialImageAlt =
+  ogImage && ogImageAlt ? ogImageAlt : ogImage ? site.brandName : heroBackgroundImage?.alt;
 
 // Google Search Console URL-prefix verification. The token is public and must
 // appear in the served HTML; the env value can override it per environment.
@@ -112,7 +131,11 @@ const siteSchema = {
     <meta name="description" content={description} />
     <meta
       name="robots"
-      content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}
+      content={
+        noindex
+          ? `noindex, ${nofollow ? "nofollow" : "follow"}`
+          : `index, ${nofollow ? "nofollow" : "follow"}, max-image-preview:large`
+      }
     />
     <link rel="canonical" href={canonicalUrl} />
     {googleVerification ? (
@@ -121,16 +144,16 @@ const siteSchema = {
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_AU" />
     <meta property="og:site_name" content={site.brandName} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={socialDescription} />
     <meta property="og:url" content={canonicalUrl} />
     {socialImage ? <meta property="og:image" content={socialImage} /> : null}
     {socialImage && socialImageAlt ? (
       <meta property="og:image:alt" content={socialImageAlt} />
     ) : null}
     <meta name="twitter:card" content={socialImage ? "summary_large_image" : "summary"} />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={socialDescription} />
     {socialImage ? <meta name="twitter:image" content={socialImage} /> : null}
     {socialImage && socialImageAlt ? (
       <meta name="twitter:image:alt" content={socialImageAlt} />

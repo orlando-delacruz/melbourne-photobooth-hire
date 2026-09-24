@@ -1,10 +1,10 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import AdminShell from "../../../components/admin/AdminShell.astro";
-import ServicesModuleEditor from "../../../components/admin/editors/ServicesModuleEditor";
+import EventTypesModuleEditor from "../../../components/admin/editors/EventTypesModuleEditor";
 import { MODULE_SECTIONS } from "../../../components/admin/sections";
 
-const section = MODULE_SECTIONS.find((item) => item.key === "mod-services")!;
+const section = MODULE_SECTIONS.find((item) => item.key === "mod-event-types")!;
 ---
 
 <AdminLayout title={`${section.label} module`}>
@@ -15,6 +15,6 @@ const section = MODULE_SECTIONS.find((item) => item.key === "mod-services")!;
     lede={section.blurb}
     publicHref={section.publicHref}
   >
-    <ServicesModuleEditor client:load />
+    <EventTypesModuleEditor client:load />
   </AdminShell>
 </AdminLayout>

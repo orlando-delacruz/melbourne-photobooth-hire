@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
-import { EVENT_TYPES, PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
+import { PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
+import { cmsRepository } from "../../lib/cms/repository";
+import type { EventTypeItem } from "../../lib/cms/types";
 
 /**
  * Inquiry form island: Phase 2 client-side validation layer only.
@@ -26,8 +28,9 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export default function InquiryForm() {
+export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
   const [phase, setPhase] = useState<Phase>("editing");
+  const [options, setOptions] = useState<string[]>(eventTypes);
   const noticeRef = useRef<HTMLDivElement>(null);
   const {
     register,
@@ -44,6 +47,24 @@ export default function InquiryForm() {
       noticeRef.current?.focus();
     }
   }, [phase]);
+
+  // Editing-browser echo: saved Event Types module state refreshes the
+  // dropdown live; otherwise the build-time options stand.
+  useEffect(() => {
+    let live = true;
+    cmsRepository
+      .loadSection("mod-event-types")
+      .then((value: unknown) => {
+        if (!live || !Array.isArray(value)) return;
+        setOptions((value as EventTypeItem[]).map((item) => item.label));
+      })
+      .catch(() => {
+        // Storage unreadable: keep the build-time options.
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   const onValid: SubmitHandler<InquiryInput> = () => {
     setPhase("ready");
@@ -198,7 +219,7 @@ export default function InquiryForm() {
                 {...register("eventType")}
               >
                 <option value="">Select…</option>
-                {EVENT_TYPES.map((type) => (
+                {options.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>

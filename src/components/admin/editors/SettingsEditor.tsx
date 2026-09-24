@@ -8,6 +8,7 @@ import SaveBar from "../SaveBar";
 import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, errMsg, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import { confirmDestructive } from "../alerts";
 
 export default function SettingsEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -26,7 +27,11 @@ export default function SettingsEditor() {
   if (!loaded) return <Skeleton />;
 
   const confirmRemove = (label: string, remove: () => void) => {
-    if (window.confirm(`Remove "${label}"?`)) remove();
+    void confirmDestructive({ title: `Remove "${label}"?`, confirmText: "Remove" }).then(
+      (confirmed) => {
+        if (confirmed) remove();
+      },
+    );
   };
 
   return (

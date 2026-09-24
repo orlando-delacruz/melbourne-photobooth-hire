@@ -23,6 +23,7 @@ import {
 import type { FieldErrors } from "react-hook-form";
 import type { CmsImage } from "../../lib/cms/types";
 import { deleteImage, getImageUrl, IMAGE_ACCEPT, putImage } from "../../lib/cms/images";
+import { confirmDestructive } from "./alerts";
 
 /** Flatten RHF nested errors to "path: message" lines for the summary. */
 export function flattenErrors(errors: FieldErrors, prefix = ""): string[] {
@@ -218,6 +219,12 @@ export function ImageField({
   };
 
   const onRemove = async () => {
+    const confirmed = await confirmDestructive({
+      title: "Remove this image?",
+      text: "The uploaded file will be removed. This cannot be undone.",
+      confirmText: "Remove image",
+    });
+    if (!confirmed) return;
     if (value.key) {
       try {
         await deleteImage(value.key);

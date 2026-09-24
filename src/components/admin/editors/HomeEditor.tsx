@@ -1,5 +1,5 @@
-// Home page editor (Website CMS): hero, intro, headings, steps, reviews and
-// event types. The services, packages, showcase images and FAQ items shown on
+// Home page editor (Website CMS): hero, intro, headings, steps and reviews.
+// The services, packages, showcase images, FAQ items and event types shown on
 // the homepage are managed in Modules; this editor owns the home-only copy.
 
 import { useFieldArray } from "react-hook-form";
@@ -24,13 +24,12 @@ import {
   STAT_ICON_OPTIONS,
   STEP_ICON_OPTIONS,
   SectionHeadingGroup,
-  SeoGroup,
-  StringList,
   errMsg,
   errorAt,
   optionalSelect,
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
+import { confirmDestructive } from "../alerts";
 import type { CmsImage } from "../../../lib/cms/types";
 
 export default function HomeEditor() {
@@ -51,23 +50,14 @@ export default function HomeEditor() {
   const steps = useFieldArray({ control, name: "steps" });
   const testimonials = useFieldArray({ control, name: "testimonials" });
 
-  const eventTypesPath = "eventTypes" as const;
-  const eventTypes = (watch(eventTypesPath) as string[]) ?? [];
-  const commitEventTypes = (next: string[]) =>
-    setValue(eventTypesPath, next, { shouldDirty: true, shouldValidate: true });
-  const moveEventType = (index: number, direction: -1 | 1) => {
-    const next = [...eventTypes];
-    const target = index + direction;
-    if (target < 0 || target >= next.length) return;
-    const [moved] = next.splice(index, 1);
-    next.splice(target, 0, moved);
-    commitEventTypes(next);
-  };
-
   if (!loaded) return <Skeleton />;
 
   const confirmRemove = (label: string, remove: () => void) => {
-    if (window.confirm(`Remove "${label}"?`)) remove();
+    void confirmDestructive({ title: `Remove "${label}"?`, confirmText: "Remove" }).then(
+      (confirmed) => {
+        if (confirmed) remove();
+      },
+    );
   };
 
   const heroImage = (watch("hero.background") as CmsImage) ?? { key: null, src: "", alt: "" };
@@ -633,45 +623,16 @@ export default function HomeEditor() {
         </AdField>
       </Panel>
 
-      <Panel title="Event types" lede="Occasion chips shown at the bottom of the homepage.">
+      <Panel
+        title="Event types heading"
+        lede="Heading above the occasion chips on the homepage. The chip options themselves live in the Event Types module."
+      >
         <SectionHeadingGroup prefix="eventTypesHeading" register={register} errors={errors} />
-        <StringList
-          label="Event type"
-          addLabel="Add event type"
-          emptyText="Add the occasions this business serves; they appear as chips."
-          items={eventTypes}
-          itemError={(index) => errorAt(errors, `${eventTypesPath}.${index}`)}
-          onChange={(index, value) => {
-            const next = [...eventTypes];
-            next[index] = value;
-            commitEventTypes(next);
-          }}
-          onAdd={() => commitEventTypes([...eventTypes, ""])}
-          onRemove={(index) => {
-            if (window.confirm(`Remove "${eventTypes[index] || `event type ${index + 1}`}"?`)) {
-              commitEventTypes(eventTypes.filter((_, i) => i !== index));
-            }
-          }}
-          onMove={moveEventType}
-        />
       </Panel>
 
       <Panel title="Call to action" lede="Closing enquiry band on the homepage.">
         <CtaBandGroup
           prefix="ctaBand"
-          register={register}
-          errors={errors}
-          watch={watch}
-          setValue={setValue}
-        />
-      </Panel>
-
-      <Panel
-        title="SEO"
-        lede="Search result title, description and social share image for the homepage."
-      >
-        <SeoGroup
-          prefix="seo"
           register={register}
           errors={errors}
           watch={watch}

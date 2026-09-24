@@ -7,8 +7,10 @@ import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
 import CmsEcho from "../components/islands/CmsEcho";
 import { getContent } from "../lib/content/repository";
+import { getPageSeo } from "../lib/content/cmsSource";
 
 const { faqs, ctaImage } = getContent();
+const seo = getPageSeo("faq");
 
 const searchIcon =
   '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>';
@@ -18,8 +20,18 @@ const chatIcon =
 ---
 
 <BaseLayout
-  title="Photobooth Hire FAQs Melbourne | Pricing, Setup & Policies"
-  description="Answers to common Melbourne photobooth hire questions: pricing, what's included, travel, setup time, space requirements and booking policies."
+  title={seo.seoTitle || "Photobooth Hire FAQs Melbourne | Pricing, Setup & Policies"}
+  description={
+    seo.seoDescription ||
+    "Answers to common Melbourne photobooth hire questions: pricing, what's included, travel, setup time, space requirements and booking policies."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
     title="Frequently asked questions"

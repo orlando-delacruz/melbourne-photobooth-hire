@@ -4,7 +4,7 @@
 import { servicesPageSchema } from "../../../lib/cms/schemas";
 import SaveBar from "../SaveBar";
 import { Notice, Skeleton } from "../fields";
-import { CtaBandGroup, PageHeaderGroup, Panel, SeoGroup } from "../groups";
+import { CtaBandGroup, PageHeaderGroup, Panel } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
 
 export default function ServicesPageEditor() {
@@ -41,16 +41,6 @@ export default function ServicesPageEditor() {
       <Panel title="Call to action" lede="Closing enquiry band on the services page.">
         <CtaBandGroup
           prefix="ctaBand"
-          register={register}
-          errors={errors}
-          watch={watch}
-          setValue={setValue}
-        />
-      </Panel>
-
-      <Panel title="SEO" lede="Search result title, description and social share image.">
-        <SeoGroup
-          prefix="seo"
           register={register}
           errors={errors}
           watch={watch}

@@ -8,21 +8,27 @@ import {
   CMS_SECTIONS,
   MODULE_SECTIONS,
   INQUIRIES_SECTION,
+  SEO_SECTION,
   SETTINGS_SECTION,
 } from "./sections";
 
 interface Props {
   /** Active nav key: "dashboard" or a CMS section key. */
   active: string;
-  /** Page title shown in the topbar. */
+  /** Short title shown in the topbar. */
   title: string;
-  /** Short context line shown under the title. */
+  /** Heading shown with the description in the page content. Defaults to the title. */
+  heading?: string;
+  /** Short context line shown under the content heading. */
   lede?: string;
   /** Public page URL for the "view page" link. Omitted for the dashboard. */
   publicHref?: string | null;
 }
 
-const { active, title, lede, publicHref } = Astro.props;
+const { active, title, heading, lede, publicHref } = Astro.props;
+
+/** The Pages group renders expanded when the current route manages a page. */
+const pagesActive = CMS_SECTIONS.some((section) => section.key === active);
 
 const dashboardIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
 const menuIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>`;
@@ -66,21 +72,46 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
           </a>
         </li>
       </ul>
-      <p class="ad-nav-caption">Website CMS</p>
-      <ul class="ad-nav">
-        {CMS_SECTIONS.map((section) => (
-          <li>
-            <a
-              href={section.href}
-              class:list={["ad-nav-link", { "ad-nav-link--current": active === section.key }]}
-              aria-current={active === section.key ? "page" : undefined}
-            >
-              <span class="ad-nav-icon" aria-hidden="true" set:html={section.icon} />
-              {section.label}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <div class="ad-nav-group" data-admin-nav-group data-open={pagesActive ? "true" : "false"}>
+        <button
+          type="button"
+          class:list={["ad-nav-toggle", { "ad-nav-toggle--active": pagesActive }]}
+          data-admin-nav-toggle
+          aria-expanded={pagesActive ? "true" : "false"}
+          aria-controls="admin-nav-pages"
+        >
+          <span>Pages</span>
+          <svg
+            class="ad-nav-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            data-admin-nav-chevron
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        <ul class="ad-nav" id="admin-nav-pages">
+          {CMS_SECTIONS.map((section) => (
+            <li>
+              <a
+                href={section.href}
+                class:list={["ad-nav-link", { "ad-nav-link--current": active === section.key }]}
+                aria-current={active === section.key ? "page" : undefined}
+              >
+                <span class="ad-nav-icon" aria-hidden="true" set:html={section.icon} />
+                {section.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
       <p class="ad-nav-caption">Modules</p>
       <ul class="ad-nav">
         {MODULE_SECTIONS.map((section) => (
@@ -95,6 +126,19 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
             </a>
           </li>
         ))}
+      </ul>
+      <p class="ad-nav-caption">SEO</p>
+      <ul class="ad-nav">
+        <li>
+          <a
+            href={SEO_SECTION.href}
+            class:list={["ad-nav-link", { "ad-nav-link--current": active === SEO_SECTION.key }]}
+            aria-current={active === SEO_SECTION.key ? "page" : undefined}
+          >
+            <span class="ad-nav-icon" aria-hidden="true" set:html={SEO_SECTION.icon} />
+            {SEO_SECTION.label}
+          </a>
+        </li>
       </ul>
       <p class="ad-nav-caption">Site</p>
       <ul class="ad-nav">
@@ -131,7 +175,6 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
       </button>
       <div class="ad-topbar-title">
         <h1>{title}</h1>
-        {lede ? <p>{lede}</p> : null}
       </div>
       {publicHref ? (
         <a class="ad-view-link" href={publicHref} target="_blank" rel="noopener noreferrer">
@@ -141,6 +184,12 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
       ) : null}
     </header>
     <main class="ad-content" id="main">
+      {lede ? (
+        <div class="ad-page-head">
+          <h2>{heading ?? title}</h2>
+          <p>{lede}</p>
+        </div>
+      ) : null}
       <slot />
     </main>
   </div>
@@ -168,5 +217,14 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") setOpen(false);
     });
+    const navGroup = document.querySelector("[data-admin-nav-group]");
+    const navToggle = document.querySelector("[data-admin-nav-toggle]");
+    if (navGroup instanceof HTMLElement && navToggle instanceof HTMLButtonElement) {
+      navToggle.addEventListener("click", () => {
+        const open = navGroup.getAttribute("data-open") !== "true";
+        navGroup.setAttribute("data-open", open ? "true" : "false");
+        navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
   })();
 </script>
