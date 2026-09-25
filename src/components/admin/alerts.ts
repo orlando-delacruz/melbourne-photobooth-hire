@@ -37,6 +37,14 @@ const DANGER_BUTTON_CLASSES = {
   cancelButton: "ad-button ad-button--secondary",
 } as const;
 
+// Icon colors mirror styles/tokens.css (--color-success/warning/error);
+// SweetAlert2 needs literals here, so keep both sides in sync by hand.
+const ICON_COLORS = {
+  success: "#1f6e43",
+  warning: "#8a5a00",
+  error: "#b3261e",
+} as const;
+
 const SUCCESS_CLASSES = {
   container: "ad-swal-container",
 } as const;
@@ -63,6 +71,7 @@ export async function confirmDestructive({
     title,
     text,
     icon: "warning",
+    iconColor: ICON_COLORS.warning,
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: "Cancel",
@@ -89,6 +98,7 @@ export async function confirmDiscardChanges(): Promise<boolean> {
     title: "Discard unsaved changes?",
     text: "Your edits will be replaced with the saved values.",
     icon: "warning",
+    iconColor: ICON_COLORS.warning,
     showCancelButton: true,
     confirmButtonText: "Discard",
     cancelButtonText: "Keep editing",
@@ -118,6 +128,7 @@ export async function notifySuccess(title: string): Promise<void> {
     ...MODAL_BASE,
     title,
     icon: "success",
+    iconColor: ICON_COLORS.success,
     showConfirmButton: false,
     timer: 2200,
     customClass: SUCCESS_CLASSES,
@@ -135,6 +146,7 @@ export async function notifyError(title: string, body?: string): Promise<void> {
     title,
     text: body ?? "Please try again.",
     icon: "error",
+    iconColor: ICON_COLORS.error,
     confirmButtonText: "Dismiss",
     customClass: BUTTON_CLASSES,
   });
