@@ -34,6 +34,10 @@ export default function InquiryForm({
   const [phase, setPhase] = useState<Phase>("editing");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  // True when the Turnstile widget reports its own error (for example a
+  // misconfigured site key or disallowed hostname, console "Error: 600010").
+  // Surfaced inline so a dead widget never looks like "did not complete".
+  const [turnstileFailed, setTurnstileFailed] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   // Dropdown options come from the build-time Event Types module data
@@ -71,13 +75,19 @@ export default function InquiryForm({
           widgetId.current = api.render(turnstileRef.current, {
             sitekey: turnstileSiteKey,
             callback: (token: string) => {
-              if (!cancelled) setTurnstileToken(token);
+              if (!cancelled) {
+                setTurnstileToken(token);
+                setTurnstileFailed(false);
+              }
             },
             "expired-callback": () => {
               if (!cancelled) setTurnstileToken(null);
             },
             "error-callback": () => {
-              if (!cancelled) setTurnstileToken(null);
+              if (!cancelled) {
+                setTurnstileToken(null);
+                setTurnstileFailed(true);
+              }
             },
           });
         } catch {
@@ -382,6 +392,15 @@ export default function InquiryForm({
       {turnstileSiteKey ? (
         <div className="iq-field">
           <div ref={turnstileRef} />
+          {turnstileFailed ? (
+            <p className="iq-error" role="alert">
+              <AlertCircle size={16} aria-hidden="true" />
+              <span>
+                Spam protection could not load. Refresh the page and try again — if it keeps
+                failing, contact us directly instead.
+              </span>
+            </p>
+          ) : null}
         </div>
       ) : null}
 
