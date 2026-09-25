@@ -5,7 +5,7 @@
 // plain strings, exactly as rendered.
 
 import * as z from "zod";
-import { IMAGE_MAX_BYTES } from "./images";
+import { IMAGE_MAX_BYTES } from "./storage";
 
 /** Short required text such as names, titles and labels. */
 function shortText(label: string, max = 200) {

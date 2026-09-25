@@ -1,22 +1,35 @@
-// Admin dashboard: inquiry summary cards, the latest inquiries, a
-// content-freshness table for every managed page and a modules overview.
+// Admin dashboard: live inquiry summary cards, recent inquiries, page
+// freshness and module overview. Every number comes from Supabase; a failed
+// load shows an error instead of placeholder content.
 
 import { useEffect, useState } from "react";
-import type { CmsContent, CmsPageKey } from "../../lib/cms/types";
-import { cmsRepository } from "../../lib/cms/repository";
-import type { SectionMeta } from "../../lib/cms/repository";
-import type { StoreSectionKey } from "../../lib/cms/types";
-import {
-  adminInquirySource,
-  byNewest,
-  formatInquiryDate,
-  formatInquiryDateTime,
-} from "../../lib/cms/inquiries";
+import type {
+  CmsContent,
+  CmsPageKey,
+  EventTypeItem,
+  FaqItem,
+  GalleryItem,
+  PackageItem,
+  ServiceItem,
+} from "../../lib/cms/types";
+import { getModuleFreshness, loadModuleItems } from "../../lib/supabase/modules";
+import type { ModuleSectionKey } from "./ModuleCrud";
+import { getPageMeta, loadPageSection, type SectionMeta } from "../../lib/supabase/pages";
+import { liveInquirySource } from "../../lib/supabase/inquiries";
+import { byNewest, formatInquiryDate, formatInquiryDateTime } from "../../lib/cms/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
 import { CMS_SECTIONS, MODULE_SECTIONS } from "./sections";
-import { Skeleton } from "./fields";
+import { Notice, Skeleton } from "./fields";
 
 const RECENT_LIMIT = 5;
+
+const MODULE_KEYS: ModuleSectionKey[] = [
+  "mod-services",
+  "mod-packages",
+  "mod-gallery",
+  "mod-faqs",
+  "mod-event-types",
+];
 
 function isSameDay(a: Date, b: Date): boolean {
   return (
@@ -52,41 +65,83 @@ function summarizeModules(content: CmsContent): string {
   return `${modules.services.length} services, ${modules.packages.length} packages, ${modules.gallery.length} images, ${modules.faqs.length} questions`;
 }
 
+interface Snapshot {
+  content: CmsContent;
+  meta: Record<string, SectionMeta>;
+  inquiries: AdminInquiry[];
+}
+
+async function loadSnapshot(): Promise<Snapshot> {
+  const [moduleEntries, pageEntries, settingsBlob, pageMeta, moduleMeta, inquiries] =
+    await Promise.all([
+      Promise.all(MODULE_KEYS.map(async (key) => [key, await loadModuleItems(key)] as const)),
+      Promise.all(
+        CMS_SECTIONS.map(
+          async (section) =>
+            [section.key as CmsPageKey, await loadPageSection(section.key as CmsPageKey)] as const,
+        ),
+      ),
+      loadPageSection("settings"),
+      getPageMeta(),
+      getModuleFreshness(),
+      liveInquirySource.list(),
+    ]);
+  const modules = new Map(moduleEntries);
+  const pages = Object.fromEntries(pageEntries) as CmsContent["pages"];
+  const content: CmsContent = {
+    pages,
+    settings: settingsBlob as CmsContent["settings"],
+    modules: {
+      services: (modules.get("mod-services") ?? []) as ServiceItem[],
+      packages: (modules.get("mod-packages") ?? []) as PackageItem[],
+      gallery: (modules.get("mod-gallery") ?? []) as GalleryItem[],
+      faqs: (modules.get("mod-faqs") ?? []) as FaqItem[],
+      "event-types": (modules.get("mod-event-types") ?? []) as EventTypeItem[],
+    },
+    seo: { privacy: pages.home.seo, terms: pages.home.seo },
+  };
+  const meta: Record<string, SectionMeta> = { ...pageMeta };
+  for (const [key, savedAt] of Object.entries(moduleMeta)) meta[key] = { savedAt };
+  return { content, meta, inquiries };
+}
+
 export default function DashboardView() {
-  const [content, setContent] = useState<CmsContent | null>(null);
-  const [meta, setMeta] = useState<Record<StoreSectionKey, SectionMeta> | null>(null);
-  const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     let live = true;
-    cmsRepository.load().then((value) => {
-      if (live) setContent(value);
-    });
-    cmsRepository.getMeta().then((value) => {
-      if (live) setMeta(value);
-    });
-    adminInquirySource.list().then((value) => {
-      if (live) setInquiries(value);
-    });
+    loadSnapshot()
+      .then((value) => {
+        if (live) setSnapshot(value);
+      })
+      .catch(() => {
+        if (live) setLoadError(true);
+      });
     return () => {
       live = false;
     };
   }, []);
 
-  if (!content || !meta || !inquiries) return <Skeleton />;
+  if (loadError) {
+    return (
+      <div className="ad-stack">
+        <Notice tone="error" title="Could not load the dashboard.">
+          <p>Check your connection and refresh the page.</p>
+        </Notice>
+      </div>
+    );
+  }
+  if (!snapshot) return <Skeleton />;
+  const { content, meta, inquiries } = snapshot;
 
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const total = inquiries.length;
   const today = inquiries.filter((inquiry) => isSameDay(new Date(inquiry.submittedAt), now)).length;
   const weekly = inquiries.filter((inquiry) => new Date(inquiry.submittedAt) >= weekAgo).length;
-  const pageKeys = [
-    ...CMS_SECTIONS.map((section) => section.key as CmsPageKey),
-    "settings",
-  ] as const;
-  const pagesUpdated = pageKeys.filter(
-    (key) => meta[key as StoreSectionKey]?.savedAt !== null,
-  ).length;
+  const pageKeys = [...CMS_SECTIONS.map((section) => section.key as CmsPageKey), "settings"];
+  const pagesUpdated = pageKeys.filter((key) => meta[key]?.savedAt != null).length;
 
   const recent = [...inquiries].sort(byNewest).slice(0, RECENT_LIMIT);
 
@@ -170,7 +225,7 @@ export default function DashboardView() {
             </thead>
             <tbody>
               {CMS_SECTIONS.map((section) => {
-                const savedAt = meta[section.key as StoreSectionKey]?.savedAt ?? null;
+                const savedAt = meta[section.key]?.savedAt ?? null;
                 return (
                   <tr key={section.key}>
                     <td>
@@ -222,7 +277,7 @@ export default function DashboardView() {
             </thead>
             <tbody>
               {MODULE_SECTIONS.map((section) => {
-                const savedAt = meta[section.key as StoreSectionKey]?.savedAt ?? null;
+                const savedAt = meta[section.key]?.savedAt ?? null;
                 return (
                   <tr key={section.key}>
                     <td>

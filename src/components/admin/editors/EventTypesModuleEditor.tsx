@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { EventTypeItem } from "../../../lib/cms/types";
 import { eventTypesModuleSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import { AdField, Notice, Skeleton, TextInput } from "../fields";
 import { Panel } from "../groups";
 import { DetailRow, toFieldErrors, useModuleList } from "../ModuleCrud";

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import type { GalleryItem } from "../../../lib/cms/types";
 import { galleryModuleSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import { AdField, ImageField, Notice, Skeleton } from "../fields";
 import { Panel } from "../groups";
 import {

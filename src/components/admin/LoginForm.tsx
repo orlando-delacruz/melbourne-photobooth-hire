@@ -74,14 +74,9 @@ export default function LoginForm() {
   if (unavailable) {
     return (
       <div className="ad-stack">
-        <Notice tone="info" title="Sign-in isn't connected yet.">
-          <p>Continue to the dashboard to manage website content.</p>
+        <Notice tone="error" title="Sign-in is not connected.">
+          <p>Supabase is not configured here. Set the public Supabase env vars and reload.</p>
         </Notice>
-        <p>
-          <a className="ad-button ad-button--primary" href="/admin">
-            Continue to dashboard
-          </a>
-        </p>
       </div>
     );
   }

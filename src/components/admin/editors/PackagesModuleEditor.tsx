@@ -7,7 +7,7 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import type { BadgeType, PackageItem } from "../../../lib/cms/types";
 import { BADGE_LABELS } from "../../../lib/cms/types";
 import { packagesModuleSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import { AdField, ImageField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList } from "../groups";
 import { DetailRow, HighlightPill, ModuleImage, toFieldErrors, useModuleList } from "../ModuleCrud";

@@ -7,7 +7,6 @@
 // delete; anyone can read served images.
 
 import { getSupabaseBrowser, isSupabaseConfigured } from "../supabase/client";
-import { collectImageKeys } from "./images";
 
 export const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
 export const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
@@ -73,6 +72,26 @@ export async function deleteImage(key: string): Promise<void> {
   if (!isSupabaseConfigured()) return;
   const { error } = await getSupabaseBrowser().storage.from(BUCKET).remove([key]);
   if (error) throw new Error("Stored image could not be removed.");
+}
+
+/**
+ * Collects every CmsImage storage key referenced by a saved value. Keys
+ * identify `{ key, src, alt }` image objects at any depth.
+ */
+export function collectImageKeys(value: unknown, into: Set<string>): void {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    for (const entry of value) collectImageKeys(entry, into);
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  if ("key" in record && "src" in record && "alt" in record && typeof record.key === "string") {
+    into.add(record.key);
+    return;
+  }
+  for (const child of Object.values(record)) {
+    if (child && typeof child === "object") collectImageKeys(child, into);
+  }
 }
 
 /**

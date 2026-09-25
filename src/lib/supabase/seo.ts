@@ -6,26 +6,14 @@
 // Unconfigured env falls back to the local repository with identical shapes.
 
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
-import { cmsRepository } from "../cms/repository";
+import { cmsSeed } from "../cms/seed";
 import { deleteImage } from "../cms/storage";
-import {
-  PAGE_META_DEFAULTS,
-  type CmsImage,
-  type CmsPageKey,
-  type PageMeta,
-  type SeoPageKey,
-} from "../cms/types";
+import { PAGE_META_DEFAULTS, type PageMeta, type SeoPageKey } from "../cms/types";
 
-/** Local fallback: mirrors the pre-Supabase SeoEditor load behavior. */
-async function loadLocalSeo(key: SeoPageKey): Promise<PageMeta> {
-  if (key === "privacy" || key === "terms") {
-    const section = await cmsRepository.loadSection(
-      key === "privacy" ? "seo-privacy" : "seo-terms",
-    );
-    return normalizeSeo(section);
-  }
-  const section = (await cmsRepository.loadSection(key as CmsPageKey)) as { seo?: unknown };
-  return normalizeSeo(section?.seo);
+/** Seed fallback: the default metadata for one page. */
+function seedSeo(key: SeoPageKey): PageMeta {
+  if (key === "privacy" || key === "terms") return normalizeSeo(cmsSeed.seo[key]);
+  return normalizeSeo(cmsSeed.pages[key].seo);
 }
 
 /** Merges saved values over field defaults so older saves stay editable. */
@@ -34,7 +22,7 @@ export function normalizeSeo(value: unknown): PageMeta {
     ogImage?: Partial<NonNullable<PageMeta["ogImage"]>>;
   };
   const rawImage = base.ogImage && typeof base.ogImage === "object" ? base.ogImage : null;
-  const image: Partial<CmsImage> = rawImage ?? {};
+  const image: Partial<NonNullable<PageMeta["ogImage"]>> = rawImage ?? {};
   return {
     seoTitle: typeof base.seoTitle === "string" ? base.seoTitle : "",
     seoDescription: typeof base.seoDescription === "string" ? base.seoDescription : "",
@@ -79,10 +67,10 @@ function rowToSeo(row: {
   };
 }
 
-/** Admin load: DB row, or local metadata when the row is still empty. */
+/** Admin load: DB row, or seed metadata when the row is still empty. */
 export async function loadSeo(key: SeoPageKey): Promise<PageMeta> {
-  const fallback = await loadLocalSeo(key);
-  if (!isSupabaseConfigured()) return fallback;
+  const fallback = seedSeo(key);
+  if (!isSupabaseConfigured()) throw new Error("CMS backend is not connected.");
   const { data, error } = await getSupabaseBrowser()
     .from("page_seo")
     .select("*")
@@ -95,16 +83,7 @@ export async function loadSeo(key: SeoPageKey): Promise<PageMeta> {
 
 /** Admin save: upserts the row and GCs a replaced/removed OG upload. */
 export async function saveSeo(key: SeoPageKey, seo: PageMeta): Promise<void> {
-  if (!isSupabaseConfigured()) {
-    if (key === "privacy" || key === "terms") {
-      await cmsRepository.saveSection(key === "privacy" ? "seo-privacy" : "seo-terms", seo);
-      return;
-    }
-    const pageKey = key as CmsPageKey;
-    const section = (await cmsRepository.loadSection(pageKey)) as Record<string, unknown>;
-    await cmsRepository.saveSection(pageKey, { ...section, seo });
-    return;
-  }
+  if (!isSupabaseConfigured()) throw new Error("CMS backend is not connected.");
   const supabase = getSupabaseBrowser();
   const { data: previous } = await supabase
     .from("page_seo")

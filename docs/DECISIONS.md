@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Twenty-eight decision records exist (DEC-001 through DEC-028). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Twenty-nine decision records exist (DEC-001 through DEC-029). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -283,6 +283,7 @@ Twenty-eight decision records exist (DEC-001 through DEC-028). Existing selectio
 | DEC-026 | Inquiry endpoint: store-first receipt, gated integrations | Accepted   | 2026-09-24 |
 | DEC-027 | Publish-on-demand via guarded Deploy Hook trigger | Superseded | 2026-09-24 |
 | DEC-028 | Server-rendered public pages with edge SWR, no rebuilds | Accepted   | 2026-09-24 |
+| DEC-029 | Single-backend simplification: generated types, no local mode | Accepted   | 2026-09-24 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -790,6 +791,25 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, DEC-024/DEC-028 notes in prior reports.
 - **Supersedes / Superseded by:** Supersedes DEC-027.
 - **Open questions or follow-up:** Live save-to-public round-trip timing check; the open asset-layout incident (Phase 18) still needs its evidence.
+
+### DEC-029 — Single-backend simplification: generated types, no local mode
+
+- **ID:** DEC-029
+- **Title:** Delete the local fallback layer; generate DB types; add a health endpoint
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The integration carried two backends everywhere (14 configured/unconfigured branches, localStorage + IndexedDB alongside Supabase, hand-written DB types that failed compilation three times). The "edits not showing" incident was caused directly by silent local-only saves. Separately, RLS verification exposed a subtle PostgREST behavior worth recording (see consequences).
+- **Decision:**
+  1. **One backend.** Deleted `lib/cms/repository.ts`, `lib/cms/images.ts` and the mock inquiry source. Admin paths throw "CMS backend is not connected" without env instead of succeeding into browser storage. Seeds remain solely as the public build-time fallback.
+  2. **Generated types.** `lib/supabase/database.types.ts` is produced by `supabase gen types` (command in the file header); hand edits there are forbidden. This deletes the `never[]` upsert saga class permanently.
+  3. **Kept seams.** `createId`/`slugId` moved to `lib/cms/ids.ts`; `collectImageKeys` moved into `storage.ts`; `SectionMeta` now lives in `supabase/pages.ts`. Dashboard and inquiries read live data with error states.
+  4. **Health endpoint.** Public `GET /api/health` reports `{ ok, source: live|seed, counts, storageReachable }` from anon-readable facts only, so the next "is it live data?" question takes 10 seconds.
+- **Alternatives considered:** Keeping local mode as offline backup — rejected by the operator; it was the incident. A custom backend for public reads — rejected; anon RLS already scopes correctly.
+- **Rationale:** Every past incident traced to duality (two truths, silent fallback, hand-rolled types). Fewer concepts, louder failures.
+- **Consequences:** Local dev hard-requires `.env`; the PAT used for verification and codegen must be revoked after use. Verified live with a temporary project token: anon reads highlighted-only, anon module writes denied (401), anon inquiry insert works with `return=minimal` (201), service paths work, storage anon-upload denied (403) with working service upload/delete, zero orphan files, database left pristine. Recorded PostgREST subtlety: anon INSERT with `return=representation` fails (401) because anon cannot SELECT the new row back — inserts must use `return=minimal`; the inquiry endpoint is unaffected (service client).
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/DATA-MODEL.md`, DEC-024.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Revoke the verification token; browser round-trips; the VSCode terminal error text and asset-layout evidence are still outstanding.
 
 ## 22. Related Documentation
 

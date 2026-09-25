@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import type { FaqItem } from "../../../lib/cms/types";
 import { faqsModuleSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import { AdField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel } from "../groups";
 import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";

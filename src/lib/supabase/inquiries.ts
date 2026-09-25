@@ -5,8 +5,8 @@
 // insert via POST /api/inquiries and can never list the table.
 // Unconfigured env falls back to the mock source so dev stays usable.
 
-import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
-import { adminInquirySource, type AdminInquiry, type AdminInquirySource } from "../cms/inquiries";
+import { getSupabaseBrowser } from "./client";
+import type { AdminInquiry, AdminInquirySource } from "../cms/inquiries";
 
 function rowToInquiry(row: {
   id: string;
@@ -62,7 +62,4 @@ export const liveInquirySource: AdminInquirySource = {
   },
 };
 
-/** Live source when configured, mock source otherwise. */
-export function inquirySource(): AdminInquirySource {
-  return isSupabaseConfigured() ? liveInquirySource : adminInquirySource;
-}
+/** Live inquiry source. No mock: without a backend every call throws. */

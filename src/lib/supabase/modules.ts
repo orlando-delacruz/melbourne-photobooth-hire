@@ -1,24 +1,14 @@
-// Supabase adapter for the five item modules (Phase 6, DEC-024).
+// Supabase adapter for the five item modules (single-backend model).
 //
 // Editors keep their list/detail UX untouched: useModuleList loads and
 // persists through here. Each item's `id` doubles as its DB slug (stable and
 // unique; seeds already use slugs as ids). Array position is `sort_order`.
-// When Supabase env is absent, everything falls back to the local repository
-// so `npm run dev` works pre-provisioning.
+// Without Supabase env every operation throws and the UI states it plainly.
 
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
 import type { Database } from "./database.types";
-import { cmsRepository } from "../cms/repository";
-import { deleteImage } from "../cms/storage";
-import { collectImageKeys } from "../cms/images";
-import type {
-  EventTypeItem,
-  FaqItem,
-  GalleryItem,
-  PackageItem,
-  ServiceItem,
-  StoreSectionKey,
-} from "../cms/types";
+import { collectImageKeys, deleteImage } from "../cms/storage";
+import type { EventTypeItem, FaqItem, GalleryItem, PackageItem, ServiceItem } from "../cms/types";
 import type { ModuleSectionKey } from "../../components/admin/ModuleCrud";
 
 type ServiceRow = Database["public"]["Tables"]["services"]["Row"];
@@ -153,8 +143,7 @@ export async function loadModuleItems<T extends { id: string }>(
   sectionKey: ModuleSectionKey,
 ): Promise<T[]> {
   if (!isSupabaseConfigured()) {
-    const local = await cmsRepository.loadSection(sectionKey as StoreSectionKey);
-    return (Array.isArray(local) ? local : []) as unknown as T[];
+    throw new Error("CMS backend is not connected.");
   }
   const supabase = getSupabaseBrowser();
   switch (sectionKey) {
@@ -207,6 +196,50 @@ async function deleteMissingSlugs(
   if (error) throw new Error("Module could not be saved.");
 }
 
+/** Latest row update per module for the dashboard freshness table. */
+export async function getModuleFreshness(): Promise<Record<ModuleSectionKey, string | null>> {
+  const supabase = getSupabaseBrowser();
+  const [services, packages, gallery, faqs, eventTypes] = await Promise.all([
+    supabase
+      .from("services")
+      .select("updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("packages")
+      .select("updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("gallery_items")
+      .select("updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("faqs")
+      .select("updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("event_types")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  return {
+    "mod-services": services.data?.updated_at ?? null,
+    "mod-packages": packages.data?.updated_at ?? null,
+    "mod-gallery": gallery.data?.updated_at ?? null,
+    "mod-faqs": faqs.data?.updated_at ?? null,
+    "mod-event-types": eventTypes.data?.created_at ?? null,
+  };
+}
+
 /**
  * Persists a whole module list: upserts every item by slug, deletes rows no
  * longer present, garbage-collects orphaned storage images, then reloads from
@@ -218,8 +251,7 @@ export async function saveModuleItems<T extends { id: string }>(
   next: T[],
 ): Promise<T[]> {
   if (!isSupabaseConfigured()) {
-    await cmsRepository.saveSection(sectionKey as StoreSectionKey, next);
-    return next;
+    throw new Error("CMS backend is not connected.");
   }
   const supabase = getSupabaseBrowser();
   const keepSlugs = next.map((item) => item.id);

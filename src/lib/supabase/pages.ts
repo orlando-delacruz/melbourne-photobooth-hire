@@ -1,27 +1,41 @@
-// Supabase adapter for page-level CMS content (Phase 7, DEC-024).
+// Supabase adapter for page-level CMS content (single-backend model).
 //
 // The 7 page sections plus settings live in `page_contents` as validated
 // JSONB blobs (one row per page_key); Zod schemas remain the validator and
 // item modules stay the single source of truth for lists (no duplication).
-// Rows are seeded empty, so an empty row falls back to the local seed shape
-// until the first save. Unconfigured env falls back to the local repository.
+// Rows seeded empty fall back to the seed shape until the first save. There
+// is no local repository anymore: without Supabase env every operation
+// throws and the UI states it plainly.
 
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
-import { cmsRepository, type SectionMeta } from "../cms/repository";
-import { deleteImage } from "../cms/storage";
-import { collectImageKeys } from "../cms/images";
-import type { CmsPageKey } from "../cms/types";
+import type { Json } from "./database.types";
+import { cmsSeed } from "../cms/seed";
+import { collectImageKeys, deleteImage } from "../cms/storage";
 
-export type PageSectionKey = CmsPageKey | "settings";
+export type PageSectionKey = keyof typeof cmsSeed.pages | keyof { settings: unknown };
+
+/** Freshness stamp for one section. Null means never saved. */
+export interface SectionMeta {
+  savedAt: string | null;
+}
+
+function seedFor(key: PageSectionKey): unknown {
+  if (key === "settings") return structuredClone(cmsSeed.settings);
+  return structuredClone(cmsSeed.pages[key as keyof typeof cmsSeed.pages]);
+}
 
 function isEmptyContent(value: unknown): boolean {
   return !value || typeof value !== "object" || Object.keys(value).length === 0;
 }
 
-/** Loads page content: DB blob, or the local seed shape when empty/unset. */
+function requireBackend(): void {
+  if (!isSupabaseConfigured()) throw new Error("CMS backend is not connected.");
+}
+
+/** Loads page content: DB blob, or the seed shape when empty/unset. */
 export async function loadPageSection(key: PageSectionKey): Promise<unknown> {
-  const seed = await cmsRepository.loadSection(key);
-  if (!isSupabaseConfigured()) return seed;
+  const seed = seedFor(key);
+  requireBackend();
   const { data, error } = await getSupabaseBrowser()
     .from("page_contents")
     .select("content")
@@ -38,14 +52,11 @@ export async function savePageSection(
   previous: unknown,
   values: unknown,
 ): Promise<{ savedAt: string }> {
-  if (!isSupabaseConfigured()) return cmsRepository.saveSection(key, values);
+  requireBackend();
   const supabase = getSupabaseBrowser();
   const { error } = await supabase
     .from("page_contents")
-    .upsert(
-      { page_key: key, content: values as Record<string, unknown> },
-      { onConflict: "page_key" },
-    );
+    .upsert({ page_key: key, content: values as unknown as Json }, { onConflict: "page_key" });
   if (error) throw new Error("Section could not be saved.");
 
   const oldKeys = new Set<string>();
@@ -71,11 +82,8 @@ export async function savePageSection(
  * seed) and removes uploads referenced only by the deleted content.
  */
 export async function resetPageSection(key: PageSectionKey): Promise<unknown> {
-  const seed = await cmsRepository.loadSection(key);
-  if (!isSupabaseConfigured()) {
-    await cmsRepository.resetSection(key);
-    return seed;
-  }
+  const seed = seedFor(key);
+  requireBackend();
   const supabase = getSupabaseBrowser();
   const { data: current } = await supabase
     .from("page_contents")
@@ -96,15 +104,17 @@ export async function resetPageSection(key: PageSectionKey): Promise<unknown> {
   return seed;
 }
 
-/** Freshness per section: DB updated_at where present, local meta otherwise. */
+/** Freshness per section from DB updated_at; missing rows read null. */
 export async function getPageMeta(): Promise<Record<string, SectionMeta>> {
-  const local = await cmsRepository.getMeta();
-  if (!isSupabaseConfigured()) return local;
+  requireBackend();
   const { data, error } = await getSupabaseBrowser()
     .from("page_contents")
     .select("page_key, updated_at");
-  if (error || !data) return local;
-  const meta: Record<string, SectionMeta> = { ...local };
+  if (error || !data) throw new Error("Section freshness could not be loaded.");
+  const meta: Record<string, SectionMeta> = {};
   for (const row of data) meta[row.page_key] = { savedAt: row.updated_at };
+  for (const key of [...Object.keys(cmsSeed.pages), "settings"] as PageSectionKey[]) {
+    meta[key] ??= { savedAt: null };
+  }
   return meta;
 }

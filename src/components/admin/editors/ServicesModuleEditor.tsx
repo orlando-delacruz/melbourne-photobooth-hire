@@ -7,7 +7,7 @@ import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import type { ServiceBadgeType, ServiceItem } from "../../../lib/cms/types";
 import { serviceBadgeText } from "../../../lib/cms/types";
 import { servicesModuleSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import { AdField, AdSelect, ImageField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList, SERVICE_ICON_OPTIONS } from "../groups";
 import { DetailRow, HighlightPill, ModuleImage, toFieldErrors, useModuleList } from "../ModuleCrud";

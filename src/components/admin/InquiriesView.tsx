@@ -9,7 +9,7 @@ import {
   formatInquiryDateTime,
   gmailComposeUrl,
 } from "../../lib/cms/inquiries";
-import { inquirySource } from "../../lib/supabase/inquiries";
+import { liveInquirySource } from "../../lib/supabase/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
 import { Notice, Skeleton } from "./fields";
 import { confirmDelete, notifyError, notifySuccess } from "./alerts";
@@ -28,7 +28,7 @@ export default function InquiriesView() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const source = inquirySource();
+  const source = liveInquirySource;
 
   useEffect(() => {
     let live = true;

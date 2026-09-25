@@ -3,7 +3,7 @@
 
 import { useFieldArray } from "react-hook-form";
 import { aboutPageSchema } from "../../../lib/cms/schemas";
-import { createId } from "../../../lib/cms/repository";
+import { createId } from "../../../lib/cms/ids";
 import SaveBar from "../SaveBar";
 import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import {
