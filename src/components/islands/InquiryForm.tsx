@@ -76,6 +76,9 @@ export default function InquiryForm({
             "expired-callback": () => {
               if (!cancelled) setTurnstileToken(null);
             },
+            "error-callback": () => {
+              if (!cancelled) setTurnstileToken(null);
+            },
           });
         } catch {
           // Widget unavailable: the submission goes without a token.
@@ -97,10 +100,22 @@ export default function InquiryForm({
         sitekey: string;
         callback?: (token: string) => void;
         "expired-callback"?: () => void;
+        "error-callback"?: () => void;
       },
     ): string;
     reset(widgetId?: string): void;
   }
+
+  // Fresh token per attempt: a consumed or expired token must never be reused.
+  const resetTurnstile = () => {
+    try {
+      const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+      if (api && widgetId.current) api.reset(widgetId.current);
+    } catch {
+      // Widget unavailable: nothing to reset.
+    }
+    setTurnstileToken(null);
+  };
 
   const onValid: SubmitHandler<InquiryInput> = async (values) => {
     setSubmitError(null);
@@ -116,6 +131,7 @@ export default function InquiryForm({
         message?: unknown;
       } | null;
       if (response.ok && payload?.ok === true) {
+        resetTurnstile();
         setPhase("received");
         return;
       }
@@ -124,9 +140,11 @@ export default function InquiryForm({
           ? payload.message
           : "Your enquiry could not be sent. Please try again.";
       setSubmitError(message);
+      resetTurnstile();
       setPhase("editing");
     } catch {
       setSubmitError("Your enquiry could not be sent. Check your connection and try again.");
+      resetTurnstile();
       setPhase("editing");
     }
   };

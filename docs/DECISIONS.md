@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty decision records exist (DEC-001 through DEC-030). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty-one decision records exist (DEC-001 through DEC-031). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -285,6 +285,7 @@ Thirty decision records exist (DEC-001 through DEC-030). Existing selections, re
 | DEC-028 | Server-rendered public pages with edge SWR, no rebuilds | Accepted   | 2026-09-24 |
 | DEC-029 | Single-backend simplification: generated types, no local mode | Accepted   | 2026-09-24 |
 | DEC-030 | Content-completeness: eyebrow fix, settings, chips, legal blobs | Accepted   | 2026-09-24 |
+| DEC-031 | Inquiry endpoint: strict Gmail delivery, visible failures | Accepted | 2026-09-25 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -831,6 +832,24 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md`, `docs/DATA-MODEL.md`, DEC-018/DEC-023.
 - **Supersedes / Superseded by:** —.
 - **Open questions or follow-up:** Browser round-trips for the new surfaces; social-icons UI if ever wanted.
+
+### DEC-031 — Inquiry endpoint: strict Gmail delivery, visible failures
+
+- **ID:** DEC-031
+- **Title:** Strict Gmail delivery with no silent EmailJS failures
+- **Status:** Accepted
+- **Date:** 2026-09-25
+- **Context:** After EmailJS/Turnstile keys were provisioned, live inquiries stored admin rows but Gmail received nothing, with no EmailJS History entry and no runtime-log line. Root cause was two silent paths in `POST /api/inquiries`: the missing-key early-return and the unchecked `fetch` status (any 400/401/403 answered false `200`). This violated REQ-INQ-018, REQ-EML-003/004, and `docs/SECURITY.md` Section 19 (no false success).
+- **Decision:**
+  1. **Strict success.** The endpoint awaits the EmailJS send and answers `200 {ok:true}` only when the row is stored AND EmailJS accepts the send; otherwise it answers `502` with retry/direct-contact guidance. The stored row remains as the recovery receipt visible in `/admin/inquiries`.
+  2. **Visible failures.** Missing keys log `EmailJS forward skipped. Missing <NAMES>` (names only, never values); HTTP rejections log `status + truncated error text` (no PII, no secrets). `GET /api/health` exposes `emailConfigured` presence booleans only.
+  3. **Fresh Turnstile token per attempt.** The form resets the widget and clears the token after every outcome plus on widget error, so consumed/expired tokens are never reused.
+- **Alternatives considered:** Keeping store-first best-effort success — rejected; it reports success when Gmail delivery failed. Deleting the DB row on email failure — rejected; the row is the only recovery path. Adding a delivered-flag column + retry queue — rejected as CRM-scale scope creep for the fixed-price constraint.
+- **Rationale:** Smallest change restoring the required success-means-delivery contract while keeping every failure diagnosable from server logs and the health endpoint, with no new dependencies.
+- **Consequences:** Production requires all four `EMAILJS_*` vars at runtime; any EmailJS rejection now surfaces as a user-facing `502` instead of silent success. No requirement-doc edits needed (behavior now matches existing Musts).
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-INQ-015/016/018, REQ-EML-001 through REQ-EML-004), `docs/API.md` (Sections 7, 10), `docs/SECURITY.md` (Sections 7, 19), `docs/DEPLOYMENT.md` (Section 26), DEC-026.
+- **Supersedes / Superseded by:** Supersedes the lenient half of DEC-026.
+- **Open questions or follow-up:** Live submit-to-Gmail round-trip after deploy; preview negative test with a bad template ID expecting `502` plus the new log line.
 
 ## 22. Related Documentation
 

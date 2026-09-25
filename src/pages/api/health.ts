@@ -22,9 +22,24 @@ export const GET: APIRoute = async () => {
   const headers = { "content-type": "application/json", "cache-control": "no-store" };
   const url = env("PUBLIC_SUPABASE_URL");
   const anonKey = env("PUBLIC_SUPABASE_ANON_KEY");
+  // Email delivery wiring as presence booleans only (DEC-031): answers "are
+  // the keys visible at runtime?" in 10 seconds without exposing values.
+  const emailConfigured = {
+    service: !!env("EMAILJS_SERVICE_ID"),
+    template: !!env("EMAILJS_TEMPLATE_ID"),
+    publicKey: !!env("EMAILJS_PUBLIC_KEY"),
+    privateKey: !!env("EMAILJS_PRIVATE_KEY"),
+    turnstileSecret: !!env("TURNSTILE_SECRET_KEY"),
+    turnstileSiteKey: !!env("PUBLIC_TURNSTILE_SITE_KEY"),
+  };
   if (!url || !anonKey) {
     return new Response(
-      JSON.stringify({ ok: false, source: "seed", reason: "Supabase env missing." }),
+      JSON.stringify({
+        ok: false,
+        source: "seed",
+        reason: "Supabase env missing.",
+        emailConfigured,
+      }),
       { status: 200, headers },
     );
   }
@@ -57,6 +72,7 @@ export const GET: APIRoute = async () => {
           event_types: eventTypes.count ?? 0,
         },
         storageReachable: true,
+        emailConfigured,
         time: new Date().toISOString(),
       }),
       { status: 200, headers },

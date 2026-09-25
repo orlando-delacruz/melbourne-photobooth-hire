@@ -1,12 +1,13 @@
-// Inquiry submission endpoint (Phases 10+12, DEC-026).
+// Inquiry submission endpoint (Phases 10+12, DEC-026, strict delivery DEC-031).
 //
 // POST /api/inquiries accepts the contact-form payload, re-validates it on
 // the server (client validation is usability only), verifies the Turnstile
 // token when a secret is configured, stores the inquiry with the privileged
-// client (anonymous visitors must not read the table), and best-effort
-// forwards it via EmailJS. The stored record is the durable receipt the admin
-// sees in /admin/inquiries, so a stored submission always answers success;
-// nothing secret or internal ever reaches the response.
+// client (anonymous visitors must not read the table), and forwards it via
+// EmailJS. Success is answered only when the inquiry is both stored AND
+// accepted for Gmail delivery; delivery failure answers 502 with retry
+// guidance (the stored row remains as the recovery receipt the admin sees
+// in /admin/inquiries). Nothing secret or internal ever reaches the response.
 
 import type { APIRoute } from "astro";
 import { inquirySchema } from "../../lib/validation/inquiry";
@@ -45,15 +46,33 @@ async function verifyTurnstile(secret: string, token: string): Promise<boolean> 
   }
 }
 
-/** Best-effort EmailJS forward. Missing keys or delivery failure never fail the receipt. */
-async function forwardEmailJS(input: Record<string, string>): Promise<void> {
+type EmailForwardResult =
+  { ok: true } | { ok: false; reason: "misconfigured" | "delivery-failed"; status?: number };
+
+/**
+ * EmailJS forward (strict delivery, DEC-031).
+ * Returns success only when EmailJS accepts the send. Missing keys and
+ * delivery failures are logged server-side by variable name / HTTP status
+ * only (never values, never inquiry personal data) and reported as failure
+ * so the caller never reports false success.
+ */
+async function forwardEmailJS(input: Record<string, string>): Promise<EmailForwardResult> {
   const serviceId = env("EMAILJS_SERVICE_ID");
   const templateId = env("EMAILJS_TEMPLATE_ID");
   const publicKey = env("EMAILJS_PUBLIC_KEY");
   const privateKey = env("EMAILJS_PRIVATE_KEY");
-  if (!serviceId || !templateId || !publicKey) return;
+  const missing = [
+    serviceId ? null : "EMAILJS_SERVICE_ID",
+    templateId ? null : "EMAILJS_TEMPLATE_ID",
+    publicKey ? null : "EMAILJS_PUBLIC_KEY",
+  ].filter((name): name is string => name !== null);
+  if (missing.length > 0) {
+    console.error(`EmailJS forward skipped. Missing ${missing.join(", ")}.`);
+    return { ok: false, reason: "misconfigured" };
+  }
+  let response: Response;
   try {
-    await fetch(EMAILJS_SEND_URL, {
+    response = await fetch(EMAILJS_SEND_URL, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -65,9 +84,16 @@ async function forwardEmailJS(input: Record<string, string>): Promise<void> {
       }),
     });
   } catch {
-    // Delivery failure is logged server-side only; the stored record stands.
+    // Network failure: logged server-side only; the stored record stands.
     console.error("EmailJS forward failed for an inquiry submission.");
+    return { ok: false, reason: "delivery-failed" };
   }
+  if (!response.ok) {
+    const detail = (await response.text().catch(() => "")).slice(0, 200);
+    console.error(`EmailJS forward failed with status ${response.status}. ${detail}`);
+    return { ok: false, reason: "delivery-failed", status: response.status };
+  }
+  return { ok: true };
 }
 
 export const POST: APIRoute = async ({ request }) => {
@@ -123,7 +149,9 @@ export const POST: APIRoute = async ({ request }) => {
     return fail(503, "Your enquiry could not be saved. Please try again or contact us directly.");
   }
 
-  void forwardEmailJS({
+  // Strict delivery (DEC-031): the stored row is the recovery receipt the
+  // admin sees, but success is reported only when EmailJS accepts the send.
+  const emailResult = await forwardEmailJS({
     name: data.name,
     email: data.email,
     mobile: data.mobile ?? "",
@@ -134,6 +162,12 @@ export const POST: APIRoute = async ({ request }) => {
     photobooth: data.photobooth ?? "",
     message: data.message ?? "",
   });
+  if (!emailResult.ok) {
+    return fail(
+      502,
+      "Your enquiry could not be sent right now. Please try again or contact us directly.",
+    );
+  }
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
