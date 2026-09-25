@@ -1,0 +1,21 @@
+---
+export const prerender = false;
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminShell from "../../../components/admin/AdminShell.astro";
+import TestimonialsModuleEditor from "../../../components/admin/editors/TestimonialsModuleEditor";
+import { MODULE_SECTIONS } from "../../../components/admin/sections";
+
+const section = MODULE_SECTIONS.find((item) => item.key === "mod-testimonials")!;
+---
+
+<AdminLayout title={`${section.label} module`}>
+  <AdminShell
+    active={section.key}
+    title={section.label}
+    heading={`${section.label} module`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <TestimonialsModuleEditor client:load />
+  </AdminShell>
+</AdminLayout>

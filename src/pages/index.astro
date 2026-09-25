@@ -22,10 +22,13 @@ import { setPublicCache } from "../lib/http-cache";
 
 const { heroBackgroundImage, ctaImage } = await loadPublicContent();
 // Raw CMS modules seed the live islands (DEC-033); each island patches its
-// section when its table changes, with no page refresh.
+// section when its table changes, with no page refresh. Testimonials fall
+// back to the legacy home blob until the module holds items (DEC-034).
 const liveModules = await loadPublicModules();
 const { pages: cmsPages } = await loadPublicPages();
 const home = cmsPages.home;
+const liveTestimonials =
+  liveModules.testimonials.length > 0 ? liveModules.testimonials : home.testimonials;
 const seo = await loadPublicSeo("home");
 setPublicCache(Astro.response.headers);
 ---
@@ -64,7 +67,7 @@ setPublicCache(Astro.response.headers);
 
   <LiveSteps client:visible initialHome={home} />
 
-  <LiveMarquee client:visible initialHome={home} />
+  <LiveMarquee client:visible initial={liveTestimonials} initialHome={home} />
 
   <LiveFaqTeaser client:visible initial={liveModules.faqs} initialHome={home} />
 

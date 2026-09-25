@@ -892,6 +892,26 @@ Future records are appended here in ID order with status and date kept current.
 - **Supersedes / Superseded by:** Supersedes the no-realtime limb of DEC-024.
 - **Open questions or follow-up:** Apply the migration to the live database; two-browser verification matrix; `SeoLive` updates the open tab only and never claims search-index effects.
 
+### DEC-034 — Testimonials move from the home blob to a Modules collection
+
+- **ID:** DEC-034
+- **Title:** Homepage reviews become a `mod-testimonials` module, no highlight toggle
+- **Status:** Accepted
+- **Date:** 2026-09-25
+- **Context:** Testimonials were the only homepage item list still embedded in the `page_contents('home')` blob and edited inside the Homepage editor, while services, packages, gallery and FAQs had already moved to dedicated module tables with list/detail editors (DEC-018). The operator ordered testimonials moved into Modules with the same interaction shape.
+- **Decision:**
+  1. **New `testimonials` table** (`slug`, `quote` 1–2000, `name` 1–120, `event_type` 1–120, `rating` 1–5 nullable, `sort_order`; array position is display order). New `mod-testimonials` admin section, route and `TestimonialsModuleEditor` (list → detail → create/edit, reorder arrows, same `ModuleCrud` primitives).
+  2. **No highlight flag.** Every saved testimonial shows on the homepage in module order; an empty module hides the reviews section. RLS is therefore public-read-all (like `event_types`), not highlighted-only. The `reviewsHeading` stays in the home blob, matching the `servicesHeading`/`packagesHeading` split.
+  3. **Rating kept.** The optional 1–5 star rating is preserved and still renders only when set (REQ-REV-007). No custom review submission system is introduced (REQ-REV-005/006 boundary intact).
+  4. **One-time seed migration.** The 6 current reviews are seeded verbatim into the table (`seed.sql`) and `cmsSeed.modules.testimonials`; `index.astro` prefers module rows and falls back to the legacy home blob only while the module is empty. The blob field stays readable (deprecated) until the module is saved in production, then a later cleanup removes it.
+  5. **Realtime included.** `testimonials` joins the `supabase_realtime` publication; `LiveMarquee` switches from `useLiveHome` rows to `useLiveRows("testimonials", …)` with `fetchTestimonials`.
+- **Alternatives considered:** Highlight toggle like the other four modules — rejected per operator call (simpler editor, reviews are always meant to show). Manual re-entry instead of seeding — rejected (would blank the homepage on deploy). Keeping testimonials in the home blob — rejected (the ordered change).
+- **Rationale:** Smallest change completing the DEC-018 module split: one table, one editor, existing loader/realtime primitives, no new dependencies.
+- **Consequences:** `database.types.ts` was extended by hand in the same shape as the CLI output because regen needs a live project token — re-run the documented `supabase gen types` command after applying the migration and diff before committing. `homeSchema.testimonials` remains as a deprecated fallback until the follow-up cleanup.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-REV-005/006/007), `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md` (§5.6), DEC-018/DEC-024/DEC-033.
+- **Supersedes / Superseded by:** Extends DEC-018 (module pattern) to testimonials; narrows the Homepage editor scope.
+- **Open questions or follow-up:** Apply `schema.sql`/`rls.sql`/`seed.sql`/`migration-realtime.sql` to the live database; verify module CRUD → homepage round-trip; remove the deprecated home-blob testimonials field once prod is saved.
+
 ## 22. Related Documentation
 
 Conceptual links; each concern is owned by its document (see Section 3):

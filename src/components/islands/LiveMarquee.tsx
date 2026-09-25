@@ -1,13 +1,16 @@
-// Live homepage testimonials marquee (DEC-033).
+// Live homepage testimonials marquee (DEC-033, DEC-034).
 //
 // Mirrors ReviewsMarquee.astro (dark tone on the homepage): heading,
-// seamless-loop clone track, initials avatars and star ratings. Hides the
-// whole section while the blob holds no testimonials, same as SSR.
-import type { HomePageContent } from "../../lib/cms/types";
+// seamless-loop clone track, initials avatars and star ratings. Rows come
+// from the Testimonials module and patch live; the heading still comes from
+// the home blob. Hides the whole section while the list is empty, same as SSR.
+import type { HomePageContent, TestimonialItem } from "../../lib/cms/types";
+import { fetchTestimonials } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
 import { useLiveHome } from "./useLiveHome";
+import { useLiveRows } from "./useLiveSync";
 
 const STAR_PATH =
   "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z";
@@ -35,9 +38,15 @@ function stars(rating: number | undefined): string {
     .join("");
 }
 
-export default function LiveMarquee({ initialHome }: { initialHome: HomePageContent }) {
+export default function LiveMarquee({
+  initial,
+  initialHome,
+}: {
+  initial: TestimonialItem[];
+  initialHome: HomePageContent;
+}) {
+  const testimonials = useLiveRows("testimonials", initial, fetchTestimonials);
   const home = useLiveHome(initialHome);
-  const testimonials = home.testimonials;
   if (testimonials.length === 0) return null;
   const heading = home.reviewsHeading;
 

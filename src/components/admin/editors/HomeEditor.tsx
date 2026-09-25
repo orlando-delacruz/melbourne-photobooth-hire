@@ -1,6 +1,7 @@
-// Home page editor (Website CMS): hero, intro, headings, steps and reviews.
-// The services, packages, showcase images, FAQ items and event types shown on
-// the homepage are managed in Modules; this editor owns the home-only copy.
+// Home page editor (Website CMS): hero, intro, headings and steps.
+// The services, packages, showcase images, FAQ items, testimonials and event
+// types shown on the homepage are managed in Modules; this editor owns the
+// home-only copy.
 
 import { useFieldArray } from "react-hook-form";
 import { homeSchema } from "../../../lib/cms/schemas";
@@ -20,7 +21,6 @@ import {
 import {
   CtaBandGroup,
   Panel,
-  RATING_OPTIONS,
   STAT_ICON_OPTIONS,
   STEP_ICON_OPTIONS,
   SectionHeadingGroup,
@@ -48,7 +48,6 @@ export default function HomeEditor() {
   const stats = useFieldArray({ control, name: "hero.stats" });
   const promises = useFieldArray({ control, name: "intro.promises" });
   const steps = useFieldArray({ control, name: "steps" });
-  const testimonials = useFieldArray({ control, name: "testimonials" });
 
   if (!loaded) return <Skeleton />;
 
@@ -496,111 +495,11 @@ export default function HomeEditor() {
         </ArraySection>
       </Panel>
 
-      <Panel title="Reviews" lede="Testimonials shown in the homepage marquee.">
+      <Panel
+        title="Reviews"
+        lede="Heading above the homepage reviews marquee. The reviews themselves live in the Testimonials module."
+      >
         <SectionHeadingGroup prefix="reviewsHeading" register={register} errors={errors} />
-        <ArraySection
-          title="Testimonials"
-          count={testimonials.fields.length}
-          addLabel="Add testimonial"
-          onAdd={() =>
-            testimonials.append({ id: createId("testimonial"), quote: "", name: "", eventType: "" })
-          }
-          emptyTitle="No testimonials"
-          emptyBody="The reviews section is hidden while the list is empty."
-        >
-          {testimonials.fields.map((field, index) => {
-            const base = `testimonials.${index}` as const;
-            const name = watch(`${base}.name`) || `Testimonial ${index + 1}`;
-            return (
-              <ItemCard
-                key={field.id}
-                index={index}
-                title={String(name)}
-                idText={field.id}
-                disableUp={index === 0}
-                disableDown={index === testimonials.fields.length - 1}
-                onMoveUp={() => testimonials.move(index, index - 1)}
-                onMoveDown={() => testimonials.move(index, index + 1)}
-                onDuplicate={() => {
-                  const current = getValues("testimonials") as {
-                    id: string;
-                    quote: string;
-                    name: string;
-                    eventType: string;
-                  }[];
-                  const source = current[index];
-                  testimonials.insert(index + 1, {
-                    ...source,
-                    id: `${source.id}${source.id.endsWith("-dup") ? "" : "-dup"}`,
-                  });
-                }}
-                onRemove={() => confirmRemove(String(name), () => testimonials.remove(index))}
-              >
-                <AdField
-                  id={`${base}-quote`}
-                  label="Quote"
-                  required
-                  error={errorAt(errors, `${base}.quote`)}
-                >
-                  <TextArea
-                    id={`${base}-quote`}
-                    rows={4}
-                    error={errorAt(errors, `${base}.quote`)}
-                    {...register(`${base}.quote`)}
-                  />
-                </AdField>
-                <div className="ad-grid-2">
-                  <AdField
-                    id={`${base}-name`}
-                    label="Name"
-                    required
-                    error={errorAt(errors, `${base}.name`)}
-                  >
-                    <TextInput
-                      id={`${base}-name`}
-                      type="text"
-                      error={errorAt(errors, `${base}.name`)}
-                      {...register(`${base}.name`)}
-                    />
-                  </AdField>
-                  <AdField
-                    id={`${base}-event`}
-                    label="Event type"
-                    required
-                    error={errorAt(errors, `${base}.eventType`)}
-                  >
-                    <TextInput
-                      id={`${base}-event`}
-                      type="text"
-                      error={errorAt(errors, `${base}.eventType`)}
-                      {...register(`${base}.eventType`)}
-                    />
-                  </AdField>
-                </div>
-                <AdField
-                  id={`${base}-rating`}
-                  label="Star rating"
-                  hint="Leave as no rating unless a rating is confirmed."
-                  error={errorAt(errors, `${base}.rating`)}
-                >
-                  <AdSelect
-                    id={`${base}-rating`}
-                    error={errorAt(errors, `${base}.rating`)}
-                    {...register(`${base}.rating`, {
-                      setValueAs: (value: unknown) => (value === "" ? undefined : Number(value)),
-                    })}
-                  >
-                    {RATING_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </AdSelect>
-                </AdField>
-              </ItemCard>
-            );
-          })}
-        </ArraySection>
       </Panel>
 
       <Panel

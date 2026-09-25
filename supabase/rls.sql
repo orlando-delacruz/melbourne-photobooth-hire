@@ -16,6 +16,7 @@ alter table public.packages enable row level security;
 alter table public.gallery_items enable row level security;
 alter table public.faqs enable row level security;
 alter table public.event_types enable row level security;
+alter table public.testimonials enable row level security;
 alter table public.page_contents enable row level security;
 alter table public.page_seo enable row level security;
 alter table public.inquiries enable row level security;
@@ -32,6 +33,8 @@ drop policy if exists "Public read highlighted faqs" on public.faqs;
 drop policy if exists "Admin full access faqs" on public.faqs;
 drop policy if exists "Public read event types" on public.event_types;
 drop policy if exists "Admin full access event types" on public.event_types;
+drop policy if exists "Public read testimonials" on public.testimonials;
+drop policy if exists "Admin full access testimonials" on public.testimonials;
 drop policy if exists "Public read page contents" on public.page_contents;
 drop policy if exists "Admin full access page contents" on public.page_contents;
 drop policy if exists "Public read page seo" on public.page_seo;
@@ -66,6 +69,13 @@ create policy "Admin full access faqs" on public.faqs
 create policy "Public read event types" on public.event_types
   for select to anon using (true);
 create policy "Admin full access event types" on public.event_types
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- Testimonials (DEC-034): whole list is public (homepage marquee shows every
+-- saved item in order); writes are admin-only.
+create policy "Public read testimonials" on public.testimonials
+  for select to anon using (true);
+create policy "Admin full access testimonials" on public.testimonials
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- Page copy + SEO: public read; writes are admin-only.

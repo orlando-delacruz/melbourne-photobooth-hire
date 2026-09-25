@@ -103,6 +103,20 @@ create table if not exists public.event_types (
   created_at timestamptz not null default now()
 );
 
+-- Testimonials module (mod-testimonials, DEC-034). No highlight flag: every
+-- saved testimonial shows on the homepage in sort_order. Max 30 enforced in app.
+create table if not exists public.testimonials (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  quote text not null check (char_length(quote) between 1 and 2000),
+  name text not null check (char_length(name) between 1 and 120),
+  event_type text not null check (char_length(event_type) between 1 and 120),
+  rating smallint check (rating is null or (rating between 1 and 5)),
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 -- Page-level CMS copy (7 pages + settings). Shapes differ per page, so the
 -- validated content blob stays JSONB; Zod schemas remain the validator.
 create table if not exists public.page_contents (
@@ -165,6 +179,9 @@ create trigger trg_gallery_touch before update on public.gallery_items
 drop trigger if exists trg_faqs_touch on public.faqs;
 create trigger trg_faqs_touch before update on public.faqs
   for each row execute function public.touch_updated_at();
+drop trigger if exists trg_testimonials_touch on public.testimonials;
+create trigger trg_testimonials_touch before update on public.testimonials
+  for each row execute function public.touch_updated_at();
 drop trigger if exists trg_page_contents_touch on public.page_contents;
 create trigger trg_page_contents_touch before update on public.page_contents
   for each row execute function public.touch_updated_at();
@@ -177,5 +194,6 @@ create index if not exists idx_services_highlight on public.services (highlight,
 create index if not exists idx_packages_highlight on public.packages (highlight, sort_order);
 create index if not exists idx_gallery_highlight on public.gallery_items (highlight, sort_order);
 create index if not exists idx_faqs_highlight on public.faqs (highlight, sort_order);
+create index if not exists idx_testimonials_order on public.testimonials (sort_order);
 create index if not exists idx_event_types_order on public.event_types (sort_order);
 create index if not exists idx_inquiries_created on public.inquiries (created_at desc);

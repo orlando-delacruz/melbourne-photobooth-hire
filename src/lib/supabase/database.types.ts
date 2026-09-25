@@ -345,6 +345,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      testimonials: {
+        Row: {
+          created_at: string;
+          event_type: string;
+          id: string;
+          name: string;
+          quote: string;
+          rating: number | null;
+          slug: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          name: string;
+          quote: string;
+          rating?: number | null;
+          slug: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          name?: string;
+          quote?: string;
+          rating?: number | null;
+          slug?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;

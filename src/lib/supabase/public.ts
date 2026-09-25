@@ -25,6 +25,7 @@ import {
   galleryFromRow,
   packageFromRow,
   serviceFromRow,
+  testimonialFromRow,
 } from "./modules";
 
 function isConfigured(): boolean {
@@ -45,13 +46,14 @@ export async function loadPublicContent(): Promise<SiteContent> {
   }
   try {
     const supabase = getSupabaseServerAnon();
-    const [services, packages, gallery, faqs] = await Promise.all([
+    const [services, packages, gallery, faqs, testimonials] = await Promise.all([
       supabase.from("services").select("*").order("sort_order"),
       supabase.from("packages").select("*").order("sort_order"),
       supabase.from("gallery_items").select("*").order("sort_order"),
       supabase.from("faqs").select("*").order("sort_order"),
+      supabase.from("testimonials").select("*").order("sort_order"),
     ]);
-    if (services.error || packages.error || gallery.error || faqs.error) {
+    if (services.error || packages.error || gallery.error || faqs.error || testimonials.error) {
       console.warn("[public-content] Module query failed: rendering seed fallback.");
       return buildSiteContent();
     }
@@ -61,6 +63,7 @@ export async function loadPublicContent(): Promise<SiteContent> {
       packages: (packages.data ?? []).map(packageFromRow),
       gallery: (gallery.data ?? []).map(galleryFromRow),
       faqs: (faqs.data ?? []).map(faqFromRow),
+      testimonials: (testimonials.data ?? []).map(testimonialFromRow),
       "event-types": [],
     };
     return buildSiteContent(modules);
@@ -95,14 +98,15 @@ export async function loadPublicModules(): Promise<CmsModules> {
   if (!isConfigured()) return fallback;
   try {
     const supabase = getSupabaseServerAnon();
-    const [services, packages, gallery, faqs, eventTypes] = await Promise.all([
+    const [services, packages, gallery, faqs, testimonials, eventTypes] = await Promise.all([
       supabase.from("services").select("*").order("sort_order"),
       supabase.from("packages").select("*").order("sort_order"),
       supabase.from("gallery_items").select("*").order("sort_order"),
       supabase.from("faqs").select("*").order("sort_order"),
+      supabase.from("testimonials").select("*").order("sort_order"),
       supabase.from("event_types").select("*").order("sort_order"),
     ]);
-    if (services.error || packages.error || gallery.error || faqs.error || eventTypes.error) {
+    if (services.error || packages.error || gallery.error || faqs.error || testimonials.error || eventTypes.error) {
       console.warn("[public-content] Module query failed: live islands use seed modules.");
       return fallback;
     }
@@ -111,6 +115,7 @@ export async function loadPublicModules(): Promise<CmsModules> {
       packages: (packages.data ?? []).map(packageFromRow),
       gallery: (gallery.data ?? []).map(galleryFromRow),
       faqs: (faqs.data ?? []).map(faqFromRow),
+      testimonials: (testimonials.data ?? []).map(testimonialFromRow),
       "event-types": (eventTypes.data ?? []).map(eventTypeFromRow),
     };
   } catch {

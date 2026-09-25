@@ -20,6 +20,7 @@ begin
       'public.packages',
       'public.gallery_items',
       'public.faqs',
+      'public.testimonials',
       'public.event_types',
       'public.page_contents',
       'public.page_seo'

@@ -470,5 +470,17 @@ export const eventTypesModuleSchema = z
   )
   .max(30);
 
+export const testimonialsModuleSchema = z
+  .array(
+    z.object({
+      id: z.string(),
+      quote: longText("the testimonial", 2000),
+      name: shortText("the guest name", 120),
+      eventType: shortText("the event type", 120),
+      rating: z.number().int().min(1).max(5).optional(),
+    }),
+  )
+  .max(30);
+
 /** Re-exported for editors: image meta plus the max size from the store. */
 export { IMAGE_MAX_BYTES };

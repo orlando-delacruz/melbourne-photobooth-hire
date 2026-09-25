@@ -560,6 +560,16 @@ export const cmsSeed: CmsContent = {
       answer: faq.answer,
       highlight: true,
     })),
+    // Homepage reviews (DEC-034): every saved testimonial shows in module
+    // order. Seeded from the same provisional reviews as the home blob so
+    // the first module-backed render matches the public site.
+    testimonials: mockContent.testimonials.map((item) => ({
+      id: item.id,
+      quote: item.quote,
+      name: item.name,
+      eventType: item.eventType,
+      rating: item.rating,
+    })),
     // Contact-form dropdown options, preserving the documented candidate
     // values in order (formerly REQ-INQ-009 constants). Array order is the
     // dropdown order.

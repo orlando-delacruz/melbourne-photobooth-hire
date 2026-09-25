@@ -119,6 +119,19 @@ on conflict (slug) do update set
   question = excluded.question, answer = excluded.answer,
   highlight = excluded.highlight, sort_order = excluded.sort_order, updated_at = now();
 
+-- Testimonials (DEC-034 one-time seed migration: the 6 home-blob reviews,
+-- kept verbatim so the first module-backed render matches the public site).
+insert into public.testimonials (slug, quote, name, event_type, rating, sort_order) values
+  ('testimonial-1', 'The booth was the heart of the night. Guests queued for it and walked away with prints in hand. The setup was completely seamless.', 'Mia & Jordan', 'Wedding', 5, 0),
+  ('testimonial-2', 'Our team still talks about the 360 clips. It turned a corporate night into something people actually remember.', 'Priya S.', 'Corporate event', 5, 1),
+  ('testimonial-3', 'Setup was quick and the prints looked incredible. The birthday kids would not leave the booth, and neither did the adults.', 'Tara N.', 'Birthday', 5, 2),
+  ('testimonial-4', 'From the first email to pack-down, everything was handled. We did not think about the booth once. It just worked.', 'Daniel R.', 'Corporate event', 5, 3),
+  ('testimonial-5', 'The backdrop matched our styling perfectly and the prints became the favour everyone took home. Beautifully done.', 'Elena & Chris', 'Engagement party', 5, 4),
+  ('testimonial-6', 'Our school formal needed something the students would actually use, and this was it. The queue never stopped.', 'Rebecca M.', 'School formal', 5, 5)
+on conflict (slug) do update set
+  quote = excluded.quote, name = excluded.name, event_type = excluded.event_type,
+  rating = excluded.rating, sort_order = excluded.sort_order, updated_at = now();
+
 -- Page copy shells: editors fill these in Phase 7. Seeded empty so public
 -- pages keep their current hardcoded fallbacks until saved content exists.
 insert into public.page_contents (page_key, content) values

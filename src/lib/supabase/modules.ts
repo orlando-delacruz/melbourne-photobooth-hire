@@ -8,13 +8,21 @@
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
 import type { Database } from "./database.types";
 import { collectImageKeys, deleteImage } from "../cms/storage";
-import type { EventTypeItem, FaqItem, GalleryItem, PackageItem, ServiceItem } from "../cms/types";
+import type {
+  EventTypeItem,
+  FaqItem,
+  GalleryItem,
+  PackageItem,
+  ServiceItem,
+  TestimonialItem,
+} from "../cms/types";
 import type { ModuleSectionKey } from "../../components/admin/ModuleCrud";
 
 type ServiceRow = Database["public"]["Tables"]["services"]["Row"];
 type PackageRow = Database["public"]["Tables"]["packages"]["Row"];
 type GalleryRow = Database["public"]["Tables"]["gallery_items"]["Row"];
 type FaqRow = Database["public"]["Tables"]["faqs"]["Row"];
+type TestimonialRow = Database["public"]["Tables"]["testimonials"]["Row"];
 type EventTypeRow = Database["public"]["Tables"]["event_types"]["Row"];
 
 /** Insert payload: server defaults own id/created_at/updated_at. */
@@ -136,6 +144,27 @@ function eventTypeToRow(item: EventTypeItem, sortOrder: number): InsertOf<EventT
   return { slug: item.id, label: item.label, sort_order: sortOrder };
 }
 
+export function testimonialFromRow(row: TestimonialRow): TestimonialItem {
+  return {
+    id: row.slug,
+    quote: row.quote,
+    name: row.name,
+    eventType: row.event_type,
+    rating: row.rating ?? undefined,
+  };
+}
+
+function testimonialToRow(item: TestimonialItem, sortOrder: number): InsertOf<TestimonialRow> {
+  return {
+    slug: item.id,
+    quote: item.quote,
+    name: item.name,
+    event_type: item.eventType,
+    rating: item.rating ?? null,
+    sort_order: sortOrder,
+  };
+}
+
 // ── Load / save ─────────────────────────────────────────────────────────────
 
 /** Loads a module list in display order, mapped to CMS items. */
@@ -167,6 +196,11 @@ export async function loadModuleItems<T extends { id: string }>(
       if (error) throw new Error("Module could not be loaded.");
       return data.map(faqFromRow) as unknown as T[];
     }
+    case "mod-testimonials": {
+      const { data, error } = await supabase.from("testimonials").select("*").order("sort_order");
+      if (error) throw new Error("Module could not be loaded.");
+      return data.map(testimonialFromRow) as unknown as T[];
+    }
     case "mod-event-types": {
       const { data, error } = await supabase.from("event_types").select("*").order("sort_order");
       if (error) throw new Error("Module could not be loaded.");
@@ -177,7 +211,7 @@ export async function loadModuleItems<T extends { id: string }>(
 
 /** Deletes rows whose slug is not in `keepSlugs` (empty list deletes all rows). */
 async function deleteMissingSlugs(
-  table: "services" | "packages" | "gallery_items" | "faqs" | "event_types",
+  table: "services" | "packages" | "gallery_items" | "faqs" | "testimonials" | "event_types",
   keepSlugs: string[],
 ): Promise<void> {
   const supabase = getSupabaseBrowser();
@@ -199,7 +233,7 @@ async function deleteMissingSlugs(
 /** Latest row update per module for the dashboard freshness table. */
 export async function getModuleFreshness(): Promise<Record<ModuleSectionKey, string | null>> {
   const supabase = getSupabaseBrowser();
-  const [services, packages, gallery, faqs, eventTypes] = await Promise.all([
+  const [services, packages, gallery, faqs, testimonials, eventTypes] = await Promise.all([
     supabase
       .from("services")
       .select("updated_at")
@@ -225,6 +259,12 @@ export async function getModuleFreshness(): Promise<Record<ModuleSectionKey, str
       .limit(1)
       .maybeSingle(),
     supabase
+      .from("testimonials")
+      .select("updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
       .from("event_types")
       .select("created_at")
       .order("created_at", { ascending: false })
@@ -236,6 +276,7 @@ export async function getModuleFreshness(): Promise<Record<ModuleSectionKey, str
     "mod-packages": packages.data?.updated_at ?? null,
     "mod-gallery": gallery.data?.updated_at ?? null,
     "mod-faqs": faqs.data?.updated_at ?? null,
+    "mod-testimonials": testimonials.data?.updated_at ?? null,
     "mod-event-types": eventTypes.data?.created_at ?? null,
   };
 }
@@ -295,6 +336,16 @@ export async function saveModuleItems<T extends { id: string }>(
       );
       if (error) throw new Error("Module could not be saved.");
       await deleteMissingSlugs("faqs", keepSlugs);
+      break;
+    }
+    case "mod-testimonials": {
+      const items = next as unknown as TestimonialItem[];
+      const { error } = await supabase.from("testimonials").upsert(
+        items.map((item, index) => testimonialToRow(item, index)),
+        { onConflict: "slug" },
+      );
+      if (error) throw new Error("Module could not be saved.");
+      await deleteMissingSlugs("testimonials", keepSlugs);
       break;
     }
     case "mod-event-types": {

@@ -6,7 +6,7 @@
 // stop future patches; rendered content always stays. Nothing here ever
 // surfaces an error to visitors; reconnection is realtime-js native.
 //
-// Security: callers subscribe only to already-public tables (the seven in
+// Security: callers subscribe only to already-public tables (the eight in
 // supabase/migration-realtime.sql). RLS filters every event before delivery,
 // and admin-only tables are never subscribed. Browser-only: subscribe from
 // inside useEffect so server rendering never touches the socket.
@@ -15,7 +15,14 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getSupabaseBrowser, isSupabaseConfigured } from "../supabase/client";
 
 export type LiveTable =
-  "services" | "packages" | "gallery_items" | "faqs" | "event_types" | "page_contents" | "page_seo";
+  | "services"
+  | "packages"
+  | "gallery_items"
+  | "faqs"
+  | "testimonials"
+  | "event_types"
+  | "page_contents"
+  | "page_seo";
 
 export type TableHandler = () => void;
 export type Unsubscribe = () => void;

@@ -2,8 +2,8 @@
 //
 // Page-level CMS content is separated from reusable item collections:
 // - `pages` + `settings` hold static, page-scoped copy only.
-// - `modules` hold the reusable Services, Packages, Gallery and FAQ items and
-//   are the single source of truth. Public pages render these collections and
+// - `modules` hold the reusable Services, Packages, Gallery, FAQ and
+//   Testimonials items and are the single source of truth. Public pages render these collections and
 //   the homepage renders their highlighted subset.
 //
 // Seed values mirror the content currently rendered by the public pages.
@@ -19,6 +19,7 @@ export type StoreSectionKey =
   | "mod-packages"
   | "mod-gallery"
   | "mod-faqs"
+  | "mod-testimonials"
   | "mod-event-types"
   | "seo-privacy"
   | "seo-terms";
@@ -127,6 +128,11 @@ export interface HomePageContent {
   steps: ProcessStep[];
   reviewsHeading: SectionHeadingContent;
   reviewsHighlightHint?: undefined;
+  /**
+   * Deprecated fallback: testimonials moved to the Testimonials module
+   * (DEC-034). Kept so old home blobs still render until the module is
+   * saved; new edits happen in the module, not here.
+   */
   testimonials: TestimonialContent[];
   faqHeading: SectionHeadingContent;
   faqCtaLabel: string;
@@ -327,6 +333,18 @@ export interface FaqItem {
   highlight: boolean;
 }
 
+/**
+ * One homepage testimonial (DEC-034). Array order is the display order.
+ * No highlight flag: every saved testimonial shows, in module order.
+ */
+export interface TestimonialItem {
+  id: string;
+  quote: string;
+  name: string;
+  eventType: string;
+  rating?: number;
+}
+
 /** One contact-form event type option. Array order is the display order. */
 export interface EventTypeItem {
   id: string;
@@ -338,6 +356,7 @@ export interface CmsModules {
   packages: PackageItem[];
   gallery: GalleryItem[];
   faqs: FaqItem[];
+  testimonials: TestimonialItem[];
   "event-types": EventTypeItem[];
 }
 

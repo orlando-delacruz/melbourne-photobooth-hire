@@ -15,6 +15,7 @@ export type AdminNavKey =
   | "mod-packages"
   | "mod-gallery"
   | "mod-faqs"
+  | "mod-testimonials"
   | "mod-event-types";
 
 export interface AdminSection {
@@ -39,7 +40,7 @@ export const CMS_SECTIONS: AdminSection[] = [
     href: "/admin/home",
     group: "cms",
     publicHref: "/",
-    blurb: "Homepage hero, intro, headings and testimonials.",
+    blurb: "Homepage hero, intro and section headings; reviews live in Modules.",
     icon: svg(
       '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
     ),
@@ -154,6 +155,17 @@ export const MODULE_SECTIONS: AdminSection[] = [
     blurb: "Create, edit, remove and highlight questions.",
     icon: svg(
       '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    ),
+  },
+  {
+    key: "mod-testimonials",
+    label: "Testimonials",
+    href: "/admin/modules/testimonials",
+    group: "modules",
+    publicHref: "/",
+    blurb: "Create, edit, remove and reorder the homepage reviews.",
+    icon: svg(
+      '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
     ),
   },
   {

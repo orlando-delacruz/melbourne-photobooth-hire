@@ -12,6 +12,7 @@ import {
   galleryFromRow,
   packageFromRow,
   serviceFromRow,
+  testimonialFromRow,
 } from "../supabase/modules";
 import type {
   CtaBandContent,
@@ -22,6 +23,7 @@ import type {
   PageHeaderContent,
   PageMeta,
   ServiceItem,
+  TestimonialItem,
 } from "../cms/types";
 
 export async function fetchServices(): Promise<ServiceItem[]> {
@@ -55,6 +57,15 @@ export async function fetchFaqs(): Promise<FaqItem[]> {
   const { data, error } = await getSupabaseBrowser().from("faqs").select("*").order("sort_order");
   if (error || !data) throw new Error("Live FAQs could not be loaded.");
   return data.map(faqFromRow);
+}
+
+export async function fetchTestimonials(): Promise<TestimonialItem[]> {
+  const { data, error } = await getSupabaseBrowser()
+    .from("testimonials")
+    .select("*")
+    .order("sort_order");
+  if (error || !data) throw new Error("Live testimonials could not be loaded.");
+  return data.map(testimonialFromRow);
 }
 
 export async function fetchEventTypes(): Promise<EventTypeItem[]> {

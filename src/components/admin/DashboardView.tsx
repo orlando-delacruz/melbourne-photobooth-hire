@@ -11,6 +11,7 @@ import type {
   GalleryItem,
   PackageItem,
   ServiceItem,
+  TestimonialItem,
 } from "../../lib/cms/types";
 import { getModuleFreshness, loadModuleItems } from "../../lib/supabase/modules";
 import type { ModuleSectionKey } from "./ModuleCrud";
@@ -28,6 +29,7 @@ const MODULE_KEYS: ModuleSectionKey[] = [
   "mod-packages",
   "mod-gallery",
   "mod-faqs",
+  "mod-testimonials",
   "mod-event-types",
 ];
 
@@ -43,7 +45,7 @@ function summarizePage(key: CmsPageKey, content: CmsContent): string {
   switch (key) {
     case "home": {
       const page = content.pages.home;
-      return `${page.hero.stats.length} hero stats, ${page.intro.promises.length} promises, ${page.steps.length} process steps, ${page.testimonials.length} reviews, ${content.modules["event-types"].length} event types`;
+      return `${page.hero.stats.length} hero stats, ${page.intro.promises.length} promises, ${page.steps.length} process steps, ${content.modules.testimonials.length} reviews, ${content.modules["event-types"].length} event types`;
     }
     case "services":
       return "Page header, enquiry band and SEO; items live in Modules";
@@ -62,7 +64,7 @@ function summarizePage(key: CmsPageKey, content: CmsContent): string {
 
 function summarizeModules(content: CmsContent): string {
   const modules = content.modules;
-  return `${modules.services.length} services, ${modules.packages.length} packages, ${modules.gallery.length} images, ${modules.faqs.length} questions`;
+  return `${modules.services.length} services, ${modules.packages.length} packages, ${modules.gallery.length} images, ${modules.faqs.length} questions, ${modules.testimonials.length} reviews`;
 }
 
 interface Snapshot {
@@ -96,6 +98,7 @@ async function loadSnapshot(): Promise<Snapshot> {
       packages: (modules.get("mod-packages") ?? []) as PackageItem[],
       gallery: (modules.get("mod-gallery") ?? []) as GalleryItem[],
       faqs: (modules.get("mod-faqs") ?? []) as FaqItem[],
+      testimonials: (modules.get("mod-testimonials") ?? []) as TestimonialItem[],
       "event-types": (modules.get("mod-event-types") ?? []) as EventTypeItem[],
     },
     seo: { privacy: pages.home.seo, terms: pages.home.seo },

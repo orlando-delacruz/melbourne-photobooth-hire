@@ -4,85 +4,77 @@
 
 - **Last updated:** 2026-09-25
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `develop` (HEAD `b34f74c` "fixes: homepage hero section eyebrow fixes content"; working tree **clean** — all backend work committed locally in `28bcebb`, `9092747`, `b34f74c`; push state unknown, verify before assuming in-sync)
-- **Mode:** build. Full Supabase backend migration implemented across this session (was frontend-only at session start). Free-tier constraints observed throughout (Vercel Hobby + Supabase free).
+- **Branch:** `develop` (HEAD still `b34f74c`; **working tree DIRTY** — large uncommitted realtime work + DEC-031/032/033 + alerts fix, nothing committed this session, push state unknown)
+- **Mode:** build. This session: EmailJS/Gmail delivery debug + strict-delivery fix, Turnstile 600010 handling, social-links wiring, full Supabase Realtime sync build, SweetAlert icon theming. SEO phase never started (deferred by operator).
 
 ---
 
-## 1. Project snapshot
+## 1. Project snapshot (unchanged basics)
 
 - **What:** SEO-focused marketing site + custom CMS/admin for a Melbourne photobooth business. Fixed **₱15,000** scope. Inquiry-only (not a booking engine).
-- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide, Motion, RHF + Zod, `@fontsource` Fraunces/Inter, `sweetalert2`, plus new: `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11` (v11 pairs with Astro 7; v7 pairs with Astro 4 — verified).
-- **Backend:** Supabase (PostgreSQL + Auth + Storage `cms-media`), RLS everywhere, cookie sessions, Astro server routes only (`POST /api/inquiries`, public `GET /api/health`). No Express, no second backend.
-- **Rendering model (DEC-028, current):** ALL pages server-rendered (`prerender = false`); public pages read live Supabase per request with edge SWR (`public, s-maxage=60, stale-while-revalidate=300` via `src/lib/http-cache.ts`); admin/API `no-store`. No rebuilds, no deploy hooks (DEC-027 built then superseded and fully deleted per operator rejection).
-- **Decisions on record:** DEC-001 through DEC-030 (`docs/DECISIONS.md`).
+- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide, Motion, RHF + Zod, `@fontsource` Fraunces/Inter, `sweetalert2`, `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11`.
+- **Backend:** Supabase (PostgreSQL + Auth + Storage `cms-media`), RLS everywhere, cookie sessions, Astro server routes only (`POST /api/inquiries`, public `GET /api/health`).
+- **Rendering model:** ALL pages SSR (`prerender = false`); edge SWR 60s/300s; admin/API `no-store` (DEC-028).
+- **New this session:** public dynamic regions are now `client:visible` React islands with SSR initial props + Realtime patching (DEC-033); inquiry endpoint is strict-delivery (DEC-031).
+- **Decisions on record:** DEC-001 through DEC-033 (`docs/DECISIONS.md`).
 
 ---
 
 ## 2. This session, in order (all built, not planned-only)
 
-1. **Implementation plan** for the 15-phase backend spec (codebase mapped via subagents first).
-2. **Phases 0–3 (DEC-024):** deps installed; `src/lib/supabase/{client,server,database.types}`; `.env.example`; `supabase/{schema,rls,storage,seed}.sql`; Vercel adapter. Note: Astro 7 removed `output:"hybrid"` (static behaves hybrid); adapter import is `@astrojs/vercel` (no `/serverless` subpath in v11).
-3. **User gave anon key + URL (Path A).** Local `.env` created (gitignored). Verified live via anon REST: 3/3/8/9/8 rows, correct order/badges, anon denied `inquiries` + `admin_users`.
-4. **Phase 4 auth (DEC-025):** `src/middleware.ts` (cookie-session guard + `admin_users` allow-list, passthrough when unconfigured); 16 admin pages `prerender=false` (login stays static); real `LoginForm` sign-in; `SignOutButton` in sidebar (`admin.css` `.ad-signout`).
-5. **Phase 5–6:** `src/lib/cms/storage.ts` (bucket backend, same interface as old IndexedDB store); `src/lib/supabase/modules.ts` (slug=id, sort_order, upsert-by-slug + delete-missing + Storage GC, reload-from-DB); `ModuleCrud` + `fields.tsx` swapped. **Typing saga lessons:** hand-written `Database` must satisfy `GenericSchema` — needs `Views`/`Functions`, `Relationships: []` on EVERY table (missing `Update` on `admin_users` collapsed schema to `never`), row types must be `type` aliases not `interface`s (no implicit index signature).
-6. **Phase 7:** `src/lib/supabase/pages.ts` (page_contents JSONB adapter); `useSectionEditor` swapped wholesale (it serves exactly the 8 page editors; also fixed discard-after-save baseline). `page_seo`/`page_contents` Insert types omit `updated_at`.
-7. **Phase 8:** `src/lib/supabase/public.ts` (build/request-time anon reads + seed fallback); `buildSiteContent(modules?)` parametrized; 7 pages rewired; **`CmsEcho.tsx` deleted** (would clobber DB state with seed); InquiryForm local echo removed. Dual-path builds proven (with/without env).
-8. **Phase 9:** verified in `dist` — DB `most-popular` package renders `card--featured`, 1 featured homepage card. Data-driven, not hardcoded.
-9. **Phase 11:** `src/lib/supabase/seo.ts`; `SeoEditor` rewired (+load-failure notice); `loadPublicSeo()` in all 9 pages with hardcoded fallbacks intact.
-10. **Phases 10+12 (DEC-026):** `POST /api/inquiries.ts` (server Zod → Turnstile verify-when-configured → service-role insert → best-effort EmailJS; store-first success semantics); `InquiryForm` real submit + no-dep Turnstile widget (site key from page prop, script in `contact.astro` with `is:inline`); `InquiriesView` on live source. Route confirmed in Vercel output (`^/api/inquiries$`); `astro preview` cannot serve functions (known, not a bug).
-11. **Page-copy wiring:** all 7 pages render CMS blobs (hero/intro/headings/steps/testimonials/add-ons/policies/headers/bands/contact facts/about sections). Proof: services/gallery/about/privacy/terms byte-identical; index/packages/faq/contact diffs verified text-identical or intentional.
-12. **"Edits not showing" incident:** root-caused to TWO compounding causes — (a) no Vercel prod env → silent seed fallback, (b) static-only publishing with zero publish mechanism (sidebar copy promised publishing that didn't exist). User's SQL checks then proved the DB 100% pristine (all seed timestamps) → deeper cause: **admin ran unconfigured, saves went to browser localStorage with success modals**. Shipped in response: admin backend-state banner (Phase 17), publish flow (Phase 16, DEC-027 — later deleted), build-time `live vs seed` deploy logging.
-13. **Broken-admin-layout incident (Phase 18, OPEN):** code review found clean markup/CSS, green builds, no console errors. Cause still unknown — needs view-source/CSS-status/URL evidence. May be stale-asset fallout clearable by redeploy.
-14. **Replan per operator:** localhost admin must show live data (true by shared DB when `.env` set); no deploy hooks/git — accepted pivot to **SSR+SWR (DEC-028)**, publish flow deleted, DEC-027 superseded.
-15. **Simplification (DEC-029, with operator-provided PAT):** `database.types.ts` regenerated via `supabase gen types` (header records command; hand edits forbidden); **deleted** `lib/cms/repository.ts`, `lib/cms/images.ts`, mock inquiry source; new `lib/cms/ids.ts`; `collectImageKeys` moved into `storage.ts`; all `isSupabaseConfigured()` admin branches removed (admin throws "CMS backend is not connected"); `DashboardView` rewritten on live queries (+`getModuleFreshness`); `InquiriesView` live-only; `LoginForm` hard error when unconnected; public `GET /api/health` (`{ok, source, counts, storageReachable}`). Deep-verified with PAT-derived service key: anon reads highlighted-only, anon module writes 401, anon inquiry insert 201 with `return=minimal` (**PostgREST lesson:** `return=representation` fails 401 since anon can't SELECT the row back; endpoint unaffected — service client), anon storage upload 403, service paths work, 0 orphans, **DB left pristine**. PAT/token absent from repo (grep-verified). **Operator action: revoke the PAT.**
-16. **Health check confirmed live by operator:** `{"ok":true,"source":"live","counts":{3,3,8,9,8},"storageReachable":true}` — prod env present, prod reads live DB.
-17. **Hero eyebrow bug + full audit:** root cause was a missing prop (`index.astro` never passed `home.hero.eyebrow` to `<Hero>`); subagent audit inventoried every static string. Built A–E: eyebrow passthrough; **settings blob wired into `BaseLayout`/`Header`/`Footer`/`FloatingMessenger`** (brand, service-area, review URL, footer CTA, messenger URL; `socials` unwired — no footer UI exists); **homepage chips from Event-Types module verbatim** (now singular; icons resolve exact-then-plural before sparkles fallback); **privacy/terms CMS blobs** (`LegalPageContent` block model, `legalPageSchema`, verbatim `legalSeed`, `supabase/migration-legal-pages.sql` — **already applied live via API and constraint verified**, new `/admin/legal` + `LegalEditor` list/detail under "SEO & Legal", public pages render blobs). Verified via dev server (`:4321`): all legal text verbatim, eyebrow/footer/chips/messenger live; `/admin/legal` 302s when logged out. DEC-030. Deliberately static list recorded: form microcopy/validation, card CTA labels, jump pills, aria-labels, SEO fallbacks, nav labels, social icons.
+1. **Email/SEO gap audit (plan mode).** Found the core conflict: endpoint was store-first/best-effort email (false `200` on EmailJS failure) vs REQ-INQ-018/SECURITY no-false-success. Pending keys listed.
+2. **EmailJS + Turnstile setup guide.** Step-by-step procedures given. Destination confirmed: `hello.melbournephotoboothhire@gmail.com`. Production-ready choice: strict success-only-on-delivery.
+3. **Gmail-not-received debug.** Admin rows stored but no Gmail: root cause = `forwardEmailJS()` never checked `response.ok` and swallowed all failures (silent false success). Localhost `503` separately explained as stale dev-server env (`.env` was correct; restart picks it up).
+4. **DEC-031 strict delivery (build):** `src/pages/api/inquiries.ts` awaits the send, checks `response.ok`, answers `502` with retry guidance on failure (DB row stays as recovery receipt); missing keys log names-only; `GET /api/health` gains `emailConfigured` presence booleans; `InquiryForm` resets Turnstile per attempt. Verified check/build/format + client-bundle secret grep.
+5. **Turnstile 600010 (console).** Diagnosed as Cloudflare config error (site key/hostname allowlist, incl. `www.`; `PUBLIC_` key bakes in at build → redeploy required). Code fix shipped: widget `error-callback` now surfaces an inline `role="alert"` notice instead of silent "did not complete".
+6. **Prod `502` explained** as the new strict behavior working (EmailJS rejecting). `/api/health` showed all `emailConfigured: true` → env visible, so rejection, not missing keys.
+7. **EmailJS `403` root-caused via runtime log:** "API access from non-browser environments is currently disabled" → fix is one dashboard toggle (`dashboard.emailjs.com/admin/account/security`). No code change. Awaiting operator confirmation + live Gmail retest.
+8. **Social links (DEC-032, build):** new `SocialIcon.astro` (inline SVG: FB/IG/TikTok/YT + fallback); footer Follow block + contact aside block (empty-hidden); `sameAs` gated on saved URLs; SettingsEditor copy. Seeded empty (no invented URLs). Verified via dev-server curls incl. temporary proof URLs (reverted, grep-verified gone).
+9. **Supabase Realtime sync (DEC-033, build, staged):**
+    - `supabase/migration-realtime.sql` (WRITTEN ONLY — **not applied, needs explicit approval**); DEC-033 supersedes DEC-024's no-realtime limb.
+    - Core: `lib/realtime/channels.ts` (one refcounted channel/table, silent no-op without env) + `islands/useLiveSync.ts` (`useLiveRows`/`useLiveDoc`, ~350ms debounced table-scoped refetch; direct payload patching rejected — RLS-visibility gaps + whole-list admin rewrites) + `lib/realtime/fetchers.ts` + `useLiveHome`/`useLiveSettings` hooks; `loadPublicModules()` added to `public.ts`.
+    - Presentational mirrors: `styles/live.css` (verbatim copies of component/page styles; Astro sources stay canonical) + `components/live/` (`LiveCard`, `LiveAccordion` with re-bound animation, `LiveGalleryFigure`, `LiveChips`, `LiveButton`, `LiveSectionHeading`, `LiveSocialIcon`, `eventIcons`, `icons`, `badges`).
+    - ~30 islands covering ALL 9 pages (lists, headings, hero, page copy, settings chrome, legal, `SeoLive` metadata) + `seoPageKey` wiring + `InquiryForm` event-type subscription + faq search-script removal (stale-NodeList fix) + dead scoped-CSS removal.
+    - Render-parity proven per page via dev-server curls (identical ids/order/text; only React `&#x27;` vs Astro `&#39;` escaping differs). `check` 0/0/0 (145 files), `build` complete, `format` clean.
+10. **SweetAlert icons (build):** complaint was stock artwork looking cheap (animation verified intact: v11.26.25 keyframes present, CSS imported, reset is `box-sizing`-only, no double-fire path). Fix: `ICON_COLORS` in `alerts.ts` (`#1f6e43`/`#8a5a00`/`#b3261e`, mirroring tokens.css) wired into all four dialogs. Verified check/build/format. Operator does visual sign-off.
 
 ---
 
 ## 3. Files added (this session)
 
-- `src/lib/supabase/{client,server,database.types,modules,pages,seo,inquiries,public}.ts`, `src/lib/http-cache.ts`, `src/lib/cms/{ids,storage}.ts`
-- `src/middleware.ts`, `src/components/admin/{SignOutButton,LegalEditor}.tsx`, `src/pages/admin/legal.astro`, `src/pages/api/{inquiries,health}.ts`
-- `supabase/{schema,rls,storage,seed,migration-legal-pages}.sql`, `.env.example`
-- Deleted: `src/lib/cms/{repository,images}.ts`, `src/components/islands/CmsEcho.tsx`, `src/pages/api/publish.ts`, `src/components/admin/PublishButton.tsx` (both publish files removed same session per operator rejection)
+- `src/lib/realtime/{channels,fetchers}.ts`, `src/components/islands/{useLiveSync,useLiveHome,useLiveSettings}.ts`
+- `src/components/live/{LiveButton,LiveCard,LiveAccordion,LiveGalleryFigure,LiveChips,LiveSectionHeading,LiveSocialIcon,eventIcons,icons,badges}.tsx?ts`
+- `src/components/islands/Live{ServicesSection,ShowcaseSection,PackagesSection,FaqTeaser,ChipsSection,HomeHero,Intro,Steps,Marquee,CtaBand,PageHeader,ServiceJump,ServiceSections,PlansSection,IncludedBand,Addons,Policies,GallerySection,FaqSection,FaqSupport,AboutSections,ContactAside,ContactCopy,LegalPage,BrandName,FooterPanels,MessengerLink}.tsx`, `SeoLive.tsx`
+- `src/components/SocialIcon.astro`, `src/styles/live.css`, `supabase/migration-realtime.sql`
 
 ## 4. Key files modified (this session)
 
-- `astro.config.mjs` (Vercel adapter, explicit sitemap `customPages` — server routes aren't auto-discovered), `package.json` (3 new deps)
-- 9 public pages (live loaders + `prerender=false` + cache headers + blob copy + chips + legal render), `BaseLayout`/`Header`/`Footer`/`FloatingMessenger` (settings), 16 admin pages (`prerender=false`), `AdminShell` (sign-out, banner, Legal link, reworded note), `AdminLayout` untouched structurally
-- `ModuleCrud`, `fields`, `useSectionEditor`, `SeoEditor`, `InquiriesView`, `LoginForm`, `DashboardView` (live rewrite), all 8 `createId/slugId` editors → `lib/cms/ids`
-- `cms/{types,schemas,seed}` (badges, SEO fields, event types, legal model, verbatim legal seed), `content/cmsSource` (parametrized builder), `InquiryForm` (real submit + Turnstile), `contact.astro` (site key prop + script)
-- `docs/DECISIONS.md` (DEC-024 through DEC-030)
+- `src/pages/api/inquiries.ts` (strict delivery), `src/pages/api/health.ts` (emailConfigured flags), all 9 public pages (island wiring + `seoPageKey`), `BaseLayout` (chrome via settings + `SeoLive`), `Header`/`Footer`/`FloatingMessenger` (live settings islands), `InquiryForm` (Turnstile reset + error notice + live options), `contact.astro`, `faq.astro` (script removed), `SettingsEditor` (social hints), `lib/supabase/{client,public}.ts`, `supabase/schema.sql` (comment), `docs/DECISIONS.md` (DEC-031/032/033), `components/admin/alerts.ts` (iconColor).
 
-## 5. Conventions to preserve (updated)
+## 5. Conventions to preserve (added this session)
 
-- **Single backend, loud failures.** No local-fallback branches in admin code — ever. Seeds are public-build fallback only. Admin without env shows "not connected", never silent local saves.
-- **`database.types.ts` is generated** (`supabase gen types`, header documents command). Never hand-edit; fix type friction by regenerating.
-- **No new dependencies** without justification (only `sweetalert2`, supabase×2, vercel adapter added this whole project). No Tailwind. Tokens only. SSR-safe CSS. Zero em-dashes in `src/`. No `window.confirm`/`alert`.
-- **Module CRUD pattern:** list → detail → edit/delete via `useModuleList`; per-item Zod `.element`; upsert-by-slug + delete-missing + Storage GC + reload-from-DB; SweetAlert2 for ops, inline summaries for validation.
-- **Item `id` doubles as DB slug** (stable, unique); array order = `sort_order`; `highlight` = public visibility (anon RLS serves highlighted-only).
-- **Proven verification techniques:** (a) anon-REST matrix via temp scripts (never in repo); (b) privileged checks via transient env (never persisted); (c) dual-path builds (with/without `.env`); (d) dist text-normalized parity proofs; (e) live dev-server content assertions; (f) Vercel output route inspection; (g) bundle greps for secrets/labels.
-- **PostgREST gotcha (verified):** anon INSERT must use `return=minimal`; `return=representation` 401s since anon can't SELECT the row back.
+- **Realtime pattern:** SSR initial props → `useLiveRows`/`useLiveDoc` → debounced table-scoped refetch; never full-site refetch; never trust payload visibility under RLS; one shared channel per table.
+- **`live.css` mirrors Astro sources:** component/page `<style>` stays canonical for first paint; copy changes verbatim with the mirror comment. Dead scoped rules removed as regions move.
+- **Island rules:** no `client:*` directives inside `.tsx` (syntax error); nested islands OK (precedent: Reveal); Astro adds `data-astro-cid-*` to SSR HTML (tolerate in greps); JSX collapses newline-whitespace — use `{" "}` for literal spaces; React escapes `'` as `&#x27;` vs Astro `&#39;` (cosmetic only).
+- **Images need no cache-busting:** uploads mint new keys (`upsert: false`).
+- **`SeoLive` updates the open tab only** — never claim index effects. Open tabs patch instantly; first visits still see ≤60s SWR cache.
 
 ## 6. Validation status
 
-- `npm run check` → 0/0/0 (101 files); `npm run build` → complete; `npm run format` → clean — after every phase.
-- Live REST proofs: table counts/order/badges, RLS allow/deny matrix both directions, storage allow/deny, orphan scan (0), constraint verification, `/api/health` live on production.
-- Dev-server proofs (`:4321`): legal verbatim text, eyebrow/footer/chips/messenger, `/admin/legal` guard redirect, sitemap 9 URLs, no secret leakage in bundles.
-- **Not verified (no browser tooling here):** all click-through round-trips — module CRUD writes, page/SEO/legal saves, highlight toggle + 60s public update, image upload, inquiry submit → admin list → Gmail compose → delete, login/logout/session-expiry, dialogs/savebar at 375px + desktop. **This is the main outstanding QA and the operator's job.**
+- `npm run check` → 0/0/0 (145 files); `npm run build` → complete; `npm run format` → clean — after every stage.
+- Dev-server (`:4321`, operator's pre-existing instance, left running) curl proofs: homepage + all 8 other pages' regions, empty-vs-filled branches, sameAs gating, story-image first paint, nested islands, secret-free bundles.
+- **Not verified (no browser tooling here — operator's job):** two-tab realtime matrix (text/image/create/delete/highlight ON-OFF/badge/price), post-migration event flow, Gmail receipt after strict fix + EmailJS toggle, Turnstile widget render after config fix, SweetAlert visual sign-off, all click-through round-trips from before.
 
 ## 7. Open items / operator actions
 
-1. **Revoke the PAT** (`sbp_fc49…`) — its work (codegen, verification, migration) is done. Highest priority.
-2. **Deploy latest** (SSR+SWR + simplification + legal + chrome wiring all uncommitted? No — tree is clean, committed as `28bcebb`/`9092747`/`b34f74c`; push state unknown). Redeploy after push.
-3. **Browser round-trips** (§6) + the 60s localhost-save → live-URL check.
-4. **Missing evidences (blocking their incidents):** VSCode terminal error text (never received); asset-layout facts — sidebar in view-source? CSS 200/404? prod vs preview URL (fresh hard-refresh look recommended first; may already be resolved by redeploys).
-5. **Pending keys (features degrade gracefully without):** `SUPABASE_SERVICE_ROLE_KEY` (inquiry endpoint runtime), Turnstile pair (spam verification; endpoint accepts without, explicitly per DEC-026), EmailJS set (auto Gmail forwarding; admin list works regardless).
-6. **Standing placeholders:** Messenger URL (`https://m.me/` until real username set in Site Settings), invented testimonials/ratings, Pexels stock imagery, provisional pricing/policies (client confirmation still required for production truth).
-7. **Deliberately static** (DEC-030, do not re-flag): form microcopy/validation, card CTA labels, jump pills, aria-labels, SEO fallbacks, nav labels, footer social icons (no UI).
-8. `docs/*.md` still contain em-dashes (documentation only).
+1. **Apply `supabase/migration-realtime.sql`** (explicit approval required) — nothing realtime fires until then.
+2. **Two-browser realtime matrix** (§6) after deploy.
+3. **Confirm EmailJS non-browser toggle + live Gmail test** (strict `502` should become `200` + inbox delivery).
+4. **Confirm Turnstile 600010 gone** (dashboard key/hostnames + redeploy) and SweetAlert icon look.
+5. **Commit + push + deploy** the dirty tree (realtime + DEC-031/032/033 + alerts; HEAD still `b34f74c`).
+6. **SEO phase** (original deferred goal) can now start — foundation (canonicals, sitemap, robots, OG, JSON-LD + new `sameAs`, GSC meta) is in place.
+7. Carried over: **revoke the PAT** (`sbp_fc49…`, still unverified); broken-admin-layout evidence (may be resolved); VSCode terminal error text (never received); client confirmations (review URL, testimonials, real imagery, pricing/policies, messenger username, 4 social URLs to enter in Site Settings).
+8. **Secrets note:** local `.env` (service-role, EmailJS private, Turnstile secret) was read this session and values appear in the chat transcript — rotate sensitive keys when convenient; `.env` is gitignored and was never committed (verified via `git status`).
 
 ---
 
@@ -90,7 +82,7 @@
 
 1. Read `AGENTS.md`, `CONTEXT.md`, relevant `docs/` before changing anything.
 2. Inspect implementation before edits; follow §5 conventions. Never reintroduce local-fallback branches or hand-edit generated types.
-3. Verify with `npm run check`, `npm run build`, `npm run format`; live-REST proofs where possible; demand browser evidence from the operator for UI claims.
+3. Verify with `npm run check`, `npm run build`, `npm run format`; dev-server curl proofs; demand browser evidence from the operator for UI claims.
 4. Do not invent business facts, URLs, prices, policies, or imagery.
-5. Update `docs/DECISIONS.md` for material decisions (register is at 30 records, DEC-027 superseded).
-6. Harmful/irreversible ops (DB writes beyond probes, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.
+5. Update `docs/DECISIONS.md` for material decisions (register is at 33 records, DEC-024's no-realtime limb superseded by DEC-033).
+6. Harmful/irreversible ops (DB writes/migrations beyond probes, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.

@@ -82,6 +82,14 @@ export function buildSiteContent(modules: CmsModules = cmsSeed.modules): SiteCon
     highlight: item.highlight,
   }));
 
+  const testimonials = modules.testimonials.map((item) => ({
+    id: item.id,
+    quote: item.quote,
+    name: item.name,
+    eventType: item.eventType,
+    rating: item.rating,
+  }));
+
   const serviceImages: Record<string, SampleImage> = {};
   for (const item of modules.services) {
     const image = serviceImage(modules, item.id);
@@ -94,6 +102,7 @@ export function buildSiteContent(modules: CmsModules = cmsSeed.modules): SiteCon
     packages,
     gallery,
     faqs,
+    testimonials,
     serviceImages,
     showcaseImages: gallery
       .filter((item) => item.highlight !== false)

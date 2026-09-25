@@ -1,5 +1,5 @@
 // Shared list-and-detail primitives for the item modules (Services,
-// Packages, Gallery, FAQs). Each module keeps the same interaction shape:
+// Packages, Gallery, FAQs, Testimonials). Each module keeps the same interaction shape:
 // list -> detail -> edit/delete, and list -> Add -> create form -> list.
 // State lives in the island (same approach as InquiriesView), so no new
 // Astro routes are needed and the admin nav context is preserved.
@@ -18,7 +18,12 @@ export interface CrudNotice {
 }
 
 export type ModuleSectionKey =
-  "mod-services" | "mod-packages" | "mod-gallery" | "mod-faqs" | "mod-event-types";
+  | "mod-services"
+  | "mod-packages"
+  | "mod-gallery"
+  | "mod-faqs"
+  | "mod-testimonials"
+  | "mod-event-types";
 
 export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectionKey) {
   const [items, setItems] = useState<T[] | null>(null);
