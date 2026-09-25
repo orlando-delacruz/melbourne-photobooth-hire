@@ -9,10 +9,12 @@
 
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
 import type { Json } from "./database.types";
-import { cmsSeed } from "../cms/seed";
+import { cmsSeed, legalSeed } from "../cms/seed";
 import { collectImageKeys, deleteImage } from "../cms/storage";
+import type { LegalPageKey } from "../cms/types";
 
-export type PageSectionKey = keyof typeof cmsSeed.pages | keyof { settings: unknown };
+export type PageSectionKey =
+  keyof typeof cmsSeed.pages | keyof { settings: unknown } | LegalPageKey;
 
 /** Freshness stamp for one section. Null means never saved. */
 export interface SectionMeta {
@@ -21,7 +23,8 @@ export interface SectionMeta {
 
 function seedFor(key: PageSectionKey): unknown {
   if (key === "settings") return structuredClone(cmsSeed.settings);
-  return structuredClone(cmsSeed.pages[key as keyof typeof cmsSeed.pages]);
+  if (key === "privacy" || key === "terms") return structuredClone(legalSeed[key]);
+  return structuredClone(cmsSeed.pages[key]);
 }
 
 function isEmptyContent(value: unknown): boolean {
@@ -113,7 +116,7 @@ export async function getPageMeta(): Promise<Record<string, SectionMeta>> {
   if (error || !data) throw new Error("Section freshness could not be loaded.");
   const meta: Record<string, SectionMeta> = {};
   for (const row of data) meta[row.page_key] = { savedAt: row.updated_at };
-  for (const key of [...Object.keys(cmsSeed.pages), "settings"] as PageSectionKey[]) {
+  for (const key of [...Object.keys(cmsSeed.pages), "settings", "privacy", "terms"]) {
     meta[key] ??= { savedAt: null };
   }
   return meta;

@@ -2,10 +2,12 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { loadPublicSeo } from "../lib/supabase/public";
+import { loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
 const seo = await loadPublicSeo("privacy");
+const { legal } = await loadPublicPages();
+const page = legal.privacy;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -23,79 +25,29 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title="Privacy Policy"
-    eyebrow="Legal"
-    lede="How we collect, use and protect the information you share with us."
-  />
+  <PageHeader title={page.header.title} eyebrow={page.header.eyebrow} lede={page.header.lede} />
   <div class="section">
     <div class="prose">
-      <p>Last updated: September 2026</p>
-      <p>
-        Melbourne Photobooth Hire ("we", "us", "our") respects your privacy. This policy explains
-        what information we collect when you use our website or enquire about our services, how we
-        use it, and the choices you have.
-      </p>
+      {page.intro.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
 
-      <h2>Information we collect</h2>
-      <p>We collect information you give us directly, including:</p>
-      <ul>
-        <li>Your name, email address and phone number.</li>
-        <li>Event details such as the date, type, venue and estimated guest numbers.</li>
-        <li>Any message or additional requirements you send through our enquiry form.</li>
-      </ul>
-      <p>
-        We also collect limited technical information automatically when you visit the site, such as
-        your browser type and general usage data, to keep the site working and secure.
-      </p>
-
-      <h2>How we use your information</h2>
-      <p>We use the information you provide to:</p>
-      <ul>
-        <li>Respond to your enquiry and prepare a quote.</li>
-        <li>Confirm, plan and deliver the services you request.</li>
-        <li>Communicate with you about your event before and after the date.</li>
-        <li>Meet our legal and accounting obligations.</li>
-      </ul>
-
-      <h2>How we share information</h2>
-      <p>
-        We do not sell your personal information. We may share it with trusted service providers who
-        help us run the business (for example, email delivery, website hosting and spam protection),
-        only to the extent needed to provide those services. We may also disclose information where
-        required by law.
-      </p>
-
-      <h2>Event photography</h2>
-      <p>
-        Photographs taken at your event belong to the experience you booked. We only use images for
-        our own promotion where you or the relevant guests have given permission. You can ask us to
-        remove an image at any time.
-      </p>
-
-      <h2>Data security and retention</h2>
-      <p>
-        We take reasonable steps to protect the information we hold and keep it only for as long as
-        we need it for the purposes described here, or as required by law.
-      </p>
-
-      <h2>Access and correction</h2>
-      <p>
-        You can ask us to access, correct or delete the personal information we hold about you. To
-        make a request, contact us through the details on our contact page.
-      </p>
-
-      <h2>Cookies</h2>
-      <p>
-        Our website may use cookies and similar technologies to support core functionality and
-        understand how the site is used. You can control cookies through your browser settings.
-      </p>
-
-      <h2>Changes to this policy</h2>
-      <p>
-        We may update this policy from time to time. The current version will always be available on
-        this page.
-      </p>
+      {page.sections.map((section) => (
+        <Fragment>
+          <h2>{section.heading}</h2>
+          {section.blocks.map((block) =>
+            block.kind === "paragraph" ? (
+              <p>{block.text}</p>
+            ) : (
+              <ul>
+                {block.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            ),
+          )}
+        </Fragment>
+      ))}
     </div>
   </div>
 </BaseLayout>

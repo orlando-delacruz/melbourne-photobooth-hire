@@ -6,6 +6,7 @@ import {
   ADMIN_DASHBOARD,
   ADMIN_EXTERNAL_ICON,
   CMS_SECTIONS,
+  LEGAL_SECTION,
   MODULE_SECTIONS,
   INQUIRIES_SECTION,
   SEO_SECTION,
@@ -135,7 +136,7 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
           </li>
         ))}
       </ul>
-      <p class="ad-nav-caption">SEO</p>
+      <p class="ad-nav-caption">SEO &amp; Legal</p>
       <ul class="ad-nav">
         <li>
           <a
@@ -145,6 +146,16 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
           >
             <span class="ad-nav-icon" aria-hidden="true" set:html={SEO_SECTION.icon} />
             {SEO_SECTION.label}
+          </a>
+        </li>
+        <li>
+          <a
+            href={LEGAL_SECTION.href}
+            class:list={["ad-nav-link", { "ad-nav-link--current": active === LEGAL_SECTION.key }]}
+            aria-current={active === LEGAL_SECTION.key ? "page" : undefined}
+          >
+            <span class="ad-nav-icon" aria-hidden="true" set:html={LEGAL_SECTION.icon} />
+            {LEGAL_SECTION.label}
           </a>
         </li>
       </ul>

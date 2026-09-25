@@ -9,8 +9,15 @@
 
 import { buildSiteContent, getEventTypes, getPageSeo } from "../content/cmsSource";
 import type { SiteContent } from "../content/types";
-import type { CmsContent, CmsModules, PageMeta, SeoPageKey } from "../cms/types";
-import { cmsSeed } from "../cms/seed";
+import type {
+  CmsContent,
+  CmsModules,
+  LegalPageContent,
+  LegalPageKey,
+  PageMeta,
+  SeoPageKey,
+} from "../cms/types";
+import { cmsSeed, legalSeed } from "../cms/seed";
 import { getSupabaseServerAnon } from "./server";
 import {
   eventTypeFromRow,
@@ -84,8 +91,9 @@ export async function loadPublicEventTypes(): Promise<string[]> {
 export async function loadPublicPages(): Promise<{
   pages: CmsContent["pages"];
   settings: CmsContent["settings"];
+  legal: Record<LegalPageKey, LegalPageContent>;
 }> {
-  const fallback = { pages: cmsSeed.pages, settings: cmsSeed.settings };
+  const fallback = { pages: cmsSeed.pages, settings: cmsSeed.settings, legal: legalSeed };
   if (!isConfigured()) {
     console.warn("[public-content] Supabase env missing: rendering seed page copy.");
     return fallback;
@@ -100,16 +108,19 @@ export async function loadPublicPages(): Promise<{
     }
     const pages = { ...cmsSeed.pages } as CmsContent["pages"];
     let settings = cmsSeed.settings;
+    const legal: Record<LegalPageKey, LegalPageContent> = { ...legalSeed };
     for (const row of data) {
       const content = row.content as unknown;
       if (!content || typeof content !== "object" || Object.keys(content).length === 0) continue;
       if (row.page_key === "settings") {
         settings = content as CmsContent["settings"];
+      } else if (row.page_key === "privacy" || row.page_key === "terms") {
+        legal[row.page_key] = content as LegalPageContent;
       } else if (row.page_key in pages) {
         (pages as Record<string, unknown>)[row.page_key] = content;
       }
     }
-    return { pages, settings };
+    return { pages, settings, legal };
   } catch {
     return fallback;
   }

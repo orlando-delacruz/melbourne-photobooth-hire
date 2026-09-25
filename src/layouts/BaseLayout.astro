@@ -4,6 +4,7 @@ import Footer from "../components/Footer.astro";
 import FloatingMessenger from "../components/FloatingMessenger.astro";
 import StructuredData from "../components/StructuredData.astro";
 import { getContent } from "../lib/content/repository";
+import { loadPublicPages } from "../lib/supabase/public";
 import { NAV_ITEMS } from "../lib/navigation";
 import "@fontsource/fraunces/latin-400.css";
 import "@fontsource/fraunces/latin-400-italic.css";
@@ -58,6 +59,12 @@ const {
   structuredData = [],
 } = Astro.props;
 const { site, heroBackgroundImage } = getContent();
+// Site chrome (brand, footer, messenger) reads the CMS settings blob so the
+// Site Settings admin is real; hero imagery keeps its mock source for now.
+const { settings: siteSettings } = await loadPublicPages();
+const brandName = siteSettings.brandName || site.brandName;
+const serviceAreaStatement = siteSettings.serviceAreaStatement || site.serviceAreaStatement;
+const reviewUrl = siteSettings.reviewUrl || null;
 const currentPath = Astro.url.pathname;
 
 const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
@@ -72,7 +79,7 @@ const socialDescription = ogDescription || description;
 const socialImageSrc = ogImage ?? heroBackgroundImage?.src;
 const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
 const socialImageAlt =
-  ogImage && ogImageAlt ? ogImageAlt : ogImage ? site.brandName : heroBackgroundImage?.alt;
+  ogImage && ogImageAlt ? ogImageAlt : ogImage ? brandName : heroBackgroundImage?.alt;
 
 // Google Search Console URL-prefix verification. The token is public and must
 // appear in the served HTML; the env value can override it per environment.
@@ -93,7 +100,7 @@ const siteSchema = {
     {
       "@type": "Organization",
       "@id": `${siteOrigin}/#organization`,
-      name: site.brandName,
+      name: brandName,
       url: `${siteOrigin}/`,
       description:
         "Photobooth hire for weddings, birthdays, corporate events and celebrations across Melbourne, Victoria.",
@@ -103,7 +110,7 @@ const siteSchema = {
       "@type": "WebSite",
       "@id": `${siteOrigin}/#website`,
       url: `${siteOrigin}/`,
-      name: site.brandName,
+      name: brandName,
       inLanguage: "en-AU",
       publisher: { "@id": `${siteOrigin}/#organization` },
     },
@@ -143,7 +150,7 @@ const siteSchema = {
     ) : null}
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_AU" />
-    <meta property="og:site_name" content={site.brandName} />
+    <meta property="og:site_name" content={brandName} />
     <meta property="og:title" content={socialTitle} />
     <meta property="og:description" content={socialDescription} />
     <meta property="og:url" content={canonicalUrl} />
@@ -174,7 +181,7 @@ const siteSchema = {
     <a class="skip-link" href="#main">
       Skip to main content
     </a>
-    <Header items={NAV_ITEMS} currentPath={currentPath} brandName={site.brandName} />
+    <Header items={NAV_ITEMS} currentPath={currentPath} brandName={brandName} />
     <main id="main">
       <div class="container">
         <slot />
@@ -182,10 +189,11 @@ const siteSchema = {
     </main>
     <Footer
       items={NAV_ITEMS}
-      brandName={site.brandName}
-      serviceAreaStatement={site.serviceAreaStatement}
-      reviewUrl={site.reviewUrl}
+      brandName={brandName}
+      serviceAreaStatement={serviceAreaStatement}
+      reviewUrl={reviewUrl}
+      footerCta={siteSettings.footerCta}
     />
-    <FloatingMessenger />
+    <FloatingMessenger messengerUrl={siteSettings.messengerUrl} />
   </body>
 </html>

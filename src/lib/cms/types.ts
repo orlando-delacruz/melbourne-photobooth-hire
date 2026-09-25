@@ -357,6 +357,34 @@ export interface SiteSettingsContent {
   footerCta: { title: string; lede: string; label: string };
 }
 
+// ── Legal pages ─────────────────────────────────────────────────────────────
+
+/** Legal content pages with CMS-managed copy (privacy, terms). */
+export type LegalPageKey = "privacy" | "terms";
+
+export interface LegalBlockParagraph {
+  kind: "paragraph";
+  text: string;
+}
+
+export interface LegalBlockList {
+  kind: "list";
+  items: string[];
+}
+
+export type LegalBlock = LegalBlockParagraph | LegalBlockList;
+
+export interface LegalSection {
+  heading: string;
+  blocks: LegalBlock[];
+}
+
+export interface LegalPageContent {
+  header: { title: string; eyebrow: string; lede: string };
+  intro: string[];
+  sections: LegalSection[];
+}
+
 // ── Root ────────────────────────────────────────────────────────────────────
 
 export interface CmsContent {

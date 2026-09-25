@@ -11,23 +11,22 @@ import ReviewsMarquee from "../components/ReviewsMarquee.astro";
 import Reveal from "../components/islands/Reveal";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
 import SectionHeading from "../components/SectionHeading.astro";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import {
+  loadPublicContent,
+  loadPublicSeo,
+  loadPublicPages,
+  loadPublicEventTypes,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const {
-  services,
-  packages,
-  eventTypes,
-  faqs,
-  heroBackgroundImage,
-  serviceImages,
-  gallery,
-  ctaImage,
-} = await loadPublicContent();
+const { services, packages, faqs, heroBackgroundImage, serviceImages, gallery, ctaImage } =
+  await loadPublicContent();
 const { pages: cmsPages } = await loadPublicPages();
 const home = cmsPages.home;
-// Module records plus page copy are the truth; mock carryovers fill only
-// shapes the page blob does not own (homepage occasion chips).
+// Occasion chips render the Event-Types module verbatim (single source of
+// truth with the contact dropdown); unknown labels fall back to the sparkles
+// glyph in eventIconSvg.
+const occasionLabels = await loadPublicEventTypes();
 const processSteps = home.steps;
 const testimonials = home.testimonials;
 const heroStats = home.hero.stats;
@@ -89,7 +88,11 @@ const eventIconPaths: Record<string, string> = {
 };
 
 function eventIconSvg(label: string, size = 16): string {
-  const inner = eventIconPaths[label] || stepIconPaths.sparkles;
+  // The Event-Types module owns the labels (singular); the icon map below is
+  // keyed by the former plural chip copy. Try the label verbatim, then the
+  // plural form, before the sparkles fallback.
+  const plural = label.endsWith("y") ? `${label.slice(0, -1)}ies` : `${label}s`;
+  const inner = eventIconPaths[label] || eventIconPaths[plural] || stepIconPaths.sparkles;
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 }
 ---
@@ -111,6 +114,7 @@ function eventIconSvg(label: string, size = 16): string {
   preloadImage={heroBackgroundImage?.src}
 >
   <Hero
+    eyebrow={home.hero.eyebrow}
     headline={home.hero.headline}
     supporting={home.hero.supporting}
     primaryHref="/contact"
@@ -331,7 +335,7 @@ function eventIconSvg(label: string, size = 16): string {
       size="lg"
     />
     <ul class="chip-list">
-      {eventTypes.map((eventType) => (
+      {occasionLabels.map((eventType) => (
         <li>
           <span class="chip-icon" aria-hidden="true" set:html={eventIconSvg(eventType)} />
           {eventType}

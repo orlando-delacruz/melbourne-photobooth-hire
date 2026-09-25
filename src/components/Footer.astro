@@ -8,8 +8,9 @@ interface Props {
   brandName: string;
   serviceAreaStatement: string;
   reviewUrl: string | null;
+  footerCta: { title: string; lede: string; label: string };
 }
-const { items, brandName, serviceAreaStatement, reviewUrl } = Astro.props;
+const { items, brandName, serviceAreaStatement, reviewUrl, footerCta } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
@@ -65,10 +66,10 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
     <div class="footer-cta">
-      <h2>Ready when you are</h2>
-      <p>Tell us your date and we'll recommend the right booth for your event.</p>
+      <h2>{footerCta.title}</h2>
+      <p>{footerCta.lede}</p>
       <Button href={ENQUIRY_HREF} variant="primary" tone="dark" size="lg" arrow>
-        Enquire now
+        {footerCta.label}
       </Button>
     </div>
   </div>

@@ -9,6 +9,7 @@ export type AdminNavKey =
   | "inquiries"
   | "settings"
   | "seo"
+  | "legal"
   | CmsPageKey
   | "mod-services"
   | "mod-packages"
@@ -192,6 +193,19 @@ export const SEO_SECTION: AdminSection = {
   publicHref: null,
   blurb: "Per-page titles, descriptions, social metadata and indexing controls.",
   icon: svg('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'),
+};
+
+/** Legal page copy shares the SEO caption; bodies live in page_contents. */
+export const LEGAL_SECTION: AdminSection = {
+  key: "legal",
+  label: "Legal pages",
+  href: "/admin/legal",
+  group: "seo",
+  publicHref: null,
+  blurb: "Privacy policy and terms copy, edited as headed sections.",
+  icon: svg(
+    '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
+  ),
 };
 
 export const ADMIN_DASHBOARD = {

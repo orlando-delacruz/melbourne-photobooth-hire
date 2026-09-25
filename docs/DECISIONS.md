@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Twenty-nine decision records exist (DEC-001 through DEC-029). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty decision records exist (DEC-001 through DEC-030). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -284,6 +284,7 @@ Twenty-nine decision records exist (DEC-001 through DEC-029). Existing selection
 | DEC-027 | Publish-on-demand via guarded Deploy Hook trigger | Superseded | 2026-09-24 |
 | DEC-028 | Server-rendered public pages with edge SWR, no rebuilds | Accepted   | 2026-09-24 |
 | DEC-029 | Single-backend simplification: generated types, no local mode | Accepted   | 2026-09-24 |
+| DEC-030 | Content-completeness: eyebrow fix, settings, chips, legal blobs | Accepted   | 2026-09-24 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -810,6 +811,26 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/DATA-MODEL.md`, DEC-024.
 - **Supersedes / Superseded by:** —.
 - **Open questions or follow-up:** Revoke the verification token; browser round-trips; the VSCode terminal error text and asset-layout evidence are still outstanding.
+
+### DEC-030 — Content-completeness: eyebrow fix, settings, chips, legal blobs
+
+- **ID:** DEC-030
+- **Title:** Every public word is CMS-editable except an explicit static list
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** Audit found the hero eyebrow saved but never rendered (missing prop passthrough), the settings admin surface rendered nowhere, homepage chips bypassed the Event-Types module, and privacy/terms bodies had no CMS home at all.
+- **Decision:**
+  1. **Hero eyebrow** passed from the home blob (one-line fix; the field was already editable and stored).
+  2. **Site chrome from the settings blob**: brand, service-area line, review URL, footer CTA and messenger URL render from Site Settings with previous-value fallbacks; `socials` stays unwired (no footer UI exists for it — adding social icons is new UI scope, not a wiring fix).
+  3. **Chips from the Event-Types module**, rendered verbatim (single source with the contact dropdown); icons resolve exact-then-plural label before the sparkles fallback, so current labels keep their glyphs.
+  4. **Legal blobs**: `privacy`/`terms` keys in `page_contents` (check constraint migrated live and verified) holding header/intro/sections of paragraph/list blocks, transcribed verbatim; new Legal list/detail editor reusing established primitives; public pages render blobs with seed-shape fallback.
+  5. **Deliberately static**: form labels/buttons/validation, per-card CTA labels, jump pills, aria-labels, SEO fallbacks, nav labels — functional/UI copy, excluded from CMS scope by choice, not oversight.
+- **Alternatives considered:** Rich-text/HTML legal editing — rejected; paragraph+list blocks cover the content with validation. Code-pluralized chip labels — rejected; verbatim module labels win.
+- **Rationale:** Smallest changes making every marketing word editable while keeping editor complexity proportional (no new dependencies, no new UI systems).
+- **Consequences:** Legal saves require the migrated check constraint (applied + verified in production). Renaming event-type labels changes chips and dropdown together.
+- **Related documents:** `docs/REQUIREMENTS.md`, `docs/DATA-MODEL.md`, DEC-018/DEC-023.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Browser round-trips for the new surfaces; social-icons UI if ever wanted.
 
 ## 22. Related Documentation
 

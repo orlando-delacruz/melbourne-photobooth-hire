@@ -2,10 +2,12 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { loadPublicSeo } from "../lib/supabase/public";
+import { loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
 const seo = await loadPublicSeo("terms");
+const { legal } = await loadPublicPages();
+const page = legal.terms;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -23,82 +25,29 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title="Terms &amp; Conditions"
-    eyebrow="Legal"
-    lede="The terms that apply when you hire a photobooth experience from us."
-  />
+  <PageHeader title={page.header.title} eyebrow={page.header.eyebrow} lede={page.header.lede} />
   <div class="section">
     <div class="prose">
-      <p>Last updated: September 2026</p>
-      <p>
-        These terms apply to the photobooth hire services provided by Melbourne Photobooth Hire
-        ("we", "us", "our"). By making an enquiry or confirming a booking, you agree to these terms.
-      </p>
+      {page.intro.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
 
-      <h2>Enquiries and quotes</h2>
-      <p>
-        Submitting an enquiry does not create a booking or reserve a date. A booking is confirmed
-        only when we accept it in writing and the deposit has been received. Quotes are valid for 14
-        days unless stated otherwise.
-      </p>
-
-      <h2>Deposits and payment</h2>
-      <ul>
-        <li>A 20% deposit is required to confirm your booking.</li>
-        <li>The remaining balance is due on the day of the event.</li>
-        <li>Deposits are non-refundable.</li>
-        <li>Extended hire is charged per hour as agreed in your quote.</li>
-      </ul>
-
-      <h2>Rescheduling and cancellation</h2>
-      <p>
-        Rescheduling is available with reasonable notice and is subject to availability. If an event
-        is cancelled, the deposit is not refunded. We may need to reschedule or cancel in
-        exceptional circumstances such as severe weather or equipment failure; in those cases we
-        will offer an alternative date or a refund of amounts paid for the affected service.
-      </p>
-
-      <h2>Venue requirements</h2>
-      <p>
-        You agree to provide suitable access to the venue, a reasonably level area for the booth,
-        and a power supply where required. Please tell us about stairs, load-in restrictions or
-        limited access in advance so we can plan accordingly.
-      </p>
-
-      <h2>Setup and hire period</h2>
-      <p>
-        We arrive before the hire period to set up and pack down afterwards. Setup and pack-down
-        time is additional to the hire period unless agreed otherwise. Delays caused by venue access
-        may reduce the available hire time.
-      </p>
-
-      <h2>Guests and safety</h2>
-      <p>
-        The booth must be used in a reasonable manner. We may pause or stop the service if equipment
-        or staff are at risk. Children should be supervised by a responsible adult while using the
-        booth.
-      </p>
-
-      <h2>Damage and liability</h2>
-      <p>
-        You are responsible for loss or damage to our equipment caused by you or your guests, other
-        than fair wear and tear. To the extent permitted by law, our liability is limited to the
-        value of the service provided. Nothing in these terms excludes rights that cannot be
-        excluded under the Australian Consumer Law.
-      </p>
-
-      <h2>Photography and content</h2>
-      <p>
-        Guests retain the photos taken at the event. We may use images for promotional purposes only
-        with permission, and you may request removal at any time.
-      </p>
-
-      <h2>Changes to these terms</h2>
-      <p>
-        We may update these terms from time to time. The terms that apply to your booking are those
-        in effect when the booking is confirmed.
-      </p>
+      {page.sections.map((section) => (
+        <Fragment>
+          <h2>{section.heading}</h2>
+          {section.blocks.map((block) =>
+            block.kind === "paragraph" ? (
+              <p>{block.text}</p>
+            ) : (
+              <ul>
+                {block.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            ),
+          )}
+        </Fragment>
+      ))}
     </div>
   </div>
 </BaseLayout>

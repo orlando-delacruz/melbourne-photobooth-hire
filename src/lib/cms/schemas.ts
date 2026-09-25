@@ -348,6 +348,35 @@ export const settingsSchema = z.object({
   }),
 });
 
+// ── Legal pages ─────────────────────────────────────────────────────────────
+
+const legalBlockSchema = z.union([
+  z.object({ kind: z.literal("paragraph"), text: longText("the paragraph", 2000) }),
+  z.object({
+    kind: z.literal("list"),
+    items: z.array(shortText("each bullet", 500)).min(1, "Add at least one bullet.").max(20),
+  }),
+]);
+
+const legalHeaderSchema = z.object({
+  title: shortText("the page title"),
+  eyebrow: shortText("the eyebrow"),
+  lede: longText("the introduction", 600),
+});
+
+export const legalPageSchema = z.object({
+  header: legalHeaderSchema,
+  intro: z.array(longText("each intro paragraph", 2000)).max(6),
+  sections: z
+    .array(
+      z.object({
+        heading: shortText("each section heading", 200),
+        blocks: z.array(legalBlockSchema).min(1, "Add at least one block.").max(12),
+      }),
+    )
+    .max(20),
+});
+
 // ── Modules ─────────────────────────────────────────────────────────────────
 
 export const servicesModuleSchema = z

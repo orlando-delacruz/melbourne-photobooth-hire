@@ -1,0 +1,19 @@
+---
+export const prerender = false;
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import LegalEditor from "../../components/admin/editors/LegalEditor";
+import { LEGAL_SECTION } from "../../components/admin/sections";
+---
+
+<AdminLayout title={`${LEGAL_SECTION.label} module`}>
+  <AdminShell
+    active={LEGAL_SECTION.key}
+    title={LEGAL_SECTION.label}
+    heading={`${LEGAL_SECTION.label} module`}
+    lede={LEGAL_SECTION.blurb}
+    publicHref={LEGAL_SECTION.publicHref}
+  >
+    <LegalEditor client:load />
+  </AdminShell>
+</AdminLayout>

@@ -7,7 +7,7 @@
 // deleted; images keep their original remote URLs until replaced by uploads.
 
 import { mockContent } from "../content/mock";
-import type { CmsContent } from "./types";
+import type { CmsContent, LegalPageContent, LegalPageKey } from "./types";
 
 const HERO_IMAGE = mockContent.heroBackgroundImage;
 const PREMIUM_IMAGE = mockContent.serviceImages?.["premium-photobooth"];
@@ -567,5 +567,211 @@ export const cmsSeed: CmsContent = {
       id: `event-type-${index + 1}`,
       label,
     })),
+  },
+};
+
+/**
+ * Legal page copy, transcribed verbatim from the public privacy/terms pages
+ * so the CMS-managed render is byte-identical until first edited in admin.
+ */
+export const legalSeed: Record<LegalPageKey, LegalPageContent> = {
+  privacy: {
+    header: {
+      title: "Privacy Policy",
+      eyebrow: "Legal",
+      lede: "How we collect, use and protect the information you share with us.",
+    },
+    intro: [
+      "Last updated: September 2026",
+      'Melbourne Photobooth Hire ("we", "us", "our") respects your privacy. This policy explains what information we collect when you use our website or enquire about our services, how we use it, and the choices you have.',
+    ],
+    sections: [
+      {
+        heading: "Information we collect",
+        blocks: [
+          { kind: "paragraph", text: "We collect information you give us directly, including:" },
+          {
+            kind: "list",
+            items: [
+              "Your name, email address and phone number.",
+              "Event details such as the date, type, venue and estimated guest numbers.",
+              "Any message or additional requirements you send through our enquiry form.",
+            ],
+          },
+          {
+            kind: "paragraph",
+            text: "We also collect limited technical information automatically when you visit the site, such as your browser type and general usage data, to keep the site working and secure.",
+          },
+        ],
+      },
+      {
+        heading: "How we use your information",
+        blocks: [
+          { kind: "paragraph", text: "We use the information you provide to:" },
+          {
+            kind: "list",
+            items: [
+              "Respond to your enquiry and prepare a quote.",
+              "Confirm, plan and deliver the services you request.",
+              "Communicate with you about your event before and after the date.",
+              "Meet our legal and accounting obligations.",
+            ],
+          },
+        ],
+      },
+      {
+        heading: "How we share information",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "We do not sell your personal information. We may share it with trusted service providers who help us run the business (for example, email delivery, website hosting and spam protection), only to the extent needed to provide those services. We may also disclose information where required by law.",
+          },
+        ],
+      },
+      {
+        heading: "Event photography",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Photographs taken at your event belong to the experience you booked. We only use images for our own promotion where you or the relevant guests have given permission. You can ask us to remove an image at any time.",
+          },
+        ],
+      },
+      {
+        heading: "Data security and retention",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "We take reasonable steps to protect the information we hold and keep it only for as long as we need it for the purposes described here, or as required by law.",
+          },
+        ],
+      },
+      {
+        heading: "Access and correction",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "You can ask us to access, correct or delete the personal information we hold about you. To make a request, contact us through the details on our contact page.",
+          },
+        ],
+      },
+      {
+        heading: "Cookies",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Our website may use cookies and similar technologies to support core functionality and understand how the site is used. You can control cookies through your browser settings.",
+          },
+        ],
+      },
+      {
+        heading: "Changes to this policy",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "We may update this policy from time to time. The current version will always be available on this page.",
+          },
+        ],
+      },
+    ],
+  },
+  terms: {
+    header: {
+      title: "Terms & Conditions",
+      eyebrow: "Legal",
+      lede: "The terms that apply when you hire a photobooth experience from us.",
+    },
+    intro: [
+      "Last updated: September 2026",
+      'These terms apply to the photobooth hire services provided by Melbourne Photobooth Hire ("we", "us", "our"). By making an enquiry or confirming a booking, you agree to these terms.',
+    ],
+    sections: [
+      {
+        heading: "Enquiries and quotes",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Submitting an enquiry does not create a booking or reserve a date. A booking is confirmed only when we accept it in writing and the deposit has been received. Quotes are valid for 14 days unless stated otherwise.",
+          },
+        ],
+      },
+      {
+        heading: "Deposits and payment",
+        blocks: [
+          {
+            kind: "list",
+            items: [
+              "A 20% deposit is required to confirm your booking.",
+              "The remaining balance is due on the day of the event.",
+              "Deposits are non-refundable.",
+              "Extended hire is charged per hour as agreed in your quote.",
+            ],
+          },
+        ],
+      },
+      {
+        heading: "Rescheduling and cancellation",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Rescheduling is available with reasonable notice and is subject to availability. If an event is cancelled, the deposit is not refunded. We may need to reschedule or cancel in exceptional circumstances such as severe weather or equipment failure; in those cases we will offer an alternative date or a refund of amounts paid for the affected service.",
+          },
+        ],
+      },
+      {
+        heading: "Venue requirements",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "You agree to provide suitable access to the venue, a reasonably level area for the booth, and a power supply where required. Please tell us about stairs, load-in restrictions or limited access in advance so we can plan accordingly.",
+          },
+        ],
+      },
+      {
+        heading: "Setup and hire period",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "We arrive before the hire period to set up and pack down afterwards. Setup and pack-down time is additional to the hire period unless agreed otherwise. Delays caused by venue access may reduce the available hire time.",
+          },
+        ],
+      },
+      {
+        heading: "Guests and safety",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "The booth must be used in a reasonable manner. We may pause or stop the service if equipment or staff are at risk. Children should be supervised by a responsible adult while using the booth.",
+          },
+        ],
+      },
+      {
+        heading: "Damage and liability",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "You are responsible for loss or damage to our equipment caused by you or your guests, other than fair wear and tear. To the extent permitted by law, our liability is limited to the value of the service provided. Nothing in these terms excludes rights that cannot be excluded under the Australian Consumer Law.",
+          },
+        ],
+      },
+      {
+        heading: "Photography and content",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "Guests retain the photos taken at the event. We may use images for promotional purposes only with permission, and you may request removal at any time.",
+          },
+        ],
+      },
+      {
+        heading: "Changes to these terms",
+        blocks: [
+          {
+            kind: "paragraph",
+            text: "We may update these terms from time to time. The terms that apply to your booking are those in effect when the booking is confirmed.",
+          },
+        ],
+      },
+    ],
   },
 };
