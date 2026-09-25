@@ -4,6 +4,8 @@ import type { SubmitHandler } from "react-hook-form";
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
+import { fetchEventTypes } from "../../lib/realtime/fetchers";
+import { useLiveRows } from "./useLiveSync";
 
 /**
  * Inquiry form island: client validation, then POST /api/inquiries which
@@ -40,9 +42,15 @@ export default function InquiryForm({
   const [turnstileFailed, setTurnstileFailed] = useState(false);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
-  // Dropdown options come from the build-time Event Types module data
-  // (loadPublicEventTypes); the module is the single source of truth.
-  const options = eventTypes;
+  // Dropdown options come from the Event Types module (DEC-023) and stay
+  // live: admin edits patch the open form's options without a refresh. The
+  // visitor's current selection is preserved by value while it still exists.
+  const liveEventTypes = useLiveRows(
+    "event_types",
+    eventTypes.map((label) => ({ id: label, label })),
+    fetchEventTypes,
+  );
+  const options = liveEventTypes.map((type) => type.label);
   const noticeRef = useRef<HTMLDivElement>(null);
   const {
     register,

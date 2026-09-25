@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHeader from "../components/PageHeader.astro";
+import LiveLegalPage from "../components/islands/LiveLegalPage";
 import { loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
@@ -12,6 +12,7 @@ setPublicCache(Astro.response.headers);
 ---
 
 <BaseLayout
+  seoPageKey="terms"
   title={seo.seoTitle || "Terms & Conditions | Melbourne Photobooth Hire"}
   description={
     seo.seoDescription ||
@@ -25,29 +26,5 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader title={page.header.title} eyebrow={page.header.eyebrow} lede={page.header.lede} />
-  <div class="section">
-    <div class="prose">
-      {page.intro.map((paragraph) => (
-        <p>{paragraph}</p>
-      ))}
-
-      {page.sections.map((section) => (
-        <Fragment>
-          <h2>{section.heading}</h2>
-          {section.blocks.map((block) =>
-            block.kind === "paragraph" ? (
-              <p>{block.text}</p>
-            ) : (
-              <ul>
-                {block.items.map((item) => (
-                  <li>{item}</li>
-                ))}
-              </ul>
-            ),
-          )}
-        </Fragment>
-      ))}
-    </div>
-  </div>
+  <LiveLegalPage client:visible pageKey="terms" initial={page} />
 </BaseLayout>

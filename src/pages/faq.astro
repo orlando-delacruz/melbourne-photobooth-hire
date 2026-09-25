@@ -1,28 +1,30 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import PageHeader from "../components/PageHeader.astro";
-import Accordion from "../components/Accordion.astro";
-import CtaBand from "../components/CtaBand.astro";
-import Reveal from "../components/islands/Reveal";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveFaqSection from "../components/islands/LiveFaqSection";
+import LiveFaqSupport from "../components/islands/LiveFaqSupport";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { faqs, ctaImage } = await loadPublicContent();
+const { ctaImage } = await loadPublicContent();
 const { pages: cmsPages } = await loadPublicPages();
 const faqPage = cmsPages.faq;
+// FAQ rows seed the live island (DEC-033): edits, creates, deletes and
+// highlight changes patch the list with no refresh.
+const liveModules = await loadPublicModules();
 const seo = await loadPublicSeo("faq");
 setPublicCache(Astro.response.headers);
-
-const searchIcon =
-  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>';
-
-const chatIcon =
-  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 ---
 
 <BaseLayout
+  seoPageKey="faq"
   title={seo.seoTitle || "Photobooth Hire FAQs Melbourne | Pricing, Setup & Policies"}
   description={
     seo.seoDescription ||
@@ -36,176 +38,48 @@ const chatIcon =
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={faqPage.header.title}
-    eyebrow={faqPage.header.eyebrow}
-    lede={faqPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="faq"
+    initial={faqPage.header}
     imageSrc={ctaImage?.src}
     imageAlt={ctaImage?.alt}
   />
 
-  {faqs.length === 0 ? (
+  {liveModules.faqs.length === 0 ? (
     <p class="section">Questions and answers will appear here once client-confirmed.</p>
   ) : (
     <section class="section faq" aria-label="Frequently asked questions">
-      <div class="faq-toolbar">
-        <div class="faq-search-panel">
-          <label class="sr-only" for="faq-search">
-            Search frequently asked questions
-          </label>
-          <span class="faq-search-icon" aria-hidden="true" set:html={searchIcon} />
-          <input
-            id="faq-search"
-            class="faq-search-input"
-            type="search"
-            placeholder={faqPage.searchPlaceholder}
-            autocomplete="off"
-          />
-        </div>
-        <p class="faq-count" data-faq-count aria-live="polite">
-          {faqs.length} questions
-        </p>
-      </div>
-
       <div class="faq-layout">
-        <div class="faq-main">
-          <Reveal client:visible>
-            <Accordion items={faqs} />
-          </Reveal>
-          <p class="faq-empty" data-faq-empty hidden>
-            {faqPage.emptyCopy}
-          </p>
-        </div>
+        <LiveFaqSection
+          client:visible
+          initial={liveModules.faqs}
+          searchPlaceholder={faqPage.searchPlaceholder}
+          emptyCopy={faqPage.emptyCopy}
+        />
 
         <aside class="faq-aside">
-          <div class="faq-support">
-            <span class="faq-support-icon" aria-hidden="true" set:html={chatIcon} />
-            <h2>{faqPage.support.heading}</h2>
-            <p>{faqPage.support.body}</p>
-            <Button href="/contact" variant="primary" tone="dark" size="lg" arrow>
-              {faqPage.support.label}
-            </Button>
-          </div>
+          <LiveFaqSupport client:visible initialPage={faqPage} />
         </aside>
       </div>
     </section>
   )}
 
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="faq"
+    initial={faqPage.ctaBand}
     id="faq-enquire"
-    eyebrow={faqPage.ctaBand.eyebrow}
-    headline={faqPage.ctaBand.headline}
-    lede={faqPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={faqPage.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel={faqPage.ctaBand.secondaryLabel}
-    imageSrc={faqPage.ctaBand.image.src || ctaImage?.src}
-    imageAlt={faqPage.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 </BaseLayout>
 
-<script>
-  // Progressive enhancement: filter the FAQ list as the visitor types. Without
-  // JavaScript the search is hidden and every question stays available.
-  const input = document.getElementById("faq-search") as HTMLInputElement | null;
-  const countEl = document.querySelector("[data-faq-count]");
-  const emptyEl = document.querySelector<HTMLElement>("[data-faq-empty]");
-  const items = Array.from(document.querySelectorAll<HTMLDetailsElement>(".accordion__item"));
-
-  if (input && items.length > 0) {
-    const total = items.length;
-    const apply = () => {
-      const query = input.value.trim().toLowerCase();
-      let visible = 0;
-      items.forEach((item) => {
-        const text = (item.textContent || "").toLowerCase();
-        const match = query === "" || text.includes(query);
-        item.style.display = match ? "" : "none";
-        if (match) visible += 1;
-      });
-      if (countEl) {
-        countEl.textContent =
-          query === "" ? total + " questions" : visible + " of " + total + " questions";
-      }
-      if (emptyEl) emptyEl.hidden = visible !== 0;
-    };
-    input.addEventListener("input", apply);
-    apply();
-  }
-</script>
-
 <style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  /* ── Toolbar ────────────────────────────────────────────────────────── */
-
-  .faq-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-xl);
-  }
-  .faq-search-panel {
-    position: relative;
-    flex: 1 1 20rem;
-    max-width: 26rem;
-  }
-  .faq-search-input {
-    width: 100%;
-    min-height: 3rem;
-    padding: 0.7rem 1rem 0.7rem 2.7rem;
-    border: 1px solid var(--color-input-border);
-    border-radius: var(--radius-md);
-    font: inherit;
-    font-size: var(--text-body);
-    color: var(--color-ink);
-    background: var(--color-surface);
-    transition:
-      border-color var(--motion-quick) var(--ease-default),
-      box-shadow var(--motion-quick) var(--ease-default);
-  }
-  .faq-search-input::placeholder {
-    color: var(--color-ink-faint);
-  }
-  .faq-search-input:hover {
-    border-color: var(--color-ink-soft);
-  }
-  .faq-search-input:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-    border-color: var(--color-accent);
-  }
-  .faq-search-icon {
-    position: absolute;
-    left: 0.9rem;
-    top: 50%;
-    transform: translateY(-50%);
-    display: inline-flex;
-    color: var(--color-ink-faint);
-    pointer-events: none;
-  }
-  .faq-count {
-    margin: 0;
-    color: var(--color-ink-faint);
-    font-size: var(--text-small);
-  }
-
-  /* Hide the search when JavaScript is unavailable. */
-  html:not(.js) .faq-search-panel {
-    display: none;
-  }
+  /* NOTE: toolbar, search, count and empty-line styles live in
+     styles/live.css — the LiveFaqSection island renders those nodes. */
 
   /* ── Layout ─────────────────────────────────────────────────────────── */
 
@@ -218,80 +92,9 @@ const chatIcon =
   .faq-main {
     min-width: 0;
   }
-  .faq-empty {
-    margin: var(--space-lg) 0 0;
-    color: var(--color-ink-soft);
-  }
 
   .faq-aside {
     max-width: 26rem;
-  }
-  .faq-support {
-    position: relative;
-    overflow: hidden;
-    padding: var(--space-lg);
-    border: 1px solid var(--color-ink-hairline-strong);
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, var(--color-surface-dark), var(--color-ink));
-    box-shadow: var(--elevation-2);
-    color: var(--color-on-ink);
-  }
-  /* Champagne hairline plus an interior spotlight. */
-  .faq-support::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-accent-on-dark) 22%,
-      #fff2c8 50%,
-      var(--color-accent-on-dark) 78%,
-      transparent
-    );
-    pointer-events: none;
-  }
-  .faq-support::after {
-    content: "";
-    position: absolute;
-    inset: -35% -20% auto;
-    height: 65%;
-    background: radial-gradient(60% 100% at 50% 0%, rgba(230, 206, 138, 0.16), transparent 70%);
-    pointer-events: none;
-  }
-  .faq-support-icon {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    margin-bottom: var(--space-md);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-ink-hairline-strong);
-    background: var(--color-accent-wash);
-    color: var(--color-accent-on-dark);
-  }
-  .faq-support h2 {
-    position: relative;
-    z-index: 1;
-    margin: 0 0 var(--space-2xs);
-    color: var(--color-on-ink);
-    font-size: var(--text-h3);
-  }
-  .faq-support p {
-    position: relative;
-    z-index: 1;
-    margin: 0 0 var(--space-lg);
-    color: var(--color-on-ink-secondary);
-  }
-  .faq-support :global(.button) {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    justify-content: center;
   }
 
   @media (min-width: 900px) {

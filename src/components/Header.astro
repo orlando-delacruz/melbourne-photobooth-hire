@@ -1,14 +1,16 @@
 ---
 import type { NavItem } from "./islands/MobileNav";
 import MobileNav from "./islands/MobileNav";
+import LiveBrandName from "./islands/LiveBrandName";
+import type { SiteSettingsContent } from "../lib/cms/types";
 import { ENQUIRY_HREF } from "../lib/navigation";
 
 interface Props {
   items: NavItem[];
   currentPath: string;
-  brandName: string;
+  initialSettings: SiteSettingsContent;
 }
-const { items, currentPath, brandName } = Astro.props;
+const { items, currentPath, initialSettings } = Astro.props;
 ---
 
 <header class="site-header" data-site-header>
@@ -30,7 +32,9 @@ const { items, currentPath, brandName } = Astro.props;
           <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
         </svg>
       </span>
-      <span class="brand-name">{brandName}</span>
+      <span class="brand-name">
+        <LiveBrandName client:visible initialSettings={initialSettings} />
+      </span>
     </a>
     <nav class="desktop-nav" aria-label="Primary">
       <ul>

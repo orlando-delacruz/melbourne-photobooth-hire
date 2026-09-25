@@ -2,8 +2,9 @@
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
-import PageHeader from "../components/PageHeader.astro";
-import SocialIcon from "../components/SocialIcon.astro";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveContactAside from "../components/islands/LiveContactAside";
+import { LiveContactCopyFoot, LiveContactCopyHead } from "../components/islands/LiveContactCopy";
 import {
   loadPublicContent,
   loadPublicEventTypes,
@@ -22,11 +23,10 @@ setPublicCache(Astro.response.headers);
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
-
-const steps = contactPage.steps;
 ---
 
 <BaseLayout
+  seoPageKey="contact"
   title={seo.seoTitle || "Contact & Enquire | Photobooth Hire Melbourne"}
   description={
     seo.seoDescription ||
@@ -40,61 +40,16 @@ const steps = contactPage.steps;
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={contactPage.header.title}
-    eyebrow={contactPage.header.eyebrow}
-    lede={contactPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="contact"
+    initial={contactPage.header}
     imageSrc={serviceImages?.["roaming-photobooth"]?.src}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
 
   <section class="section contact" aria-labelledby="contact-form-heading">
-    <aside class="contact-aside">
-      <h2 id="contact-next">{contactPage.asideHeading}</h2>
-      <ol class="next-steps">
-        {steps.map((step, index) => (
-          <li>
-            <span class="next-num" aria-hidden="true">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <div class="next-body">
-              <h3>{step.title}</h3>
-              <p>{step.detail}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <dl class="aside-facts">
-        <div class="aside-fact">
-          <dt>{contactPage.serviceAreaLabel}</dt>
-          <dd>{siteSettings.serviceAreaStatement}</dd>
-        </div>
-        <div class="aside-fact">
-          <dt>{contactPage.typicalReplyLabel}</dt>
-          <dd>{contactPage.typicalReplyValue}</dd>
-        </div>
-      </dl>
-      {siteSettings.socials.length > 0 ? (
-        <div class="aside-social">
-          <h2 class="aside-social-heading">Follow</h2>
-          <ul class="aside-social-list">
-            {siteSettings.socials.map((social) => (
-              <li>
-                <a
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Melbourne Photobooth Hire on ${social.label} (opens in a new tab)`}
-                >
-                  <SocialIcon label={social.label} />
-                  <span>{social.label}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </aside>
+    <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
 
     <div class="form-card">
       <header class="form-head">
@@ -114,8 +69,7 @@ const steps = contactPage.steps;
           </svg>
         </span>
         <div>
-          <h2 id="contact-form-heading">{contactPage.formTitle}</h2>
-          <p>{contactPage.formLede}</p>
+          <LiveContactCopyHead client:visible initialPage={contactPage} />
         </div>
       </header>
       <InquiryForm
@@ -131,7 +85,7 @@ const steps = contactPage.steps;
           defer
         ></script>
       ) : null}
-      <p class="form-foot">{contactPage.formFoot}</p>
+      <LiveContactCopyFoot client:visible initialPage={contactPage} />
     </div>
   </section>
 </BaseLayout>
@@ -142,119 +96,6 @@ const steps = contactPage.steps;
     gap: var(--space-xl);
     grid-template-columns: 1fr;
     align-items: start;
-  }
-
-  .contact-aside {
-    max-width: 28rem;
-  }
-  .contact-aside h2 {
-    margin: 0 0 var(--space-lg);
-    font-size: var(--text-h2);
-  }
-
-  /* Vertical stepper. The connector runs from each numeral's centre to the
-     next, and the numeral sits above it with a matching page-tone fill so the
-     line reads as continuous without pixel-matching row heights. */
-  .next-steps {
-    list-style: none;
-    margin: 0 0 var(--space-xl);
-    padding: 0;
-    display: grid;
-    gap: var(--space-lg);
-  }
-  .next-steps li {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--space-sm);
-  }
-  .next-steps li:not(:last-child)::before {
-    content: "";
-    position: absolute;
-    left: 1.125rem;
-    top: 1.125rem;
-    bottom: calc(-1 * (var(--space-lg) + 1.125rem));
-    width: 1px;
-    transform: translateX(-50%);
-    background: var(--color-border-strong);
-  }
-  .next-num {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-pill);
-    background: var(--color-ivory);
-    color: var(--color-accent-strong);
-    font-family: var(--font-display);
-    font-size: var(--text-small);
-    font-weight: 500;
-  }
-  .next-body h3 {
-    margin: 0.3rem 0 var(--space-3xs);
-    font-size: var(--text-h4);
-  }
-  .next-body p {
-    margin: 0;
-    color: var(--color-ink-soft);
-    font-size: var(--text-small);
-  }
-
-  .aside-facts {
-    margin: 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border);
-    display: grid;
-    gap: var(--space-sm);
-  }
-  .aside-fact dt {
-    color: var(--color-ink-faint);
-    font-size: var(--text-caption);
-    font-weight: 600;
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-  }
-  .aside-fact dd {
-    margin: var(--space-3xs) 0 0;
-    color: var(--color-ink-soft);
-    font-size: var(--text-small);
-  }
-
-  .aside-social {
-    margin-top: var(--space-lg);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border);
-  }
-  .aside-social-heading {
-    margin: 0 0 var(--space-2xs);
-    font-size: var(--text-caption);
-    font-weight: 600;
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-    color: var(--color-ink-faint);
-  }
-  .aside-social-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs) var(--space-sm);
-  }
-  .aside-social-list a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3xs);
-    min-height: 2.75rem;
-    color: var(--color-ink-soft);
-    text-decoration: none;
-  }
-  .aside-social-list a:hover {
-    color: var(--color-accent-strong);
   }
 
   .form-card {
@@ -315,10 +156,6 @@ const steps = contactPage.steps;
     .contact {
       grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
       gap: var(--space-2xl);
-    }
-    .contact-aside {
-      position: sticky;
-      top: 7rem;
     }
   }
 </style>

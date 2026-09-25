@@ -1,24 +1,30 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import PageHeader from "../components/PageHeader.astro";
-import CtaBand from "../components/CtaBand.astro";
-import GalleryTrigger from "../components/GalleryTrigger.astro";
-import Reveal from "../components/islands/Reveal";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import LiveGallerySection from "../components/islands/LiveGallerySection";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { gallery, ctaImage, serviceImages } = await loadPublicContent();
+const { ctaImage, serviceImages } = await loadPublicContent();
 const { pages: cmsPages } = await loadPublicPages();
 const galleryPage = cmsPages.gallery;
+// The grid patches itself when the Gallery module changes (DEC-033).
+const liveModules = await loadPublicModules();
 const seo = await loadPublicSeo("gallery");
 setPublicCache(Astro.response.headers);
 const headerImage = serviceImages?.["360-video-booth"]?.src;
 ---
 
 <BaseLayout
+  seoPageKey="gallery"
   title={seo.seoTitle || "Photobooth Gallery Melbourne | Weddings, Parties & Events"}
   description={
     seo.seoDescription ||
@@ -32,133 +38,30 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={galleryPage.header.title}
-    eyebrow={galleryPage.header.eyebrow}
-    lede={galleryPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="gallery"
+    initial={galleryPage.header}
     imageSrc={headerImage}
     imageAlt={serviceImages?.["360-video-booth"]?.alt}
   />
 
-  {gallery.length === 0 ? (
-    <div class="empty-state section">
-      <h2>{galleryPage.emptyState.title}</h2>
-      <p>{galleryPage.emptyState.body}</p>
-      <Button href="/contact" variant="primary" size="lg" arrow>
-        {galleryPage.emptyState.actionLabel}
-      </Button>
-    </div>
-  ) : (
-    <section class="section" aria-label="Event gallery">
-      <ul class="gallery-grid">
-        {gallery.map((item, index) => (
-          <li>
-            <Reveal client:visible delay={Math.min(index, 5) * 0.05} variant="blur">
-              <figure class="gallery-item" data-cms-id={item.id}>
-                <GalleryTrigger src={item.src} caption={item.caption}>
-                  <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
-                </GalleryTrigger>
-                {item.caption ? <figcaption>{item.caption}</figcaption> : null}
-              </figure>
-            </Reveal>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+  <LiveGallerySection
+    client:visible
+    initial={liveModules.gallery}
+    emptyState={galleryPage.emptyState}
+  />
 
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="gallery"
+    initial={galleryPage.ctaBand}
     id="gallery-enquire"
-    eyebrow={galleryPage.ctaBand.eyebrow}
-    headline={galleryPage.ctaBand.headline}
-    lede={galleryPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={galleryPage.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel={galleryPage.ctaBand.secondaryLabel}
-    imageSrc={galleryPage.ctaBand.image.src || ctaImage?.src}
-    imageAlt={galleryPage.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 
   <GalleryLightbox client:idle />
 </BaseLayout>
-
-<style>
-  .empty-state {
-    display: grid;
-    justify-items: start;
-    gap: var(--space-2xs);
-    max-width: var(--text-max-width);
-  }
-  .empty-state h2 {
-    margin: 0;
-    font-size: var(--text-h2);
-  }
-  .empty-state p {
-    margin: 0 0 var(--space-sm);
-    color: var(--color-ink-soft);
-  }
-  .gallery-grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: var(--space-sm);
-  }
-  .gallery-item {
-    position: relative;
-    margin: 0;
-    overflow: hidden;
-    border-radius: var(--radius-md);
-    background: var(--color-ink-raised);
-    box-shadow: inset 0 0 0 1px rgba(23, 18, 12, 0.06);
-  }
-  .gallery-item img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    transition:
-      transform 800ms var(--ease-default),
-      filter 800ms var(--ease-default);
-  }
-  .gallery-item:hover img {
-    transform: scale(1.05);
-    filter: brightness(1.05) saturate(1.03);
-  }
-  .gallery-item figcaption {
-    position: absolute;
-    inset: auto 0 0 0;
-    padding: var(--space-md) var(--space-sm) var(--space-sm);
-    background: linear-gradient(180deg, transparent, rgba(13, 9, 6, 0.82));
-    color: var(--color-on-ink);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--text-small);
-    opacity: 0;
-    transform: translateY(6px);
-    pointer-events: none;
-    transition:
-      opacity var(--motion-settled) var(--ease-default),
-      transform var(--motion-settled) var(--ease-default);
-  }
-  .gallery-item:hover figcaption,
-  .gallery-item:focus-within figcaption {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  @media (hover: none) {
-    .gallery-item figcaption {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .gallery-item figcaption {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-  }
-</style>

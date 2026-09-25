@@ -1,103 +1,37 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import Card from "../components/Card.astro";
-import Hero from "../components/Hero.astro";
-import Accordion from "../components/Accordion.astro";
-import CtaBand from "../components/CtaBand.astro";
-import GalleryTrigger from "../components/GalleryTrigger.astro";
-import ReviewsMarquee from "../components/ReviewsMarquee.astro";
-import Reveal from "../components/islands/Reveal";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
-import SectionHeading from "../components/SectionHeading.astro";
+import LiveServicesSection from "../components/islands/LiveServicesSection";
+import LiveShowcaseSection from "../components/islands/LiveShowcaseSection";
+import LivePackagesSection from "../components/islands/LivePackagesSection";
+import LiveFaqTeaser from "../components/islands/LiveFaqTeaser";
+import LiveChipsSection from "../components/islands/LiveChipsSection";
+import LiveHomeHero from "../components/islands/LiveHomeHero";
+import LiveIntro from "../components/islands/LiveIntro";
+import LiveSteps from "../components/islands/LiveSteps";
+import LiveMarquee from "../components/islands/LiveMarquee";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
 import {
   loadPublicContent,
+  loadPublicModules,
   loadPublicSeo,
   loadPublicPages,
-  loadPublicEventTypes,
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { services, packages, faqs, heroBackgroundImage, serviceImages, gallery, ctaImage } =
-  await loadPublicContent();
+const { heroBackgroundImage, ctaImage } = await loadPublicContent();
+// Raw CMS modules seed the live islands (DEC-033); each island patches its
+// section when its table changes, with no page refresh.
+const liveModules = await loadPublicModules();
 const { pages: cmsPages } = await loadPublicPages();
 const home = cmsPages.home;
-// Occasion chips render the Event-Types module verbatim (single source of
-// truth with the contact dropdown); unknown labels fall back to the sparkles
-// glyph in eventIconSvg.
-const occasionLabels = await loadPublicEventTypes();
-const processSteps = home.steps;
-const testimonials = home.testimonials;
-const heroStats = home.hero.stats;
 const seo = await loadPublicSeo("home");
 setPublicCache(Astro.response.headers);
-
-// Homepage sections render highlighted module items only.
-const highlightedServices = services.filter((service) => service.highlight !== false);
-const highlightedPackages = packages.filter((pkg) => pkg.highlight !== false);
-const highlightedGallery = gallery.filter((item) => item.highlight !== false);
-const highlightedFaqs = faqs.filter((faq) => faq.highlight !== false);
-
-const stepIconPaths: Record<string, string> = {
-  message:
-    '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/>',
-  palette:
-    '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
-  sparkles:
-    '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/>',
-};
-
-function stepIconSvg(name?: string, size = 22): string {
-  const inner = (name && stepIconPaths[name]) || stepIconPaths.sparkles;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
-}
-
-const promiseIconPaths: Record<string, string> = {
-  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  qrcode:
-    '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/>',
-  users:
-    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-};
-
-function promiseIconSvg(name: string, size = 20): string {
-  const inner = promiseIconPaths[name] || stepIconPaths.sparkles;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
-}
-
-// Presentational icon per event type. Content stays a plain string list at the
-// seam; unknown labels fall back to the sparkles glyph.
-const eventIconPaths: Record<string, string> = {
-  Weddings:
-    '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
-  Birthdays:
-    '<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/>',
-  "Corporate Events":
-    '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',
-  "School Formals":
-    '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
-  "Engagement Parties":
-    '<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>',
-  "Christmas Parties":
-    '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
-  "Milestone Anniversaries":
-    '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
-  "Product Launches":
-    '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
-};
-
-function eventIconSvg(label: string, size = 16): string {
-  // The Event-Types module owns the labels (singular); the icon map below is
-  // keyed by the former plural chip copy. Try the label verbatim, then the
-  // plural form, before the sparkles fallback.
-  const plural = label.endsWith("y") ? `${label.slice(0, -1)}ies` : `${label}s`;
-  const inner = eventIconPaths[label] || eventIconPaths[plural] || stepIconPaths.sparkles;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
-}
 ---
 
 <BaseLayout
+  seoPageKey="home"
   bodyClass="page-home"
   title={seo.seoTitle || "Photobooth Hire Melbourne | Melbourne Photobooth Hire"}
   description={
@@ -113,465 +47,39 @@ function eventIconSvg(label: string, size = 16): string {
   ogDescription={seo.ogDescription || undefined}
   preloadImage={heroBackgroundImage?.src}
 >
-  <Hero
-    eyebrow={home.hero.eyebrow}
-    headline={home.hero.headline}
-    supporting={home.hero.supporting}
-    primaryHref="/contact"
-    primaryLabel={home.hero.primaryLabel}
-    secondaryHref="/packages"
-    secondaryLabel={home.hero.secondaryLabel}
-    backgroundSrc={home.hero.background.src || heroBackgroundImage?.src}
-    backgroundAlt={home.hero.background.alt || heroBackgroundImage?.alt}
-    stats={heroStats}
-    scrollHref="#services-heading"
-    scrollLabel="Scroll to our booths"
+  <LiveHomeHero
+    client:visible
+    initial={home.hero}
+    fallbackBackgroundSrc={heroBackgroundImage?.src}
+    fallbackBackgroundAlt={heroBackgroundImage?.alt}
   />
 
-  <section class="section on-dark intro" aria-labelledby="intro-heading">
-    <div class="intro-grid">
-      <Reveal client:visible>
-        <div>
-          <p class="eyebrow eyebrow--rule">{home.intro.eyebrow}</p>
-          <h2 id="intro-heading">{home.intro.heading}</h2>
-        </div>
-      </Reveal>
-      <Reveal client:visible delay={0.08}>
-        <div class="intro-body">
-          <p>{home.intro.body}</p>
-          <dl class="promises">
-            {home.intro.promises.map((promise, index) => (
-              <div class="promise">
-                <dt>
-                  <span
-                    class="promise-icon"
-                    aria-hidden="true"
-                    set:html={promiseIconSvg(["clock", "qrcode", "users"][index] ?? "clock")}
-                  />
-                  {promise.title}
-                </dt>
-                <dd>{promise.detail}</dd>
-              </div>
-            ))}
-          </dl>
-          <Button href="/about" variant="tertiary" tone="dark" arrow>
-            {home.intro.aboutLabel}
-          </Button>
-        </div>
-      </Reveal>
-    </div>
-  </section>
+  <LiveIntro client:visible initialHome={home} />
 
-  <section class="section on-dark" aria-labelledby="services-heading">
-    <SectionHeading
-      tone="dark"
-      title={home.servicesHeading.title}
-      eyebrow={home.servicesHeading.eyebrow}
-      id="services-heading"
-      lede={home.servicesHeading.lede}
-      size="lg"
-    />
-    <div class="booths-grid">
-      {highlightedServices.map((service, index) => (
-        <Reveal client:visible delay={index * 0.08}>
-          <Card
-            tone="dark"
-            title={service.name}
-            badge={service.badge}
-            featured={service.featured}
-            icon={service.icon}
-            tagline={service.tagline}
-            description={service.summary}
-            highlights={service.highlights}
-            imageSrc={serviceImages?.[service.id]?.src}
-            imageAlt={serviceImages?.[service.id]?.alt}
-            href="/services"
-            ctaLabel={home.servicesCardLabel}
-            cmsId={service.id}
-          />
-        </Reveal>
-      ))}
-    </div>
-  </section>
+  <LiveServicesSection client:visible initial={liveModules.services} initialHome={home} />
 
-  {highlightedGallery.length > 0 ? (
-    <section class="section on-dark" aria-labelledby="showcase-heading">
-      <Reveal client:visible variant="mask">
-        <div class="showcase-head">
-          <SectionHeading
-            tone="dark"
-            title={home.showcaseHeading.title}
-            eyebrow={home.showcaseHeading.eyebrow}
-            id="showcase-heading"
-            lede={home.showcaseHeading.lede}
-          />
-          <p class="showcase-cta">
-            <Button href="/gallery" variant="secondary" tone="dark" arrow>
-              {home.showcaseLabel}
-            </Button>
-          </p>
-        </div>
-        <ul class="showcase-grid">
-          {highlightedGallery.map((item, index) => (
-            <li>
-              <Reveal client:visible delay={index * 0.07} variant="blur">
-                <figure class="showcase-item" data-cms-id={item.id}>
-                  <GalleryTrigger src={item.src} caption={item.caption}>
-                    <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
-                  </GalleryTrigger>
-                  <figcaption>{item.caption}</figcaption>
-                </figure>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
-    </section>
-  ) : null}
+  <LiveShowcaseSection client:visible initial={liveModules.gallery} initialHome={home} />
 
-  <section class="section on-dark" aria-labelledby="packages-heading">
-    <SectionHeading
-      tone="dark"
-      title={home.packagesHeading.title}
-      eyebrow={home.packagesHeading.eyebrow}
-      id="packages-heading"
-      lede={home.packagesHeading.lede}
-      size="lg"
-    />
-    <div class="card-grid">
-      {highlightedPackages.map((pkg) => (
-        <Reveal client:visible>
-          <Card
-            tone="dark"
-            title={pkg.name}
-            badge={pkg.badge}
-            meta={pkg.durationLabel}
-            price={pkg.priceLabel}
-            description={pkg.summary}
-            items={pkg.inclusions}
-            featured={pkg.featured}
-            href="/contact"
-            ctaLabel="Enquire about this package"
-            cmsId={pkg.id}
-          />
-        </Reveal>
-      ))}
-    </div>
-    <p class="packages-note">
-      <Button href="/packages" variant="secondary" tone="dark" arrow>
-        {home.packagesCompareLabel}
-      </Button>
-    </p>
-  </section>
+  <LivePackagesSection client:visible initial={liveModules.packages} initialHome={home} />
 
-  <section class="section on-dark" aria-labelledby="process-heading">
-    <SectionHeading
-      tone="dark"
-      title={home.processHeading.title}
-      eyebrow={home.processHeading.eyebrow}
-      id="process-heading"
-      lede={home.processHeading.lede}
-      size="lg"
-    />
-    <ol class="steps">
-      {processSteps.map((step, index) => (
-        <Reveal client:visible delay={index * 0.08} variant="scale">
-          <li class="step">
-            <div class="step-head">
-              <span class="step-icon" set:html={stepIconSvg(step.icon)} />
-              <p class="step-number" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </p>
-            </div>
-            <h3>{step.title}</h3>
-            <p>{step.summary}</p>
-          </li>
-        </Reveal>
-      ))}
-    </ol>
-  </section>
+  <LiveSteps client:visible initialHome={home} />
 
-  {testimonials.length > 0 ? (
-    <section class="section on-dark reviews" aria-labelledby="reviews-heading">
-      <Reveal client:visible variant="mask">
-        <ReviewsMarquee
-          testimonials={testimonials}
-          tone="dark"
-          eyebrow={home.reviewsHeading.eyebrow}
-          title={home.reviewsHeading.title}
-          id="reviews-heading"
-          lede={home.reviewsHeading.lede}
-        />
-      </Reveal>
-    </section>
-  ) : null}
+  <LiveMarquee client:visible initialHome={home} />
 
-  <section class="section on-dark" aria-labelledby="faq-heading">
-    <SectionHeading
-      tone="dark"
-      title={home.faqHeading.title}
-      eyebrow={home.faqHeading.eyebrow}
-      id="faq-heading"
-      lede={home.faqHeading.lede}
-      size="lg"
-    />
-    <Reveal client:visible>
-      <Accordion items={highlightedFaqs.slice(0, 4)} tone="dark" />
-    </Reveal>
-    <p class="faq-cta">
-      <Button href="/faq" variant="secondary" tone="dark" arrow>
-        {home.faqCtaLabel}
-      </Button>
-    </p>
-  </section>
+  <LiveFaqTeaser client:visible initial={liveModules.faqs} initialHome={home} />
 
-  <section class="section on-dark" aria-labelledby="event-types-heading">
-    <SectionHeading
-      tone="dark"
-      title={home.eventTypesHeading.title}
-      eyebrow={home.eventTypesHeading.eyebrow}
-      id="event-types-heading"
-      lede={home.eventTypesHeading.lede}
-      size="lg"
-    />
-    <ul class="chip-list">
-      {occasionLabels.map((eventType) => (
-        <li>
-          <span class="chip-icon" aria-hidden="true" set:html={eventIconSvg(eventType)} />
-          {eventType}
-        </li>
-      ))}
-    </ul>
-  </section>
+  <LiveChipsSection client:visible initial={liveModules["event-types"]} initialHome={home} />
 
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="home"
+    initial={home.ctaBand}
     id="enquire-heading"
-    eyebrow={home.ctaBand.eyebrow}
-    headline={home.ctaBand.headline}
-    lede={home.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={home.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel={home.ctaBand.secondaryLabel}
-    imageSrc={home.ctaBand.image.src || ctaImage?.src}
-    imageAlt={home.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 
   <GalleryLightbox client:idle />
 </BaseLayout>
-
-<style>
-  .intro-grid {
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-  .intro h2 {
-    margin: var(--space-sm) 0 0;
-    max-width: 16ch;
-    font-size: var(--text-title);
-    line-height: var(--leading-title);
-    letter-spacing: var(--tracking-display);
-    color: var(--color-on-ink);
-  }
-  .intro-body {
-    max-width: 40rem;
-  }
-  .intro-body > p {
-    margin: 0 0 var(--space-md);
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-lead);
-  }
-  .promises {
-    display: grid;
-    gap: var(--space-sm);
-    margin: 0 0 var(--space-md);
-    padding: 0;
-    border-top: 1px solid var(--color-ink-hairline);
-  }
-  .promise {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-3xs);
-    padding-block: var(--space-sm);
-    border-bottom: 1px solid var(--color-ink-hairline);
-  }
-  .promise dt {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    color: var(--color-on-ink);
-    font-weight: 600;
-    font-size: var(--text-small);
-  }
-  .promise-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-ink-hairline-strong);
-    background: var(--color-accent-wash);
-    color: var(--color-accent-on-dark);
-  }
-  .promise dd {
-    margin: 0;
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-small);
-  }
-  @media (min-width: 640px) {
-    .promise {
-      grid-template-columns: minmax(12rem, 1fr) 1fr;
-      gap: var(--space-sm);
-      align-items: center;
-    }
-  }
-  .booths-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-  }
-  @media (min-width: 1024px) {
-    .booths-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-  .showcase-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-md);
-  }
-  .showcase-head :global(.section-heading) {
-    margin-bottom: var(--space-lg);
-  }
-  .showcase-cta {
-    margin: 0 0 var(--space-lg);
-  }
-  .showcase-grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-sm);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  }
-  .showcase-item {
-    margin: 0;
-    overflow: hidden;
-    border-radius: var(--radius-md);
-  }
-  .showcase-item img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-    transition:
-      transform 700ms var(--ease-default),
-      filter 700ms var(--ease-default);
-  }
-  .showcase-item:hover img {
-    transform: scale(1.04);
-    filter: brightness(1.05) saturate(1.03);
-  }
-  .showcase-item figcaption {
-    margin-top: var(--space-2xs);
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-small);
-    font-style: italic;
-    font-family: var(--font-display);
-  }
-  .packages-note {
-    margin: var(--space-lg) 0 0;
-  }
-  .steps {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-md);
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  }
-  .step {
-    position: relative;
-    border-top: 1px solid var(--color-ink-hairline-strong);
-    padding-top: var(--space-sm);
-  }
-  /* Champagne thread draws across the rule on hover. */
-  .step::after {
-    content: "";
-    position: absolute;
-    inset: -1px auto auto 0;
-    width: 100%;
-    height: 1px;
-    background: var(--color-accent-on-dark);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 620ms var(--ease-default);
-  }
-  .step:hover::after {
-    transform: scaleX(1);
-  }
-  .step-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-sm);
-  }
-  .step-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-ink-hairline-strong);
-    background: var(--color-accent-wash);
-    color: var(--color-accent-on-dark);
-    transition:
-      background-color var(--motion-settled) var(--ease-default),
-      transform var(--motion-settled) var(--ease-default);
-  }
-  .step:hover .step-icon {
-    transform: translateY(-2px);
-    background: rgba(230, 206, 138, 0.18);
-  }
-  .step-number {
-    margin: 0;
-    color: var(--color-accent-on-dark);
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
-    font-weight: 400;
-    line-height: 1;
-    opacity: 0.55;
-  }
-  .step h3 {
-    margin: 0 0 var(--space-2xs);
-    color: var(--color-on-ink);
-    font-size: var(--text-h3);
-  }
-  .step p:last-child {
-    margin: 0;
-    color: var(--color-on-ink-secondary);
-  }
-  .faq-cta {
-    margin: var(--space-lg) 0 0;
-  }
-  .chip-icon {
-    display: inline-flex;
-    align-items: center;
-    margin-right: var(--space-2xs);
-    color: var(--color-accent-on-dark);
-  }
-  @media (min-width: 900px) {
-    .intro-grid {
-      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-      gap: var(--space-2xl);
-    }
-  }
-</style>

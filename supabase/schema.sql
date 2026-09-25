@@ -1,5 +1,7 @@
 -- Melbourne Photobooth Hire: Supabase schema (Phase 2).
--- Free-tier lean: no realtime, no extensions beyond pgcrypto, minimal indexes.
+-- Free-tier lean: no extensions beyond pgcrypto, minimal indexes. Public
+-- tables join the supabase_realtime publication separately
+-- (migration-realtime.sql, DEC-033); admin-only tables stay out.
 -- Mirrors src/lib/cms/types.ts + validation caps in src/lib/cms/schemas.ts.
 -- Run once in the Supabase SQL editor, then rls.sql, storage.sql, seed.sql.
 

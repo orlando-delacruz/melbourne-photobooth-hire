@@ -1,32 +1,28 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import Card from "../components/Card.astro";
-import PageHeader from "../components/PageHeader.astro";
-import SectionHeading from "../components/SectionHeading.astro";
-import CtaBand from "../components/CtaBand.astro";
-import Reveal from "../components/islands/Reveal";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveAddons from "../components/islands/LiveAddons";
+import LivePolicies from "../components/islands/LivePolicies";
+import LivePlansSection from "../components/islands/LivePlansSection";
+import LiveIncludedBand from "../components/islands/LiveIncludedBand";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { packages, ctaImage, serviceImages } = await loadPublicContent();
+const { ctaImage, serviceImages } = await loadPublicContent();
 const { pages: cmsPages } = await loadPublicPages();
 const packagesPage = cmsPages.packages;
-// Add-ons, policies and section copy come from the page blob; the package
-// cards themselves come from the Packages module.
-const addOns = packagesPage.addOns;
-const bookingPolicies = packagesPage.bookingPolicies;
+// The plans grid, included band, add-ons and policies patch themselves
+// when the Packages module or page copy changes (DEC-033).
+const liveModules = await loadPublicModules();
 const seo = await loadPublicSeo("packages");
 setPublicCache(Astro.response.headers);
-
-const sharedInclusions = packages.length
-  ? packages
-      .map((pkg) => pkg.inclusions)
-      .reduce((common, list) => common.filter((item) => list.includes(item)))
-  : [];
-
-const standardInclusions = packagesPage.included.standardItems;
 
 const headerImage = serviceImages?.["premium-photobooth"]?.src;
 
@@ -60,24 +56,10 @@ const jumpItems = [
     ),
   },
 ];
-
-const addonIcons: Record<string, string> = {
-  "professional-photography":
-    '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
-  "extended-hire": '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  "custom-backdrop":
-    '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
-  "digital-guestbook": '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
-};
-
-function addonIconSvg(id: string, size = 22): string {
-  return svgWrap(addonIcons[id] ?? '<path d="m5 12.5 4.5 4.5L19 7"/>', size);
-}
-
-const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>', 18);
 ---
 
 <BaseLayout
+  seoPageKey="packages"
   title={seo.seoTitle || "Photobooth Hire Packages Melbourne | Prices & Inclusions"}
   description={
     seo.seoDescription ||
@@ -91,10 +73,10 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={packagesPage.header.title}
-    eyebrow={packagesPage.header.eyebrow}
-    lede={packagesPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="packages"
+    initial={packagesPage.header}
     imageSrc={headerImage}
     imageAlt={serviceImages?.["premium-photobooth"]?.alt}
   >
@@ -108,129 +90,25 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
         </li>
       ))}
     </ul>
-  </PageHeader>
+  </LivePageHeader>
 
-  <section class="section" id="package-plans" aria-labelledby="packages-list">
-    <SectionHeading
-      eyebrow={packagesPage.plansHeading.eyebrow}
-      id="packages-list"
-      title={packagesPage.plansHeading.title}
-      lede={packagesPage.plansHeading.lede}
-      size="lg"
-    />
-    {packages.length === 0 ? (
-      <p class="empty">
-        {packagesPage.emptyState.title} {packagesPage.emptyState.body}
-      </p>
-    ) : (
-      <div class="card-grid">
-        {packages.map((pkg, index) => (
-          <Reveal client:visible delay={index * 0.08} variant={index === 1 ? "scale" : "rise"}>
-            <Card
-              title={pkg.name}
-              badge={pkg.badge}
-              meta={pkg.durationLabel}
-              price={pkg.priceLabel}
-              description={pkg.summary}
-              items={pkg.inclusions}
-              featured={pkg.featured}
-              href="/contact"
-              ctaLabel="Enquire now"
-              cmsId={pkg.id}
-            />
-          </Reveal>
-        ))}
-      </div>
-    )}
-    <div class="packages-foot">
-      <p class="packages-note">{packagesPage.footNote}</p>
-      <Button href="/contact" variant="primary" size="lg" arrow>
-        {packagesPage.checkDateLabel}
-      </Button>
-    </div>
-  </section>
+  <LivePlansSection client:visible initial={liveModules.packages} initialPage={packagesPage} />
 
-  <section class="included bleed" id="package-included" aria-labelledby="packages-included">
-    <div class="container">
-      <div class="included-inner">
-        <Reveal client:visible variant="mask">
-          <div>
-            <p class="eyebrow eyebrow--rule">{packagesPage.included.eyebrow}</p>
-            <h2 id="packages-included">{packagesPage.included.heading}</h2>
-            <p class="included-lede">{packagesPage.included.lede}</p>
-          </div>
-        </Reveal>
-        <Reveal client:visible delay={0.08} variant="blur">
-          <ul class="included-list">
-            {(sharedInclusions.length >= 4 ? sharedInclusions : standardInclusions).map((item) => (
-              <li>
-                <span
-                  class="included-check"
-                  set:html={svgWrap('<path d="m5 12.5 4.5 4.5L19 7"/>', 18)}
-                />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-      </div>
-    </div>
-  </section>
+  <LiveIncludedBand client:visible initial={liveModules.packages} initialPage={packagesPage} />
 
-  <section class="section" id="package-addons" aria-labelledby="packages-addons">
-    <SectionHeading
-      title={packagesPage.addonsHeading.title}
-      id="packages-addons"
-      eyebrow={packagesPage.addonsHeading.eyebrow}
-      lede={packagesPage.addonsHeading.lede}
-      size="lg"
-    />
-    <div class="addons">
-      {addOns.map((addOn, index) => (
-        <Reveal client:visible delay={index * 0.06} variant="scale">
-          <article class="addon">
-            <span class="addon-icon" aria-hidden="true" set:html={addonIconSvg(addOn.id)} />
-            <h3>{addOn.name}</h3>
-            <p>{addOn.detail}</p>
-          </article>
-        </Reveal>
-      ))}
-    </div>
-  </section>
+  <LiveAddons client:visible initialPage={packagesPage} />
 
-  <section class="section" id="package-policies" aria-labelledby="packages-policies">
-    <div class="policies">
-      <Reveal client:visible>
-        <div class="policies-intro">
-          <p class="eyebrow eyebrow--rule">{packagesPage.policies.eyebrow}</p>
-          <h2 id="packages-policies">{packagesPage.policies.heading}</h2>
-          <p>{packagesPage.policies.lede}</p>
-        </div>
-      </Reveal>
-      <Reveal client:visible delay={0.08} variant="blur">
-        <ul class="policy-list">
-          {bookingPolicies.map((policy) => (
-            <li>
-              <span class="policy-icon" set:html={policyIcon} />
-              <span>{policy}</span>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
-    </div>
-  </section>
+  <LivePolicies client:visible initialPage={packagesPage} />
 
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="packages"
+    initial={packagesPage.ctaBand}
     id="packages-enquire"
-    eyebrow={packagesPage.ctaBand.eyebrow}
-    headline={packagesPage.ctaBand.headline}
-    lede={packagesPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={packagesPage.ctaBand.primaryLabel}
     secondaryHref="/services"
-    secondaryLabel={packagesPage.ctaBand.secondaryLabel}
-    imageSrc={packagesPage.ctaBand.image.src || ctaImage?.src}
-    imageAlt={packagesPage.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 </BaseLayout>
 

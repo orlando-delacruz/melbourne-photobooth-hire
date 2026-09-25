@@ -1,52 +1,28 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import PageHeader from "../components/PageHeader.astro";
-import SectionHeading from "../components/SectionHeading.astro";
-import CtaBand from "../components/CtaBand.astro";
-import Reveal from "../components/islands/Reveal";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveAboutSections from "../components/islands/LiveAboutSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { serviceImages, showcaseImages, ctaImage } = await loadPublicContent();
+const { serviceImages, ctaImage } = await loadPublicContent();
 const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
 const aboutPage = cmsPages.about;
+// Raw CMS modules seed the story-image derivation in the live island.
+const liveModules = await loadPublicModules();
 const seo = await loadPublicSeo("about");
 setPublicCache(Astro.response.headers);
-
-const storyImage = showcaseImages?.[0] ?? serviceImages?.["premium-photobooth"];
-
-function svgWrap(inner: string, size = 20): string {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
-}
-
-const statIcons = [
-  svgWrap(
-    '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
-  ),
-  svgWrap('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
-  svgWrap(
-    '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/>',
-  ),
-  svgWrap('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
-];
-
-const valueIcons: Record<string, string> = {
-  craft:
-    '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
-  reliability:
-    '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
-  hospitality:
-    '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
-};
-
-function valueIconSvg(id: string, size = 22): string {
-  return svgWrap(valueIcons[id] ?? valueIcons.craft, size);
-}
 ---
 
 <BaseLayout
+  seoPageKey="about"
   title={seo.seoTitle || "About Us | Melbourne Photobooth Hire"}
   description={
     seo.seoDescription ||
@@ -60,306 +36,30 @@ function valueIconSvg(id: string, size = 22): string {
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={aboutPage.header.title}
-    eyebrow={aboutPage.header.eyebrow}
-    lede={aboutPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="about"
+    initial={aboutPage.header}
     imageSrc={serviceImages?.["roaming-photobooth"]?.src}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
 
-  <section class="section story" aria-labelledby="story-heading">
-    <Reveal client:visible className="story-copy-col" variant="rise">
-      <div class="story-copy">
-        <p class="eyebrow eyebrow--rule">{aboutPage.storyEyebrow}</p>
-        <h2 id="story-heading">{aboutPage.storyHeading}</h2>
-        <div class="prose">
-          {aboutPage.story.map((paragraph) => (
-            <p>{paragraph}</p>
-          ))}
-        </div>
-      </div>
-    </Reveal>
-    {storyImage ? (
-      <Reveal client:visible delay={0.08} className="story-media" variant="blur">
-        <figure class="story-figure">
-          <img src={storyImage.src} alt={storyImage.alt} loading="lazy" decoding="async" />
-        </figure>
-      </Reveal>
-    ) : null}
-  </section>
+  <LiveAboutSections
+    client:visible
+    initialPage={aboutPage}
+    initialSettings={siteSettings}
+    initialGallery={liveModules.gallery}
+    initialServices={liveModules.services}
+  />
 
-  <section class="stats bleed on-dark" aria-label="At a glance">
-    <div class="container">
-      <dl class="stats-grid">
-        {aboutPage.stats.map((stat, index) => (
-          <div class="stat">
-            <dt class="stat-value">
-              <span
-                class="stat-icon"
-                aria-hidden="true"
-                set:html={statIcons[index] ?? statIcons[0]}
-              />
-              <span>{stat.value}</span>
-            </dt>
-            <dd class="stat-label">{stat.label}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="values-heading">
-    <SectionHeading
-      eyebrow={aboutPage.valuesHeading.eyebrow}
-      id="values-heading"
-      title={aboutPage.valuesHeading.title}
-      lede={aboutPage.valuesHeading.lede}
-      size="lg"
-    />
-    <div class="values">
-      {aboutPage.values.map((value, index) => (
-        <Reveal client:visible delay={index * 0.06} variant="scale">
-          <article class="value">
-            <div class="value-head">
-              <span class="value-icon" aria-hidden="true" set:html={valueIconSvg(value.id)} />
-              <span class="value-num" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-            </div>
-            <h3>{value.title}</h3>
-            <p>{value.detail}</p>
-          </article>
-        </Reveal>
-      ))}
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="about-next">
-    <div class="about-next">
-      <div>
-        <h2 id="about-next">{aboutPage.next.heading}</h2>
-        <p>
-          {siteSettings.serviceAreaStatement} {aboutPage.next.suffix}
-        </p>
-      </div>
-      <p class="about-next-ctas">
-        <Button href="/services" variant="secondary" size="lg" arrow>
-          {aboutPage.next.servicesLabel}
-        </Button>
-        <Button href="/contact" variant="primary" size="lg" arrow>
-          {aboutPage.next.enquireLabel}
-        </Button>
-      </p>
-    </div>
-  </section>
-
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="about"
+    initial={aboutPage.ctaBand}
     id="about-enquire"
-    eyebrow={aboutPage.ctaBand.eyebrow}
-    headline={aboutPage.ctaBand.headline}
-    lede={aboutPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={aboutPage.ctaBand.primaryLabel}
     secondaryHref="/gallery"
-    secondaryLabel={aboutPage.ctaBand.secondaryLabel}
-    imageSrc={aboutPage.ctaBand.image.src || ctaImage?.src}
-    imageAlt={aboutPage.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 </BaseLayout>
-
-<style>
-  /* ── Story ──────────────────────────────────────────────────────────── */
-
-  .story {
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: 1fr;
-    align-items: center;
-  }
-  .story-copy {
-    max-width: 40rem;
-  }
-  .story-copy h2 {
-    margin: var(--space-sm) 0 var(--space-md);
-    max-width: 22ch;
-    font-size: var(--text-title);
-    line-height: var(--leading-title);
-    letter-spacing: var(--tracking-display);
-  }
-  .story-copy .prose p:first-child {
-    color: var(--color-ink);
-    font-size: var(--text-lead);
-  }
-  .story-figure {
-    margin: 0;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--elevation-2);
-  }
-  .story-figure img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-  }
-
-  /* ── Stats ──────────────────────────────────────────────────────────── */
-
-  .stats {
-    background: var(--color-ink);
-    padding-block: clamp(2.5rem, 5vw, 4rem);
-    border-block: 1px solid var(--color-ink-hairline);
-  }
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-md);
-    margin: 0;
-  }
-  .stat {
-    padding-top: var(--space-sm);
-    border-top: 1px solid var(--color-ink-hairline);
-  }
-  .stat-value {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    margin: 0;
-    color: var(--color-accent-on-dark);
-    font-family: var(--font-display);
-    font-size: var(--text-title);
-    font-weight: 500;
-    line-height: 1;
-  }
-  .stat-icon {
-    display: inline-flex;
-    color: var(--color-accent-on-dark);
-  }
-  .stat-label {
-    margin: var(--space-2xs) 0 0;
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-small);
-  }
-
-  /* ── Values ─────────────────────────────────────────────────────────── */
-
-  .values {
-    display: grid;
-    gap: var(--space-md);
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  }
-  .values :global(.reveal) {
-    display: flex;
-    flex-direction: column;
-  }
-  .value {
-    position: relative;
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    padding: var(--space-lg);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--elevation-1);
-    transition:
-      transform var(--motion-settled) var(--ease-default),
-      box-shadow var(--motion-settled) var(--ease-default),
-      border-color var(--motion-settled) var(--ease-default);
-  }
-  .value::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
-    pointer-events: none;
-  }
-  .value:hover {
-    transform: translateY(-4px);
-    border-color: var(--color-border-strong);
-    box-shadow: var(--elevation-2);
-  }
-  .value-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-md);
-  }
-  .value-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-ivory);
-    color: var(--color-accent-strong);
-  }
-  .value-num {
-    color: var(--color-accent);
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    opacity: 0.5;
-  }
-  .value h3 {
-    margin: 0 0 var(--space-2xs);
-    font-size: var(--text-h3);
-  }
-  .value p {
-    margin: 0;
-    color: var(--color-ink-soft);
-  }
-
-  /* ── Next step ──────────────────────────────────────────────────────── */
-
-  .about-next {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    padding: var(--space-lg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--elevation-1);
-  }
-  .about-next h2 {
-    margin: 0 0 var(--space-2xs);
-    font-size: var(--text-h2);
-  }
-  .about-next p {
-    margin: 0;
-    color: var(--color-ink-soft);
-  }
-  .about-next-ctas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-  }
-
-  @media (min-width: 900px) {
-    .story {
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-      gap: var(--space-2xl);
-    }
-  }
-  @media (min-width: 800px) {
-    .stats-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .value {
-      transition: none;
-    }
-    .value:hover {
-      transform: none;
-    }
-  }
-</style>

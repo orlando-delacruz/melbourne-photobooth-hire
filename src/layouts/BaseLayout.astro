@@ -3,8 +3,10 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingMessenger from "../components/FloatingMessenger.astro";
 import StructuredData from "../components/StructuredData.astro";
+import SeoLive from "../components/islands/SeoLive";
 import { getContent } from "../lib/content/repository";
 import { loadPublicPages } from "../lib/supabase/public";
+import type { SeoPageKey } from "../lib/cms/types";
 import { NAV_ITEMS } from "../lib/navigation";
 import "@fontsource/fraunces/latin-400.css";
 import "@fontsource/fraunces/latin-400-italic.css";
@@ -43,6 +45,8 @@ interface Props {
   ogDescription?: string;
   /** Extra Schema.org nodes for this page, rendered alongside the site graph. */
   structuredData?: Record<string, unknown>[];
+  /** SEO page key for live metadata patching (SeoLive island). */
+  seoPageKey?: SeoPageKey;
 }
 const {
   title,
@@ -57,14 +61,13 @@ const {
   ogTitle,
   ogDescription,
   structuredData = [],
+  seoPageKey,
 } = Astro.props;
 const { site, heroBackgroundImage } = getContent();
 // Site chrome (brand, footer, messenger) reads the CMS settings blob so the
 // Site Settings admin is real; hero imagery keeps its mock source for now.
 const { settings: siteSettings } = await loadPublicPages();
 const brandName = siteSettings.brandName || site.brandName;
-const serviceAreaStatement = siteSettings.serviceAreaStatement || site.serviceAreaStatement;
-const reviewUrl = siteSettings.reviewUrl || null;
 // CMS social profiles (Site Settings). Empty until the client saves real
 // profile URLs, so both the footer/contact blocks and sameAs stay hidden.
 const socials = siteSettings.socials ?? [];
@@ -186,20 +189,14 @@ const siteSchema = {
     <a class="skip-link" href="#main">
       Skip to main content
     </a>
-    <Header items={NAV_ITEMS} currentPath={currentPath} brandName={brandName} />
+    <Header items={NAV_ITEMS} currentPath={currentPath} initialSettings={siteSettings} />
     <main id="main">
       <div class="container">
         <slot />
       </div>
     </main>
-    <Footer
-      items={NAV_ITEMS}
-      brandName={brandName}
-      serviceAreaStatement={serviceAreaStatement}
-      reviewUrl={reviewUrl}
-      footerCta={siteSettings.footerCta}
-      socials={socials}
-    />
-    <FloatingMessenger messengerUrl={siteSettings.messengerUrl} />
+    <Footer items={NAV_ITEMS} initialSettings={siteSettings} />
+    <FloatingMessenger initialSettings={siteSettings} />
+    {seoPageKey ? <SeoLive client:idle pageKey={seoPageKey} /> : null}
   </body>
 </html>

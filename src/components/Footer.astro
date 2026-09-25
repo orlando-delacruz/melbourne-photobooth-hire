@@ -1,21 +1,14 @@
 ---
 import type { NavItem } from "./islands/MobileNav";
-import Button from "./Button.astro";
-import SocialIcon from "./SocialIcon.astro";
-import type { SocialLink } from "../lib/cms/types";
-import { ENQUIRY_HREF } from "../lib/navigation";
+import LiveBrandName from "./islands/LiveBrandName";
+import { LiveFooterBase, LiveFooterBrand, LiveFooterCta } from "./islands/LiveFooterPanels";
+import type { SiteSettingsContent } from "../lib/cms/types";
 
 interface Props {
   items: NavItem[];
-  brandName: string;
-  serviceAreaStatement: string;
-  reviewUrl: string | null;
-  footerCta: { title: string; lede: string; label: string };
-  /** CMS social profiles; an empty list hides the follow block. */
-  socials?: SocialLink[];
+  initialSettings: SiteSettingsContent;
 }
-const { items, brandName, serviceAreaStatement, reviewUrl, footerCta, socials = [] } = Astro.props;
-const year = new Date().getFullYear();
+const { items, initialSettings } = Astro.props;
 ---
 
 <footer class="site-footer on-dark">
@@ -39,34 +32,9 @@ const year = new Date().getFullYear();
             <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
           </svg>
         </span>
-        {brandName}
+        <LiveBrandName client:visible initialSettings={initialSettings} />
       </p>
-      <p class="brand-statement">{serviceAreaStatement}</p>
-      {reviewUrl ? (
-        <p class="footer-review">
-          <a href={reviewUrl}>Leave a Google review</a>
-        </p>
-      ) : null}
-      {socials.length > 0 ? (
-        <div class="footer-social">
-          <h2>Follow</h2>
-          <ul>
-            {socials.map((social) => (
-              <li>
-                <a
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${brandName} on ${social.label} (opens in a new tab)`}
-                >
-                  <SocialIcon label={social.label} />
-                  <span>{social.label}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      <LiveFooterBrand client:visible initialSettings={initialSettings} />
     </div>
     <nav class="footer-nav" aria-label="Explore">
       <h2>Explore</h2>
@@ -90,18 +58,11 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
     <div class="footer-cta">
-      <h2>{footerCta.title}</h2>
-      <p>{footerCta.lede}</p>
-      <Button href={ENQUIRY_HREF} variant="primary" tone="dark" size="lg" arrow>
-        {footerCta.label}
-      </Button>
+      <LiveFooterCta client:visible initialSettings={initialSettings} />
     </div>
   </div>
   <div class="container footer-base">
-    <p class="footer-copy">
-      &copy; {year} {brandName}. All rights reserved.
-    </p>
-    <p class="footer-area">{serviceAreaStatement}</p>
+    <LiveFooterBase client:visible initialSettings={initialSettings} />
   </div>
 </footer>
 <style>
@@ -140,55 +101,6 @@ const year = new Date().getFullYear();
   .brand-mark {
     display: inline-flex;
     color: var(--color-accent-on-dark);
-  }
-  .brand-statement {
-    margin: 0;
-    max-width: 30rem;
-    color: var(--color-on-ink-secondary);
-  }
-  .footer-review {
-    margin: var(--space-sm) 0 0;
-  }
-  .footer-review a {
-    color: var(--color-accent-on-dark);
-    text-underline-offset: 4px;
-  }
-  .footer-social {
-    margin-top: var(--space-md);
-  }
-  .footer-social h2 {
-    margin: 0 0 var(--space-2xs);
-    color: var(--color-on-ink);
-    font-family: var(--font-body);
-    font-size: var(--text-caption);
-    font-weight: 600;
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-  }
-  .footer-social ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs) var(--space-sm);
-  }
-  .footer-social a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3xs);
-    min-height: 2.75rem;
-    color: var(--color-on-ink-secondary);
-    text-decoration: none;
-    transition: color var(--motion-quick) var(--ease-default);
-  }
-  .footer-social a:hover {
-    color: var(--color-accent-on-dark);
-  }
-  .footer-social a:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
   }
   .footer-nav h2 {
     margin: 0 0 var(--space-sm);
@@ -231,16 +143,6 @@ const year = new Date().getFullYear();
   .footer-nav a:hover::after {
     transform: scaleX(1);
   }
-  .footer-cta p {
-    margin: 0 0 var(--space-md);
-    max-width: 22rem;
-    color: var(--color-on-ink-secondary);
-  }
-  .footer-cta h2 {
-    margin: 0 0 var(--space-2xs);
-    font-size: var(--text-h3);
-    color: var(--color-on-ink);
-  }
   .footer-base {
     position: relative;
     margin-top: var(--space-xl);
@@ -251,11 +153,6 @@ const year = new Date().getFullYear();
     gap: var(--space-2xs) var(--space-md);
     justify-content: space-between;
     align-items: baseline;
-  }
-  .footer-base p {
-    margin: 0;
-    color: var(--color-on-ink-faint);
-    font-size: var(--text-small);
   }
   @media (min-width: 720px) {
     .footer-top {

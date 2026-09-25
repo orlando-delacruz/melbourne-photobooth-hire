@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty-two decision records exist (DEC-001 through DEC-032). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty-three decision records exist (DEC-001 through DEC-033). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -287,6 +287,7 @@ Thirty-two decision records exist (DEC-001 through DEC-032). Existing selections
 | DEC-030 | Content-completeness: eyebrow fix, settings, chips, legal blobs | Accepted   | 2026-09-24 |
 | DEC-031 | Inquiry endpoint: strict Gmail delivery, visible failures | Accepted | 2026-09-25 |
 | DEC-032 | Social profiles rendered in footer, contact and sameAs | Accepted | 2026-09-25 |
+| DEC-033 | Supabase Realtime sync for public content | Accepted | 2026-09-25 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -870,6 +871,26 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-SEO-011, REQ-SEO-012), `docs/ARCHITECTURE.md`, DEC-016/DEC-030.
 - **Supersedes / Superseded by:** Supersedes the "socials unwired" limb of DEC-030.
 - **Open questions or follow-up:** Client to supply the four profile URLs; verify footer/contact/`sameAs` round-trip after entry.
+
+### DEC-033 — Supabase Realtime sync for public content
+
+- **ID:** DEC-033
+- **Title:** Open public pages patch live via Supabase Realtime, no refresh
+- **Status:** Accepted
+- **Date:** 2026-09-25
+- **Context:** Public pages are SSR snapshots: an admin save is invisible to already-open tabs until a manual refresh or the 60s edge-SWR revalidation. The operator ordered live sync (admin save → open public tab patches itself) across modules, page copy, settings and SEO meta, all pages at once, with no polling and no SPA rewrite.
+- **Decision:**
+  1. **Publication migration.** `supabase/migration-realtime.sql` adds the 7 already-public tables to `supabase_realtime`. Admin-only tables (`inquiries`, `admin_users`) are excluded. RLS continues to filter every event and refetch.
+  2. **Shared channel core.** `src/lib/realtime/channels.ts` keeps one refcounted channel per table (no duplicate subscriptions across components); `useLiveSync` hooks subscribe on mount and release on unmount. `realtime-js` auto-reconnects; disconnects only freeze patches, never break the page, with no visitor-facing errors.
+  3. **Debounced table-scoped refetch.** Any event for a table schedules one refetch of that table's public dataset after ~350ms (bursts from whole-list admin saves collapse to one small query; never a full-site refetch). Direct payload patching was rejected: under RLS, UPDATE payloads for rows losing visibility arrive without the new record, and admin saves rewrite ordering — a single refetch is the smallest obviously-correct mechanism.
+  4. **Islands at section level.** New `client:visible` React islands own each dynamic region with SSR initial props (SEO and first paint unchanged); presentational markup mirrors the Astro components class-for-class, with component styles moved (not duplicated) to global stylesheets. No admin-code changes: direct RLS writes already fire `postgres_changes`.
+  5. **Images need no cache-busting.** Uploads always mint new storage keys (`upsert: false`), so replacements arrive as new URLs by construction.
+- **Alternatives considered:** Polling/`setInterval` — rejected per the explicit order. Per-row direct apply from payloads — rejected (RLS-visibility gaps, reorder handling). Full-page islands/SPA — rejected (SEO/perf cost, rewrite scale). `REPLICA IDENTITY FULL` — rejected (unnecessary; key + refetch suffices).
+- **Rationale:** Smallest mechanism meeting the live-sync order inside the existing Astro+islands architecture: one migration, one shared hook, section-level islands, zero new dependencies (`realtime-js` already ships inside `supabase-js`).
+- **Consequences:** Supersedes the no-realtime limb of DEC-024 and the `client.ts`/`schema.sql` no-realtime notes (to be updated with this change). Open tabs patch instantly; first-time visits still observe the 60s SWR cache. Free-tier Realtime connection caps should be glanced at after launch week.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/API.md`, DEC-024/DEC-028.
+- **Supersedes / Superseded by:** Supersedes the no-realtime limb of DEC-024.
+- **Open questions or follow-up:** Apply the migration to the live database; two-browser verification matrix; `SeoLive` updates the open tab only and never claims search-index effects.
 
 ## 22. Related Documentation
 

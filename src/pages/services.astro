@@ -1,37 +1,30 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
-import PageHeader from "../components/PageHeader.astro";
-import CtaBand from "../components/CtaBand.astro";
-import Reveal from "../components/islands/Reveal";
-import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveServiceJump from "../components/islands/LiveServiceJump";
+import LiveServiceSections from "../components/islands/LiveServiceSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
 const { services, serviceImages, ctaImage } = await loadPublicContent();
+// Raw CMS modules seed the live islands (DEC-033): the jump nav and the
+// service sections patch themselves when the Services table changes.
+const liveModules = await loadPublicModules();
 const { pages: cmsPages } = await loadPublicPages();
 const servicesPage = cmsPages.services;
 const seo = await loadPublicSeo("services");
 setPublicCache(Astro.response.headers);
-
-const icons: Record<string, string> = {
-  camera:
-    '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
-  users:
-    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  video: '<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
-};
-
-function iconSvg(name: string | undefined, size = 22): string {
-  const inner = (name && icons[name]) || "";
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
-}
-
-const checkSvg =
-  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>';
 ---
 
 <BaseLayout
+  seoPageKey="services"
   title={seo.seoTitle || "Photobooth Hire Services Melbourne | Premium, Roaming & 360"}
   description={
     seo.seoDescription ||
@@ -45,296 +38,26 @@ const checkSvg =
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
 >
-  <PageHeader
-    title={servicesPage.header.title}
-    eyebrow={servicesPage.header.eyebrow}
-    lede={servicesPage.header.lede}
+  <LivePageHeader
+    client:visible
+    pageKey="services"
+    initial={servicesPage.header}
     imageSrc={services[0] && serviceImages?.[services[0].id]?.src}
     imageAlt={serviceImages?.[services[0].id]?.alt}
   >
-    <ul class="service-jump">
-      {services.map((service) => (
-        <li>
-          <a href={`#${service.id}`}>
-            <span class="service-jump-icon" set:html={iconSvg(service.icon, 16)} />
-            {service.name}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </PageHeader>
+    <LiveServiceJump client:visible initial={liveModules.services} />
+  </LivePageHeader>
 
-  <div class="services">
-    {services.map((service, index) => (
-      <section
-        class:list={["service section", { "service--featured": service.featured }]}
-        id={service.id}
-        aria-labelledby={`service-${service.id}`}
-        data-cms-id={service.id}
-        data-cms-featured={service.featured ? "true" : undefined}
-      >
-        <Reveal client:visible className="service-cell service-cell--media" variant="blur">
-          <div class="service-media">
-            {serviceImages?.[service.id] ? (
-              <img
-                src={serviceImages[service.id].src}
-                alt={serviceImages[service.id].alt}
-                loading={index === 0 ? "eager" : "lazy"}
-                decoding="async"
-              />
-            ) : null}
-            <span
-              class="service-media-badge"
-              aria-hidden="true"
-              set:html={iconSvg(service.icon, 24)}
-            />
-          </div>
-        </Reveal>
-        <Reveal client:visible delay={0.08} className="service-cell service-cell--body">
-          <div class="service-body">
-            <p class="service-kicker">
-              <span class="service-index" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <span class="service-kicker-rule" aria-hidden="true" />
-              {service.badge ? <span class="service-badge">{service.badge}</span> : null}
-            </p>
-            <h2 id={`service-${service.id}`}>{service.name}</h2>
-            {service.tagline ? <p class="service-tagline">{service.tagline}</p> : null}
-            <p class="service-summary">{service.summary}</p>
-            {service.highlights && service.highlights.length > 0 ? (
-              <ul class="service-highlights">
-                {service.highlights.map((item) => (
-                  <li>
-                    <span class="service-check" set:html={checkSvg} />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <p class="service-cta">
-              <Button href="/contact" variant="primary" size="lg" arrow>
-                Enquire now
-              </Button>
-              <Button href="/packages" variant="secondary" size="lg">
-                View packages
-              </Button>
-            </p>
-          </div>
-        </Reveal>
-      </section>
-    ))}
-  </div>
+  <LiveServiceSections client:visible initial={liveModules.services} />
 
-  <CtaBand
+  <LiveCtaBand
+    client:visible
+    pageKey="services"
+    initial={servicesPage.ctaBand}
     id="services-enquire"
-    eyebrow={servicesPage.ctaBand.eyebrow}
-    headline={servicesPage.ctaBand.headline}
-    lede={servicesPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel={servicesPage.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel={servicesPage.ctaBand.secondaryLabel}
-    imageSrc={servicesPage.ctaBand.image.src || ctaImage?.src}
-    imageAlt={servicesPage.ctaBand.image.alt || ctaImage?.alt}
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
   />
 </BaseLayout>
-
-<style>
-  /* ── Header quick-jump ──────────────────────────────────────────────── */
-
-  .service-jump {
-    list-style: none;
-    margin: var(--space-lg) 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs);
-  }
-  .service-jump a {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    min-height: 44px;
-    padding: var(--space-2xs) var(--space-sm);
-    border: 1px solid var(--color-ink-hairline-strong);
-    border-radius: var(--radius-pill);
-    background: rgba(244, 238, 224, 0.05);
-    color: var(--color-on-ink);
-    font-size: var(--text-small);
-    font-weight: 600;
-    text-decoration: none;
-    transition:
-      border-color var(--motion-quick) var(--ease-default),
-      background-color var(--motion-quick) var(--ease-default),
-      color var(--motion-quick) var(--ease-default);
-  }
-  .service-jump a:hover,
-  .service-jump a:focus-visible {
-    border-color: var(--color-accent-on-dark);
-    background: rgba(230, 206, 138, 0.1);
-    color: var(--color-accent-on-dark);
-  }
-  .service-jump-icon {
-    display: inline-flex;
-    color: var(--color-accent-on-dark);
-  }
-
-  /* ── Service sections ───────────────────────────────────────────────── */
-
-  .service {
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: 1fr;
-    align-items: center;
-    scroll-margin-top: 7rem;
-  }
-  .service + .service {
-    border-top: 1px solid var(--color-divider);
-  }
-
-  .service-media {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--elevation-2);
-  }
-  .service-media img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    transition:
-      transform 900ms var(--ease-default),
-      filter 900ms var(--ease-default);
-  }
-  .service-media:hover img {
-    transform: scale(1.05);
-    filter: brightness(1.05) saturate(1.03);
-  }
-  .service-media-badge {
-    position: absolute;
-    left: var(--space-sm);
-    bottom: var(--space-sm);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    border-radius: var(--radius-md);
-    background: rgba(13, 9, 6, 0.62);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(230, 206, 138, 0.42);
-    color: var(--color-accent-on-dark);
-  }
-
-  .service-body {
-    max-width: 36rem;
-  }
-  .service-kicker {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin: 0 0 var(--space-sm);
-  }
-  .service-index {
-    color: var(--color-accent-strong);
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    font-weight: 500;
-    line-height: 1;
-  }
-  .service-kicker-rule {
-    flex: 0 1 3rem;
-    height: 1px;
-    background: var(--color-border-strong);
-  }
-  .service-badge {
-    margin: 0;
-    padding: 0.3em 0.75em;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-pill);
-    color: var(--color-accent-strong);
-    font-weight: 600;
-    font-size: var(--text-caption);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-  }
-  /* Most Popular service: the badge carries the featured champagne fill. */
-  .service--featured .service-badge {
-    border-color: transparent;
-    background: var(--color-accent-on-dark);
-    color: var(--color-ink);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  }
-  .service-body h2 {
-    margin: 0 0 var(--space-2xs);
-    font-size: var(--text-title);
-    line-height: var(--leading-title);
-    letter-spacing: var(--tracking-display);
-  }
-  .service-tagline {
-    margin: 0 0 var(--space-sm);
-    color: var(--color-accent-strong);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--text-lead);
-  }
-  .service-summary {
-    margin: 0 0 var(--space-md);
-    color: var(--color-ink-soft);
-    font-size: var(--text-lead);
-  }
-  .service-highlights {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-2xs);
-  }
-  .service-highlights li {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--space-2xs);
-    align-items: start;
-    color: var(--color-ink-soft);
-    font-size: var(--text-small);
-  }
-  .service-check {
-    display: inline-flex;
-    margin-top: 0.18em;
-    color: var(--color-accent);
-  }
-  .service-cta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-sm);
-    margin: var(--space-lg) 0 0;
-  }
-
-  @media (min-width: 900px) {
-    .service {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-2xl);
-    }
-    .service:nth-child(even) :global(.service-cell--media) {
-      order: 2;
-    }
-    .service:nth-child(even) :global(.service-cell--body) {
-      order: 1;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .service-jump a,
-    .service-media img {
-      transition: none;
-    }
-    .service-media:hover img {
-      transform: none;
-    }
-  }
-</style>

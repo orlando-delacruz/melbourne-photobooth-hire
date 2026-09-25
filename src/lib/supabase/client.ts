@@ -1,6 +1,8 @@
 // Browser-safe Supabase client (anon key only).
 //
-// Free-tier notes: no realtime, no polling here. Public pages and admin
+// Free-tier notes: no polling here. Realtime subscriptions go through the
+// shared registry in lib/realtime/channels.ts (DEC-033), which reuses this
+// singleton so RLS scopes every event. Public pages and admin
 // islands share this singleton for RLS-scoped reads/writes. The service-role
 // key must never be imported into client code; see server.ts.
 //

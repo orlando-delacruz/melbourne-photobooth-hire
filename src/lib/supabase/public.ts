@@ -85,6 +85,40 @@ export async function loadPublicEventTypes(): Promise<string[]> {
 }
 
 /**
+ * Raw CMS module rows for live islands (DEC-033): the same public dataset as
+ * loadPublicContent but in CMS item shapes (with badgeType, highlight,
+ * sort order) so islands can derive badges and filters identically to SSR.
+ * Additive only — existing callers are untouched.
+ */
+export async function loadPublicModules(): Promise<CmsModules> {
+  const fallback: CmsModules = cmsSeed.modules;
+  if (!isConfigured()) return fallback;
+  try {
+    const supabase = getSupabaseServerAnon();
+    const [services, packages, gallery, faqs, eventTypes] = await Promise.all([
+      supabase.from("services").select("*").order("sort_order"),
+      supabase.from("packages").select("*").order("sort_order"),
+      supabase.from("gallery_items").select("*").order("sort_order"),
+      supabase.from("faqs").select("*").order("sort_order"),
+      supabase.from("event_types").select("*").order("sort_order"),
+    ]);
+    if (services.error || packages.error || gallery.error || faqs.error || eventTypes.error) {
+      console.warn("[public-content] Module query failed: live islands use seed modules.");
+      return fallback;
+    }
+    return {
+      services: (services.data ?? []).map(serviceFromRow),
+      packages: (packages.data ?? []).map(packageFromRow),
+      gallery: (gallery.data ?? []).map(galleryFromRow),
+      faqs: (faqs.data ?? []).map(faqFromRow),
+      "event-types": (eventTypes.data ?? []).map(eventTypeFromRow),
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+/**
  * Page-level copy plus site settings: DB blobs when saved, seed shapes
  * otherwise. Item lists are NOT included here; modules stay the source.
  */
