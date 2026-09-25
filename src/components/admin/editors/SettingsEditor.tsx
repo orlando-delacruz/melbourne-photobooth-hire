@@ -100,7 +100,10 @@ export default function SettingsEditor() {
         </AdField>
       </Panel>
 
-      <Panel title="Social profiles" lede="Add social profiles to show them on the website.">
+      <Panel
+        title="Social profiles"
+        lede="Shown in the website footer and on the contact page. Labels containing Facebook, Instagram, TikTok or YouTube get the matching icon."
+      >
         <ArraySection
           title="Social link list"
           count={socials.fields.length}
@@ -132,7 +135,7 @@ export default function SettingsEditor() {
                     id={`${base}-label`}
                     label="Label"
                     required
-                    hint="For example Instagram."
+                    hint="For example Facebook, Instagram, TikTok or YouTube."
                     error={errorAt(errors, `${base}.label`)}
                   >
                     <TextInput

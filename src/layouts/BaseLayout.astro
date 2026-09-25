@@ -65,6 +65,9 @@ const { settings: siteSettings } = await loadPublicPages();
 const brandName = siteSettings.brandName || site.brandName;
 const serviceAreaStatement = siteSettings.serviceAreaStatement || site.serviceAreaStatement;
 const reviewUrl = siteSettings.reviewUrl || null;
+// CMS social profiles (Site Settings). Empty until the client saves real
+// profile URLs, so both the footer/contact blocks and sameAs stay hidden.
+const socials = siteSettings.socials ?? [];
 const currentPath = Astro.url.pathname;
 
 const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
@@ -91,8 +94,9 @@ const googleVerification =
  * Site-wide structured data.
  *
  * Only confirmed facts are emitted: brand, production URL and Melbourne
- * service area. Address, phone, social profiles and service/price detail are
- * deliberately omitted until the client confirms them (DEC-016).
+ * service area, plus CMS-saved social profile URLs (sameAs) once the client
+ * provides them. Address, phone and service/price detail are deliberately
+ * omitted until the client confirms them (DEC-016).
  */
 const siteSchema = {
   "@context": "https://schema.org",
@@ -105,6 +109,7 @@ const siteSchema = {
       description:
         "Photobooth hire for weddings, birthdays, corporate events and celebrations across Melbourne, Victoria.",
       areaServed: { "@type": "City", name: "Melbourne" },
+      ...(socials.length > 0 ? { sameAs: socials.map((social) => social.url) } : {}),
     },
     {
       "@type": "WebSite",
@@ -193,6 +198,7 @@ const siteSchema = {
       serviceAreaStatement={serviceAreaStatement}
       reviewUrl={reviewUrl}
       footerCta={siteSettings.footerCta}
+      socials={socials}
     />
     <FloatingMessenger messengerUrl={siteSettings.messengerUrl} />
   </body>

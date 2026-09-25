@@ -3,6 +3,7 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import PageHeader from "../components/PageHeader.astro";
+import SocialIcon from "../components/SocialIcon.astro";
 import {
   loadPublicContent,
   loadPublicEventTypes,
@@ -73,6 +74,26 @@ const steps = contactPage.steps;
           <dd>{contactPage.typicalReplyValue}</dd>
         </div>
       </dl>
+      {siteSettings.socials.length > 0 ? (
+        <div class="aside-social">
+          <h2 class="aside-social-heading">Follow</h2>
+          <ul class="aside-social-list">
+            {siteSettings.socials.map((social) => (
+              <li>
+                <a
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Melbourne Photobooth Hire on ${social.label} (opens in a new tab)`}
+                >
+                  <SocialIcon label={social.label} />
+                  <span>{social.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </aside>
 
     <div class="form-card">
@@ -201,6 +222,39 @@ const steps = contactPage.steps;
     margin: var(--space-3xs) 0 0;
     color: var(--color-ink-soft);
     font-size: var(--text-small);
+  }
+
+  .aside-social {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+  }
+  .aside-social-heading {
+    margin: 0 0 var(--space-2xs);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+  .aside-social-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+  }
+  .aside-social-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    min-height: 2.75rem;
+    color: var(--color-ink-soft);
+    text-decoration: none;
+  }
+  .aside-social-list a:hover {
+    color: var(--color-accent-strong);
   }
 
   .form-card {

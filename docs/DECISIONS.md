@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty-one decision records exist (DEC-001 through DEC-031). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty-two decision records exist (DEC-001 through DEC-032). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -286,6 +286,7 @@ Thirty-one decision records exist (DEC-001 through DEC-031). Existing selections
 | DEC-029 | Single-backend simplification: generated types, no local mode | Accepted   | 2026-09-24 |
 | DEC-030 | Content-completeness: eyebrow fix, settings, chips, legal blobs | Accepted   | 2026-09-24 |
 | DEC-031 | Inquiry endpoint: strict Gmail delivery, visible failures | Accepted | 2026-09-25 |
+| DEC-032 | Social profiles rendered in footer, contact and sameAs | Accepted | 2026-09-25 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -850,6 +851,25 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-INQ-015/016/018, REQ-EML-001 through REQ-EML-004), `docs/API.md` (Sections 7, 10), `docs/SECURITY.md` (Sections 7, 19), `docs/DEPLOYMENT.md` (Section 26), DEC-026.
 - **Supersedes / Superseded by:** Supersedes the lenient half of DEC-026.
 - **Open questions or follow-up:** Live submit-to-Gmail round-trip after deploy; preview negative test with a bad template ID expecting `502` plus the new log line.
+
+### DEC-032 — Social profiles rendered in footer, contact and sameAs
+
+- **ID:** DEC-032
+- **Title:** CMS social links wired to footer, contact page and Organization sameAs
+- **Status:** Accepted
+- **Date:** 2026-09-25
+- **Context:** The settings blob already stored a generic `socials` list with a full CMS editor (DEC-030), but no public surface rendered it — `socials` stayed deliberately unwired with no footer UI. The client confirmed four networks (Facebook, Instagram, TikTok, YouTube) with URLs to follow.
+- **Decision:**
+  1. **Reuse the generic list.** No schema, validation, or database change: `{label, url}` entries, icon resolved by label keyword (facebook/instagram/tiktok/youtube, case-insensitive) with a generic link fallback. Editor hints steer labels toward those four names.
+  2. **Two placements.** A "Follow" block in the footer brand column (every page) and in the contact-page aside; both `target="_blank" rel="noopener noreferrer"` with "opens in a new tab" names. Empty list renders nothing in both places.
+  3. **Inline SVG icons.** No new dependency: stroke-style glyphs for Facebook/Instagram/YouTube plus a fill-style TikTok note, consistent with existing inline-SVG usage. `lucide-react` brand exports are deprecated and TikTok is absent, so they are not used.
+  4. **`sameAs` gated.** The Organization node emits `sameAs` only when at least one CMS-saved social URL exists — never seed or placeholder data (DEC-016).
+- **Alternatives considered:** Four fixed URL fields (facebookUrl, instagramUrl, …) — rejected; a migration plus editor rework for behavior the generic list already covers. `lucide-react` brand icons — rejected (deprecated exports, no TikTok). Feed embeds/share buttons — rejected as out-of-scope integrations.
+- **Rationale:** Smallest change closing the DEC-030 gap: one new presentational component, two thin render blocks, gated schema — no new services, deps, or content models.
+- **Consequences:** Seed stays `[]`, so both blocks and `sameAs` are hidden until the client saves real profile URLs in Site Settings. Entering a wrong URL propagates to `sameAs` — a content-accuracy handoff note, not a code problem.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-SEO-011, REQ-SEO-012), `docs/ARCHITECTURE.md`, DEC-016/DEC-030.
+- **Supersedes / Superseded by:** Supersedes the "socials unwired" limb of DEC-030.
+- **Open questions or follow-up:** Client to supply the four profile URLs; verify footer/contact/`sameAs` round-trip after entry.
 
 ## 22. Related Documentation
 

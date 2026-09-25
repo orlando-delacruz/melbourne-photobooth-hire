@@ -1,6 +1,8 @@
 ---
 import type { NavItem } from "./islands/MobileNav";
 import Button from "./Button.astro";
+import SocialIcon from "./SocialIcon.astro";
+import type { SocialLink } from "../lib/cms/types";
 import { ENQUIRY_HREF } from "../lib/navigation";
 
 interface Props {
@@ -9,8 +11,10 @@ interface Props {
   serviceAreaStatement: string;
   reviewUrl: string | null;
   footerCta: { title: string; lede: string; label: string };
+  /** CMS social profiles; an empty list hides the follow block. */
+  socials?: SocialLink[];
 }
-const { items, brandName, serviceAreaStatement, reviewUrl, footerCta } = Astro.props;
+const { items, brandName, serviceAreaStatement, reviewUrl, footerCta, socials = [] } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
@@ -42,6 +46,26 @@ const year = new Date().getFullYear();
         <p class="footer-review">
           <a href={reviewUrl}>Leave a Google review</a>
         </p>
+      ) : null}
+      {socials.length > 0 ? (
+        <div class="footer-social">
+          <h2>Follow</h2>
+          <ul>
+            {socials.map((social) => (
+              <li>
+                <a
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${brandName} on ${social.label} (opens in a new tab)`}
+                >
+                  <SocialIcon label={social.label} />
+                  <span>{social.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
     </div>
     <nav class="footer-nav" aria-label="Explore">
@@ -128,6 +152,43 @@ const year = new Date().getFullYear();
   .footer-review a {
     color: var(--color-accent-on-dark);
     text-underline-offset: 4px;
+  }
+  .footer-social {
+    margin-top: var(--space-md);
+  }
+  .footer-social h2 {
+    margin: 0 0 var(--space-2xs);
+    color: var(--color-on-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+  .footer-social ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-sm);
+  }
+  .footer-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    min-height: 2.75rem;
+    color: var(--color-on-ink-secondary);
+    text-decoration: none;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .footer-social a:hover {
+    color: var(--color-accent-on-dark);
+  }
+  .footer-social a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
   }
   .footer-nav h2 {
     margin: 0 0 var(--space-sm);
