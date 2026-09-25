@@ -2,178 +2,95 @@
 
 > How this works: when the user says **"hand-off context SESSION.md"**, update this file with a fresh summary of the current chat session (what was asked, what changed, decisions, state, open items). Keep it concise but include the small key details another agent needs to continue safely.
 
-- **Last updated:** 2026-09-24
+- **Last updated:** 2026-09-25
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `develop` (HEAD `f92361d` "enhance: ux for admin panel"; working tree **clean**, **1 commit ahead of `origin/develop`** — push pending)
-- **Mode:** frontend-only. No backend, API, or database work was done. One allowed dependency addition: `sweetalert2`.
+- **Branch:** `develop` (HEAD `b34f74c` "fixes: homepage hero section eyebrow fixes content"; working tree **clean** — all backend work committed locally in `28bcebb`, `9092747`, `b34f74c`; push state unknown, verify before assuming in-sync)
+- **Mode:** build. Full Supabase backend migration implemented across this session (was frontend-only at session start). Free-tier constraints observed throughout (Vercel Hobby + Supabase free).
 
 ---
 
 ## 1. Project snapshot
 
 - **What:** SEO-focused marketing site + custom CMS/admin for a Melbourne photobooth business. Fixed **₱15,000** scope. Inquiry-only (not a booking engine).
-- **Stack:** Astro 7 + React 19 islands, strict TypeScript, CSS custom-property tokens, Lucide React, Motion, React Hook Form + Zod, `@fontsource` Fraunces/Inter.
-- **Source of truth:** root `AGENTS.md`, `docs/*.md`, root `CONTEXT.md` glossary. `docs/DECISIONS.md` holds accepted decision records.
-- **Roadmap state:** **Phase 2** (frontend on centralized mock data). Phases 3-7 (Supabase CMS, server endpoints/EmailJS/Turnstile, integration testing, deploy, maintenance) **not started**.
-- **Content:** everything is provisional/placeholder through the `getContent()` seam (`src/lib/content/mock.ts`). Production remains blocked on client confirmation.
-- **Decisions on record:** DEC-001 through DEC-023 (`docs/DECISIONS.md`).
+- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide, Motion, RHF + Zod, `@fontsource` Fraunces/Inter, `sweetalert2`, plus new: `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11` (v11 pairs with Astro 7; v7 pairs with Astro 4 — verified).
+- **Backend:** Supabase (PostgreSQL + Auth + Storage `cms-media`), RLS everywhere, cookie sessions, Astro server routes only (`POST /api/inquiries`, public `GET /api/health`). No Express, no second backend.
+- **Rendering model (DEC-028, current):** ALL pages server-rendered (`prerender = false`); public pages read live Supabase per request with edge SWR (`public, s-maxage=60, stale-while-revalidate=300` via `src/lib/http-cache.ts`); admin/API `no-store`. No rebuilds, no deploy hooks (DEC-027 built then superseded and fully deleted per operator rejection).
+- **Decisions on record:** DEC-001 through DEC-030 (`docs/DECISIONS.md`).
 
 ---
 
-## 2. This session, in order
+## 2. This session, in order (all built, not planned-only)
 
-1. **Read-only codebase analysis** (no edits): mapped architecture, content seam, docs, inconsistencies.
-2. **Contact page + Inquiry form** — SSR styling fix and form redesign.
-3. **Homepage** — gallery lightbox, reviews marquee, step icons, floating Messenger button, motion pass (`DEC-014`).
-4. **Homepage pass 2** — removed light panels, premium review cards, removed marquee pause/play, smooth accordion, event-type icons (`DEC-015`).
-5. **Mobile nav toggle** — icon-only (removed "Menu"/"Close" text).
-6. **Services page** — editorial redesign with quick-jump chips, check-list highlights, premium media.
-7. **Packages page** — premium cards; featured "Most popular" card is now a dark card with a highlighted price.
-8. **About page** — story image, icon stats, premium value cards.
-9. **Hero** — mobile layout fix (stacked CTAs, 3-up stats, fits viewport).
-10. **FAQ page** — search/filter with live count, two-column layout, premium dark support card.
-11. **Global hover polish** — consistent premium hovers on links, buttons, cards, nav, accordion, forms, images.
-12. **Global content cleanup** — removed all em/en dashes from `src/`.
-13. **Gallery hover** — pointer cursor + eye indicator.
-14. **SESSION.md** created (this file).
-
----
-
-## 3. Key decisions recorded this session (`docs/DECISIONS.md`)
-
-- **DEC-013 — SSR-safe island styling via token-backed CSS.** styled-components CSS was **not** in the server-rendered HTML, so the inquiry form and mobile nav rendered as unstyled HTML until hydration. Moved island styling to plain token-backed CSS files: `src/styles/inquiry-form.css`, `src/styles/mobile-nav.css`, `src/styles/gallery-lightbox.css`. styled-components + `src/lib/theme.ts` remain but are no longer used by application code.
-- **DEC-014 — Homepage refinement:** gallery lightbox (`GalleryTrigger.astro` + `GalleryLightbox.tsx`), reviews marquee (`ReviewsMarquee.astro`), step icons, floating Messenger CTA, Reveal materials.
-- **DEC-015 — Homepage pass 2:** removed `.panel-print` light panels, premium dark review cards, removed marquee Pause/Play control (kept hover/focus pause + reduced-motion), smooth accordion (progressive-enhancement height animation), event-type icons. Also updated `docs/DESIGN-SYSTEM.md` §29 exception wording.
-
-Note: DEC-014/015 record the client authorising **placeholder content and looping motion** for this internal design stage.
+1. **Implementation plan** for the 15-phase backend spec (codebase mapped via subagents first).
+2. **Phases 0–3 (DEC-024):** deps installed; `src/lib/supabase/{client,server,database.types}`; `.env.example`; `supabase/{schema,rls,storage,seed}.sql`; Vercel adapter. Note: Astro 7 removed `output:"hybrid"` (static behaves hybrid); adapter import is `@astrojs/vercel` (no `/serverless` subpath in v11).
+3. **User gave anon key + URL (Path A).** Local `.env` created (gitignored). Verified live via anon REST: 3/3/8/9/8 rows, correct order/badges, anon denied `inquiries` + `admin_users`.
+4. **Phase 4 auth (DEC-025):** `src/middleware.ts` (cookie-session guard + `admin_users` allow-list, passthrough when unconfigured); 16 admin pages `prerender=false` (login stays static); real `LoginForm` sign-in; `SignOutButton` in sidebar (`admin.css` `.ad-signout`).
+5. **Phase 5–6:** `src/lib/cms/storage.ts` (bucket backend, same interface as old IndexedDB store); `src/lib/supabase/modules.ts` (slug=id, sort_order, upsert-by-slug + delete-missing + Storage GC, reload-from-DB); `ModuleCrud` + `fields.tsx` swapped. **Typing saga lessons:** hand-written `Database` must satisfy `GenericSchema` — needs `Views`/`Functions`, `Relationships: []` on EVERY table (missing `Update` on `admin_users` collapsed schema to `never`), row types must be `type` aliases not `interface`s (no implicit index signature).
+6. **Phase 7:** `src/lib/supabase/pages.ts` (page_contents JSONB adapter); `useSectionEditor` swapped wholesale (it serves exactly the 8 page editors; also fixed discard-after-save baseline). `page_seo`/`page_contents` Insert types omit `updated_at`.
+7. **Phase 8:** `src/lib/supabase/public.ts` (build/request-time anon reads + seed fallback); `buildSiteContent(modules?)` parametrized; 7 pages rewired; **`CmsEcho.tsx` deleted** (would clobber DB state with seed); InquiryForm local echo removed. Dual-path builds proven (with/without env).
+8. **Phase 9:** verified in `dist` — DB `most-popular` package renders `card--featured`, 1 featured homepage card. Data-driven, not hardcoded.
+9. **Phase 11:** `src/lib/supabase/seo.ts`; `SeoEditor` rewired (+load-failure notice); `loadPublicSeo()` in all 9 pages with hardcoded fallbacks intact.
+10. **Phases 10+12 (DEC-026):** `POST /api/inquiries.ts` (server Zod → Turnstile verify-when-configured → service-role insert → best-effort EmailJS; store-first success semantics); `InquiryForm` real submit + no-dep Turnstile widget (site key from page prop, script in `contact.astro` with `is:inline`); `InquiriesView` on live source. Route confirmed in Vercel output (`^/api/inquiries$`); `astro preview` cannot serve functions (known, not a bug).
+11. **Page-copy wiring:** all 7 pages render CMS blobs (hero/intro/headings/steps/testimonials/add-ons/policies/headers/bands/contact facts/about sections). Proof: services/gallery/about/privacy/terms byte-identical; index/packages/faq/contact diffs verified text-identical or intentional.
+12. **"Edits not showing" incident:** root-caused to TWO compounding causes — (a) no Vercel prod env → silent seed fallback, (b) static-only publishing with zero publish mechanism (sidebar copy promised publishing that didn't exist). User's SQL checks then proved the DB 100% pristine (all seed timestamps) → deeper cause: **admin ran unconfigured, saves went to browser localStorage with success modals**. Shipped in response: admin backend-state banner (Phase 17), publish flow (Phase 16, DEC-027 — later deleted), build-time `live vs seed` deploy logging.
+13. **Broken-admin-layout incident (Phase 18, OPEN):** code review found clean markup/CSS, green builds, no console errors. Cause still unknown — needs view-source/CSS-status/URL evidence. May be stale-asset fallout clearable by redeploy.
+14. **Replan per operator:** localhost admin must show live data (true by shared DB when `.env` set); no deploy hooks/git — accepted pivot to **SSR+SWR (DEC-028)**, publish flow deleted, DEC-027 superseded.
+15. **Simplification (DEC-029, with operator-provided PAT):** `database.types.ts` regenerated via `supabase gen types` (header records command; hand edits forbidden); **deleted** `lib/cms/repository.ts`, `lib/cms/images.ts`, mock inquiry source; new `lib/cms/ids.ts`; `collectImageKeys` moved into `storage.ts`; all `isSupabaseConfigured()` admin branches removed (admin throws "CMS backend is not connected"); `DashboardView` rewritten on live queries (+`getModuleFreshness`); `InquiriesView` live-only; `LoginForm` hard error when unconnected; public `GET /api/health` (`{ok, source, counts, storageReachable}`). Deep-verified with PAT-derived service key: anon reads highlighted-only, anon module writes 401, anon inquiry insert 201 with `return=minimal` (**PostgREST lesson:** `return=representation` fails 401 since anon can't SELECT the row back; endpoint unaffected — service client), anon storage upload 403, service paths work, 0 orphans, **DB left pristine**. PAT/token absent from repo (grep-verified). **Operator action: revoke the PAT.**
+16. **Health check confirmed live by operator:** `{"ok":true,"source":"live","counts":{3,3,8,9,8},"storageReachable":true}` — prod env present, prod reads live DB.
+17. **Hero eyebrow bug + full audit:** root cause was a missing prop (`index.astro` never passed `home.hero.eyebrow` to `<Hero>`); subagent audit inventoried every static string. Built A–E: eyebrow passthrough; **settings blob wired into `BaseLayout`/`Header`/`Footer`/`FloatingMessenger`** (brand, service-area, review URL, footer CTA, messenger URL; `socials` unwired — no footer UI exists); **homepage chips from Event-Types module verbatim** (now singular; icons resolve exact-then-plural before sparkles fallback); **privacy/terms CMS blobs** (`LegalPageContent` block model, `legalPageSchema`, verbatim `legalSeed`, `supabase/migration-legal-pages.sql` — **already applied live via API and constraint verified**, new `/admin/legal` + `LegalEditor` list/detail under "SEO & Legal", public pages render blobs). Verified via dev server (`:4321`): all legal text verbatim, eyebrow/footer/chips/messenger live; `/admin/legal` 302s when logged out. DEC-030. Deliberately static list recorded: form microcopy/validation, card CTA labels, jump pills, aria-labels, SEO fallbacks, nav labels, social icons.
 
 ---
 
-## 4. Files added (new)
+## 3. Files added (this session)
 
-- `src/components/Accordion.astro` (native `<details>` + progressive-enhancement height animation)
-- `src/components/CtaBand.astro`
-- `src/components/FloatingMessenger.astro` (**placeholder URL `https://m.me/`**)
-- `src/components/GalleryTrigger.astro`
-- `src/components/ReviewsMarquee.astro`
-- `src/components/islands/GalleryLightbox.tsx`
-- `src/styles/gallery-lightbox.css`
-- `src/styles/inquiry-form.css`
-- `src/styles/mobile-nav.css`
-- `SESSION.md`
+- `src/lib/supabase/{client,server,database.types,modules,pages,seo,inquiries,public}.ts`, `src/lib/http-cache.ts`, `src/lib/cms/{ids,storage}.ts`
+- `src/middleware.ts`, `src/components/admin/{SignOutButton,LegalEditor}.tsx`, `src/pages/admin/legal.astro`, `src/pages/api/{inquiries,health}.ts`
+- `supabase/{schema,rls,storage,seed,migration-legal-pages}.sql`, `.env.example`
+- Deleted: `src/lib/cms/{repository,images}.ts`, `src/components/islands/CmsEcho.tsx`, `src/pages/api/publish.ts`, `src/components/admin/PublishButton.tsx` (both publish files removed same session per operator rejection)
 
-## 5. Files modified (high level)
+## 4. Key files modified (this session)
 
-- Pages: `index`, `services`, `packages`, `gallery`, `about`, `faq`, `contact`, `privacy`, `terms`, `404`.
-- Components: `Card.astro`, `Button.astro`, `Header.astro`, `Footer.astro`, `Hero.astro`, `PageHeader.astro`, `SectionHeading.astro`, `islands/InquiryForm.tsx`, `islands/MobileNav.tsx`, `islands/Reveal.tsx`.
-- Styles: `src/styles/tokens.css`, `src/styles/global.css`.
-- Content: `src/lib/content/mock.ts`, `src/lib/content/types.ts`, `src/lib/validation/inquiry.ts`, `src/lib/theme.ts`.
-- Docs: `docs/DECISIONS.md`, `docs/TECH-STACK.md` (§6 note), `docs/DESIGN-SYSTEM.md` (§29).
+- `astro.config.mjs` (Vercel adapter, explicit sitemap `customPages` — server routes aren't auto-discovered), `package.json` (3 new deps)
+- 9 public pages (live loaders + `prerender=false` + cache headers + blob copy + chips + legal render), `BaseLayout`/`Header`/`Footer`/`FloatingMessenger` (settings), 16 admin pages (`prerender=false`), `AdminShell` (sign-out, banner, Legal link, reworded note), `AdminLayout` untouched structurally
+- `ModuleCrud`, `fields`, `useSectionEditor`, `SeoEditor`, `InquiriesView`, `LoginForm`, `DashboardView` (live rewrite), all 8 `createId/slugId` editors → `lib/cms/ids`
+- `cms/{types,schemas,seed}` (badges, SEO fields, event types, legal model, verbatim legal seed), `content/cmsSource` (parametrized builder), `InquiryForm` (real submit + Turnstile), `contact.astro` (site key prop + script)
+- `docs/DECISIONS.md` (DEC-024 through DEC-030)
 
----
+## 5. Conventions to preserve (updated)
 
-## 6. Conventions and patterns to preserve
+- **Single backend, loud failures.** No local-fallback branches in admin code — ever. Seeds are public-build fallback only. Admin without env shows "not connected", never silent local saves.
+- **`database.types.ts` is generated** (`supabase gen types`, header documents command). Never hand-edit; fix type friction by regenerating.
+- **No new dependencies** without justification (only `sweetalert2`, supabase×2, vercel adapter added this whole project). No Tailwind. Tokens only. SSR-safe CSS. Zero em-dashes in `src/`. No `window.confirm`/`alert`.
+- **Module CRUD pattern:** list → detail → edit/delete via `useModuleList`; per-item Zod `.element`; upsert-by-slug + delete-missing + Storage GC + reload-from-DB; SweetAlert2 for ops, inline summaries for validation.
+- **Item `id` doubles as DB slug** (stable, unique); array order = `sort_order`; `highlight` = public visibility (anon RLS serves highlighted-only).
+- **Proven verification techniques:** (a) anon-REST matrix via temp scripts (never in repo); (b) privileged checks via transient env (never persisted); (c) dual-path builds (with/without `.env`); (d) dist text-normalized parity proofs; (e) live dev-server content assertions; (f) Vercel output route inspection; (g) bundle greps for secrets/labels.
+- **PostgREST gotcha (verified):** anon INSERT must use `return=minimal`; `return=representation` 401s since anon can't SELECT the row back.
 
-- **No new dependencies.** No Tailwind, no alternative libraries. Lucide paths are inlined as SVG strings (existing convention).
-- **Tokens only:** `src/styles/tokens.css` is the source of values. Semantic `var(--*)` references; avoid hardcoded values.
-- **SSR-safe CSS:** Astro page/component scoped styles, or standalone CSS files imported by a page/layout, so styles are in the head (no FOUC). React island styling uses plain class names (`iq-*`, `mn-*`, `lb-*`) or `:global(...)` from Astro.
-- **Reveal materials:** `variant="rise" | "blur" | "mask" | "scale"`; reduced-motion and no-JS guards are in `global.css`.
-- **Zero em-dashes** (`—`) or en-dashes (`–`) in `src/`. Use commas/periods/colons.
-- **Terminology:** `CONTEXT.md` binding (inquiry not booking, customer not user, etc.). Site copy still uses "booking" in the hire/policy sense in places.
-- **`.sr-only`** is defined per page/component (not global).
-- `Card.astro` note: `featured` + light tone renders a dark premium card; CTA tone switches to `dark` when featured.
-- **Module CRUD pattern (this session):** list → detail → edit/delete and Add → create → list, as in-island state via `useModuleList` (precedent: `InquiriesView`). Per-item Zod `.element` validation, whole-section `saveSection` persist, `confirmDelete` + `notifySuccess`/`notifyError` from `alerts.ts`. No `window.confirm`/`alert` anywhere in `src/`.
-- **AdminShell props:** `title` (topbar h1) + `heading` (content h2, defaults to title) + `lede` (content only). SaveBar renders only when dirty.
-- **New store sections** must be added in five places: `StoreSectionKey`, `STORE_SECTIONS`, `SectionValue`, `seedFor`, `load()` (`repository.ts`) plus `CmsContent`/`cmsSeed`. Storage key is still `mph-cms-v2`.
-- **Proven verification techniques:** (a) runtime schema-vs-seed checks by copying `src/lib` to a temp dir with `.ts`-suffixed relative imports and importing with system Node; (b) `dist/` head-identity diffs for fallback safety; (c) bundle greps for labels/chunks. Temp scripts live outside the repo.
+## 6. Validation status
 
----
+- `npm run check` → 0/0/0 (101 files); `npm run build` → complete; `npm run format` → clean — after every phase.
+- Live REST proofs: table counts/order/badges, RLS allow/deny matrix both directions, storage allow/deny, orphan scan (0), constraint verification, `/api/health` live on production.
+- Dev-server proofs (`:4321`): legal verbatim text, eyebrow/footer/chips/messenger, `/admin/legal` guard redirect, sitemap 9 URLs, no secret leakage in bundles.
+- **Not verified (no browser tooling here):** all click-through round-trips — module CRUD writes, page/SEO/legal saves, highlight toggle + 60s public update, image upload, inquiry submit → admin list → Gmail compose → delete, login/logout/session-expiry, dialogs/savebar at 375px + desktop. **This is the main outstanding QA and the operator's job.**
 
-## 7. Validation status
+## 7. Open items / operator actions
 
-- `npm run check` → **0 errors / 0 warnings / 0 hints**
-- `npm run build` → **10 pages**
-- `npm run format` → clean
-- Static assertions on `dist/` confirmed per task (SSR CSS present, no `sc-*` classes, no em-dashes, key markup present).
-- **Not verified:** real browser rendering/interaction at 375/768/1024/1440 (no browser tooling available). This is the main outstanding QA.
+1. **Revoke the PAT** (`sbp_fc49…`) — its work (codegen, verification, migration) is done. Highest priority.
+2. **Deploy latest** (SSR+SWR + simplification + legal + chrome wiring all uncommitted? No — tree is clean, committed as `28bcebb`/`9092747`/`b34f74c`; push state unknown). Redeploy after push.
+3. **Browser round-trips** (§6) + the 60s localhost-save → live-URL check.
+4. **Missing evidences (blocking their incidents):** VSCode terminal error text (never received); asset-layout facts — sidebar in view-source? CSS 200/404? prod vs preview URL (fresh hard-refresh look recommended first; may already be resolved by redeploys).
+5. **Pending keys (features degrade gracefully without):** `SUPABASE_SERVICE_ROLE_KEY` (inquiry endpoint runtime), Turnstile pair (spam verification; endpoint accepts without, explicitly per DEC-026), EmailJS set (auto Gmail forwarding; admin list works regardless).
+6. **Standing placeholders:** Messenger URL (`https://m.me/` until real username set in Site Settings), invented testimonials/ratings, Pexels stock imagery, provisional pricing/policies (client confirmation still required for production truth).
+7. **Deliberately static** (DEC-030, do not re-flag): form microcopy/validation, card CTA labels, jump pills, aria-labels, SEO fallbacks, nav labels, footer social icons (no UI).
+8. `docs/*.md` still contain em-dashes (documentation only).
 
 ---
 
-## 8. Open items / known limitations
+## 8. How to continue
 
-- **Messenger URL is a placeholder** (`https://m.me/`). Must be replaced with the client's Facebook Page username before production (`DEC-014`).
-- **Testimonials + star ratings are invented placeholder content** (REQ-REV-007). Production blocked until approved/verified.
-- **All imagery is Pexels stock**, pricing/policies are provisional Shot&Prints-derived reference values. Production blocked until client-confirmed.
-- Marquee WCAG 2.2.2: no visible pause control (client choice); pause is via hover/keyboard focus + reduced-motion. Flagged in DEC-015.
-- `docs/*.md` still contain em-dashes (documentation only; not cleaned).
-- **Push pending.** `f92361d` is 1 commit ahead of `origin/develop`.
-- **Live-browser QA outstanding for everything in §11** (module CRUD, Swal dialogs incl. centered positioning, savebar show/hide, Pages dropdown, topbar titles, event-type dropdown echo, SEO save flow, OG upload). No browser tooling or loopback HTTP in this environment; static + runtime proofs only.
-- **Known behavior notes:** empty Event Types module degrades the contact dropdown to "Select…" only; uploaded OG blobs resolve at build only via remote `src` until the Phase 3 backend; `home.eventTypes` and the `EVENT_TYPES` const were intentionally deleted (dead data / hardcoded list); homepage chips still render the plural mock list.
-
----
-## 10. CMS frontend session (2026-09-22)
-
-- Built the frontend-only CMS under `/admin/` (DEC-017): dashboard, Home, Services, Packages, Gallery, About, FAQ, Contact, Site Settings editors.
-- New: `src/lib/cms/` (types, seed, Zod schemas, localStorage repository, provisional notes), `src/components/admin/` (shell, field primitives, 8 editors, dashboard), `src/pages/admin/`, `src/styles/admin.css`, sitemap filter in `astro.config.mjs`.
-- Public pages untouched; only `astro.config.mjs` modified plus docs.
-- `npm run check` → 0 errors; `npm run build` → 19 pages; `npm run format` → clean; preview smoke test → all 9 admin routes 200, sitemap holds only the 9 public pages.
-- **Not verified:** real browser rendering/interaction at 375/768/1024/1440 (no browser tooling available); CMS save flows exercised only via code review, not a live browser session.
-- **Production-readiness pass (2026-09-22):** removed all developer-facing copy from the admin UI; added `/admin/login` (form validates, then explains sign-in is not connected; no fake auth) and `/admin/inquiries` (read-only table, mock `AdminInquirySource` with 6 sample records in `src/lib/cms/inquiries.ts`); reworked the dashboard to four summary cards (Total/Today's/Weekly Inquiries, Pages Updated), a recent-inquiries table (max 5 + View All) and a Website Content freshness table; sidebar gained an Inquiries link.
-- **Login UI pass (2026-09-22):** `/admin/login` redesigned as the brand "threshold": espresso noir canvas with a champagne glow, ivory card, Fraunces heading, single load reveal with reduced-motion guard. Same tokens, no new dependencies; auth behaviour unchanged. Refined after review: photo-strip rail removed (single-column card), inputs compacted to a 44px touch target, password show/hide eye toggle added, and an input overflow fixed at root cause (admin pages lacked the public site's `box-sizing: border-box` reset; it is now on the shared admin form-control rule).
-- **Admin-wide responsive + polish pass (2026-09-22):** icon buttons raised to 44px touch targets; `:active` press feedback on buttons; string lists and repeatable item heads reflow to single-column actions on narrow screens; save bar stacks on phones with iOS safe-area inset; inquiries table hides Email/Guests columns ≤640px (`ad-hide-sm`); champagne hairline signature added to panels and summary cards; editor panels unified onto the shared flexed panel head; desktop table row hover. Public site untouched.
-- **Admin width-overflow fix (2026-09-23):** all admin pages overflowed their viewport by 40px (whole-page horizontal pan) because the admin layer lacks the public `global.css` `box-sizing: border-box` reset, so `.ad-content`'s `width: 100%` plus horizontal padding computed as content-box. Fixed with a scoped reset (`.ad-body *` → `border-box`) in `admin.css`. Verified by headless-browser measurement: `scrollWidth == clientWidth` on all 11 admin routes at 320/375/640/768/1024/1440, plus true-375px screenshots of login, dashboard, services editor and inquiries (no clipping; login card, summary cards, mobile save-bar stack and pruned table columns all render as designed).
-- **CMS restructure pass (2026-09-23, DEC-018):** split page-level CMS from item modules; full CRUD + highlight toggles for Services/Packages/Gallery/FAQs under `/admin/modules/*` with the spec sidebar groups; real file uploads via an IndexedDB blob store (`src/lib/cms/images.ts`, PNG/JPEG/WebP ≤ 2 MB) with preview/replace/remove and blob GC on save — zero URL text inputs remain; package badge radio (None/Basic/Most Popular/Best Value/Custom-with-guard) driving the public card treatment from badge data; inquiries gained clickable detail view, Gmail compose response, and confirmed delete with in-place list update; public pages consume module data at build plus a `CmsEcho` island applying saved highlights/badges/uploaded images client-side; storage key bumped to `mph-cms-v2` (no blind migration). Public presentation preserved; uploads and admin saves stay per-browser until the Phase 3 backend.
-- **Final verification (2026-09-24, all in a real headless browser):** `check` 0/0/0, `format` clean, `build` complete; all 24 routes (9 public + 15 admin) return 200; echo proven (highlight-OFF hides card, custom badge swaps text + drops featured/star, zero console errors); inquiry detail/Gmail-link/delete-with-persistence proven; full FAQ CRUD (add/type/save/toggle/delete/reload) proven with validation correctly blocking empty saves; real PNG upload proven (blob preview → saved key → success notice); zero horizontal pan on all admin + public routes at 320/375/768/1024; screenshots reviewed (modules editor, inquiry flow, dashboard, homepage states); test localStorage/IndexedDB state cleaned afterwards. Test scripts live only in the OS temp dir, not the repo.
-
----
-
-## 11. Admin CMS feature session (2026-09-24, this session)
-
-All work below is committed in `f92361d` ("enhance: ux for admin panel"). Plan mode was used for the module-UI and SEO plans; everything else was built directly. New decisions DEC-019 through DEC-023.
-
-1. **Modules list/detail plan + user answers.** Planned the Services/Packages/Gallery/FAQs list-and-detail pattern; user confirmed: in-component state (no new routes), drop move/duplicate/reset, literal Add labels.
-2. **Modules list/detail build (DEC-019 core).** New shared `src/components/admin/ModuleCrud.tsx` (`useModuleList`, `HighlightPill`, `DetailRow`, `ModuleImage`/`ModuleThumb`, `toFieldErrors`); all four module editors rewritten to list → detail → edit/delete and Add → create → list with per-item Zod `.element` validation, whole-section `saveSection` persistence, confirmed deletes (last-item guard on Services/Packages); `useModuleEditor.ts` bulk hook deleted; `admin.css` gained `ad-pill`/`ad-thumb`/`ad-detail-media`.
-3. **Seed/schema save-blockers found by executing real schemas vs real seed (DEC-019).** Services seed built `image.src` from whole image objects (`??`/`?.` precedence bug hidden by an `as` cast) — this was also rendering `src="[object Object]"` on live public pages; fixed to `?.src` per branch and removed the cast. Packages schema required non-empty `customBadge` for every item while seeds store `""` for non-custom; relaxed to capped string with the `superRefine` custom-only guard preserved. Verified: all 23 seeded items validate; guard still blocks blank custom.
-4. **Required service badges (DEC-020).** `ServiceItem.badge?: string` → required `badgeType` (basic/most-popular/best-value/custom, no bare option) + `customBadge`, with `serviceBadgeText()`; seeds map legacy labels to custom and the badgeless 360 booth to Basic (user answers: 360=Basic, reuse packages featured treatment, migrate saved data on load). Repository migrates legacy saves on load (text→custom, empty→Basic). Admin form uses a dropdown + conditional custom input (new blanks default Basic). Public `Service` gains `featured`; homepage passes it into the existing `Card` featured treatment; services page toggles `service--featured` on the section; `CmsEcho` resolves service badge/featured and updates pills client-side.
-5. **Dedicated SEO module (DEC-021).** New top-level SEO sidebar group + `/admin/seo` + `SeoEditor.tsx` (9 pages: 7 CMS + Privacy/Terms via new `seo-privacy`/`seo-terms` sections; SERP preview; non-blocking counts 50-60/150-160; upload-backed OG image; Twitter mirrors OG; OG URL/type derived). `PageMeta` extended with planning-only `keywords` (never rendered), `canonicalUrl`, `ogTitle`/`ogDescription`, `noindex`/`nofollow` — all defaulted, zero migration. `SeoGroup` deleted from all 7 Website CMS forms. `BaseLayout` gains `canonicalUrl`, `nofollow`, `ogTitle`, `ogDescription`, `ogImageAlt`; `getPageSeo()` helper; all 9 pages wired with hardcoded fallbacks. User answers: include privacy/terms, Twitter mirrors OG, keep hero fallback. Proof: all 10 pages' title/meta/link tags byte-identical pre/post (caught and fixed one real deviation: explicit OG alt overriding hero alt on privacy/terms).
-6. **SweetAlert2 standard alerts (DEC-022).** Installed `sweetalert2@11.26.25` (only new dep). Central `src/components/admin/alerts.ts` (lazy import = SSR-safe, code-split chunk; `ad-button` classes + one destructive variant; focus starts on Cancel). All 16 `window.confirm` sites converted (deletes, sub-item removes, new image-remove confirm, discard/reset); operational results → toasts/error modals, validation summaries stay inline, no pre-save confirms, `beforeunload` kept. Follow-up: all dialogs forced to true centered modals (`MODAL_BASE`: `position:center` + backdrop), success toast → auto-dismissing centered modal, `ad-swal-container` z-index 2000 (only higher z in repo is the public grain overlay, not loaded in admin).
-7. **Admin top bar (title-only) + distinct content headings.** `AdminShell` topbar renders `<h1>` only; content opens with `ad-page-head` (h2 + lede) when a lede exists; new `heading` prop (defaults to title) so pairs differ: topbar short label vs content descriptive (`Homepage`/`Edit Homepage`, `Services`/`Services module`, `Dashboard`/`Content overview`, `Inquiries`/`Enquiries`, `Settings`/`Site settings`). Login standalone, untouched.
-8. **Event Types module (DEC-023).** New `mod-event-types` collection `{id, label}` (array order = dropdown order) with list/detail/add/edit + Up/Down reorder persisted immediately; seeded with the 8 documented dropdown values verbatim. Deleted the hardcoded `EVENT_TYPES` const and the never-rendered `home.eventTypes` field (type/schema/seed/HomeEditor panel/dashboard count; chips heading group kept). `getEventTypes()` feeds the contact island as SSR prop + live repository echo in the editing browser; submission validation unchanged. Homepage chips keep their plural mock list untouched.
-9. **SaveBar visibility.** Renders only when `dirty || saving` (existing RHF state, no new system); plus mobile `min-width: 0` grid hardening. Proven: zero `ad-savebar` markup in all 13 admin pages' SSR HTML.
-10. **Sidebar Pages dropdown.** "Website CMS" caption replaced by a collapsible **Pages** group (chevron, `aria-expanded`, server-rendered open state when a child route is active; inline script toggle following the drawer pattern).
-
-### Files added this session
-
-- `src/components/admin/ModuleCrud.tsx` (shared list/detail primitives + `useModuleList`)
-- `src/components/admin/alerts.ts` (central SweetAlert2 system)
-- `src/components/admin/editors/SeoEditor.tsx`, `src/components/admin/editors/EventTypesModuleEditor.tsx`
-- `src/pages/admin/seo.astro`, `src/pages/admin/modules/event-types.astro`
-
-### Files removed this session
-
-- `src/components/admin/useModuleEditor.ts` (bulk-edit hook, superseded)
-- `SeoGroup` in `src/components/admin/groups.tsx` (SEO lives in its own module now)
-
-### Key files modified this session
-
-- Admin: `AdminShell.astro` (title-only topbar, content `ad-page-head`, `heading` prop, Pages dropdown), `SaveBar.tsx` (dirty gate), `InquiriesView.tsx`, `ModuleCrud.tsx`, `fields.tsx` (image-remove confirm), `useSectionEditor.ts` (Swal results), `sections.ts` (SEO + Event Types entries), 4 module editors, `SeoEditor`, 7 page editors (SeoGroup out), `HomeEditor.tsx` (dead event-types list out), `DashboardView.tsx` (module count), `admin.css`.
-- Data: `cms/types.ts` (service badges, `SeoPageKey`, `PAGE_META_DEFAULTS`, `EventTypeItem`), `cms/schemas.ts` (service badges, PageMeta extension, event-types schema, home `eventTypes` out), `cms/seed.ts` (badge mapping, image-src fix, SEO legal sections, event-type seeds), `cms/repository.ts` (new section keys, service migration, `load()` additions), `content/cmsSource.ts` (`getPageSeo`, `getEventTypes`), `content/types.ts` (`Service.featured`), `validation/inquiry.ts` (`EVENT_TYPES` out).
-- Public: `BaseLayout.astro` (SEO props, derived robots/OG), 9 pages wired for SEO, `index.astro` (service `featured`), `services.astro` (`service--featured`), `contact.astro` + `InquiryForm.tsx` (dropdown from module + echo), `CmsEcho.tsx` (service badges).
-- Meta: `package.json` + lock (`sweetalert2`), `AdminLayout.astro` (swal CSS), `docs/DECISIONS.md` (DEC-019..023).
-
-### Validation this session
-
-- `npm run check` → 0/0/0, `npm run format` → clean, `npm run build` → 26→27 pages, every step.
-- Runtime Node proofs (temp-dir copies, never in repo): seed-vs-schema for all modules, custom-badge guard behavior, service badge mapping + featured derivation, legacy service migration, all-9 `getPageSeo` validity + old-shape default fill + canonical vetting, event-types seed/order/validation.
-- `dist` proofs: Add-label bundles, no `useModuleEditor` remnants, no `[object Object]`, head-identity across 10 pages, contact dropdown options match module order, sidebar entries, featured-card states, savebar absence, toggle markup/CSS/handler.
-- **Not verified:** live browser interaction for any of the above (no browser tooling or loopback HTTP in this environment). Code review + static/runtime proofs only. Recommend a manual pass: module CRUD, dialogs, savebar show/hide, Pages dropdown, topbar titles, event-type dropdown echo, SEO save flow, at 375px + desktop.
-
----
-
-## 12. How to continue
-
-1. Read `AGENTS.md`, `CONTEXT.md`, and relevant `docs/` before changing anything.
-2. Inspect existing implementation before edits; follow the conventions in section 6.
-3. Verify with `npm run check`, `npm run build`, `npm run format`; do a browser pass where possible.
+1. Read `AGENTS.md`, `CONTEXT.md`, relevant `docs/` before changing anything.
+2. Inspect implementation before edits; follow §5 conventions. Never reintroduce local-fallback branches or hand-edit generated types.
+3. Verify with `npm run check`, `npm run build`, `npm run format`; live-REST proofs where possible; demand browser evidence from the operator for UI claims.
 4. Do not invent business facts, URLs, prices, policies, or imagery.
-5. Update `docs/DECISIONS.md` for material decisions.
+5. Update `docs/DECISIONS.md` for material decisions (register is at 30 records, DEC-027 superseded).
+6. Harmful/irreversible ops (DB writes beyond probes, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.
