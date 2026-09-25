@@ -6,12 +6,16 @@ import PageHeader from "../components/PageHeader.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
-import CmsEcho from "../components/islands/CmsEcho";
-import { getContent } from "../lib/content/repository";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
 
-const { packages, addOns, bookingPolicies, ctaImage, serviceImages } = getContent();
-const seo = getPageSeo("packages");
+const { packages, ctaImage, serviceImages } = await loadPublicContent();
+const { pages: cmsPages } = await loadPublicPages();
+const packagesPage = cmsPages.packages;
+// Add-ons, policies and section copy come from the page blob; the package
+// cards themselves come from the Packages module.
+const addOns = packagesPage.addOns;
+const bookingPolicies = packagesPage.bookingPolicies;
+const seo = await loadPublicSeo("packages");
 
 const sharedInclusions = packages.length
   ? packages
@@ -19,14 +23,7 @@ const sharedInclusions = packages.length
       .reduce((common, list) => common.filter((item) => list.includes(item)))
   : [];
 
-const standardInclusions = [
-  "Full photobooth service",
-  "Studio-quality lighting and styling",
-  "Custom-branded print template",
-  "HD printing, unlimited sessions",
-  "QR code digital downloads",
-  "Free use of props",
-];
+const standardInclusions = packagesPage.included.standardItems;
 
 const headerImage = serviceImages?.["premium-photobooth"]?.src;
 
@@ -92,9 +89,9 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
   ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
-    title="Packages"
-    eyebrow="Simple, all-inclusive hire"
-    lede="Every booking comes dressed to impress, with red carpet and golden bollard entrance setup included as standard, with full setup and pack-down by our team."
+    title={packagesPage.header.title}
+    eyebrow={packagesPage.header.eyebrow}
+    lede={packagesPage.header.lede}
     imageSrc={headerImage}
     imageAlt={serviceImages?.["premium-photobooth"]?.alt}
   >
@@ -112,16 +109,15 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
 
   <section class="section" id="package-plans" aria-labelledby="packages-list">
     <SectionHeading
-      eyebrow="Choose your hire"
+      eyebrow={packagesPage.plansHeading.eyebrow}
       id="packages-list"
-      title="Priced up front, nothing hidden"
-      lede="Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry."
+      title={packagesPage.plansHeading.title}
+      lede={packagesPage.plansHeading.lede}
       size="lg"
     />
     {packages.length === 0 ? (
       <p class="empty">
-        Package options will be shown here once confirmed. Until then, please enquire for current
-        options.
+        {packagesPage.emptyState.title} {packagesPage.emptyState.body}
       </p>
     ) : (
       <div class="card-grid">
@@ -144,12 +140,9 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
       </div>
     )}
     <div class="packages-foot">
-      <p class="packages-note">
-        Every package can be tailored to your venue and guest numbers. Tell us your date and we'll
-        confirm availability and the best fit.
-      </p>
+      <p class="packages-note">{packagesPage.footNote}</p>
       <Button href="/contact" variant="primary" size="lg" arrow>
-        Check your date
+        {packagesPage.checkDateLabel}
       </Button>
     </div>
   </section>
@@ -159,12 +152,9 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
       <div class="included-inner">
         <Reveal client:visible variant="mask">
           <div>
-            <p class="eyebrow eyebrow--rule">Included as standard</p>
-            <h2 id="packages-included">Every hire ships with the full setup.</h2>
-            <p class="included-lede">
-              No hidden extras. From studio lighting to QR downloads, the essentials come with every
-              package.
-            </p>
+            <p class="eyebrow eyebrow--rule">{packagesPage.included.eyebrow}</p>
+            <h2 id="packages-included">{packagesPage.included.heading}</h2>
+            <p class="included-lede">{packagesPage.included.lede}</p>
           </div>
         </Reveal>
         <Reveal client:visible delay={0.08} variant="blur">
@@ -186,10 +176,10 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
 
   <section class="section" id="package-addons" aria-labelledby="packages-addons">
     <SectionHeading
-      title="Add-ons"
+      title={packagesPage.addonsHeading.title}
       id="packages-addons"
-      eyebrow="Optional extras"
-      lede="Layer on photography, extra hours or a themed backdrop to make the night yours."
+      eyebrow={packagesPage.addonsHeading.eyebrow}
+      lede={packagesPage.addonsHeading.lede}
       size="lg"
     />
     <div class="addons">
@@ -209,9 +199,9 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
     <div class="policies">
       <Reveal client:visible>
         <div class="policies-intro">
-          <p class="eyebrow eyebrow--rule">Good to know</p>
-          <h2 id="packages-policies">Booking policies</h2>
-          <p>The essentials, in plain language, so there are no surprises on the night.</p>
+          <p class="eyebrow eyebrow--rule">{packagesPage.policies.eyebrow}</p>
+          <h2 id="packages-policies">{packagesPage.policies.heading}</h2>
+          <p>{packagesPage.policies.lede}</p>
         </div>
       </Reveal>
       <Reveal client:visible delay={0.08} variant="blur">
@@ -229,17 +219,16 @@ const policyIcon = svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4
 
   <CtaBand
     id="packages-enquire"
-    eyebrow="Ready when you are"
-    headline="Let's lock in your date."
-    lede="Send your event details and we'll confirm availability and the package that fits."
+    eyebrow={packagesPage.ctaBand.eyebrow}
+    headline={packagesPage.ctaBand.headline}
+    lede={packagesPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel="Enquire now"
+    primaryLabel={packagesPage.ctaBand.primaryLabel}
     secondaryHref="/services"
-    secondaryLabel="Explore the booths"
-    imageSrc={ctaImage?.src}
-    imageAlt={ctaImage?.alt}
+    secondaryLabel={packagesPage.ctaBand.secondaryLabel}
+    imageSrc={packagesPage.ctaBand.image.src || ctaImage?.src}
+    imageAlt={packagesPage.ctaBand.image.alt || ctaImage?.alt}
   />
-  <CmsEcho page="packages" client:idle />
 </BaseLayout>
 
 <style>

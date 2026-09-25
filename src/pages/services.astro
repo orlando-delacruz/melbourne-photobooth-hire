@@ -4,12 +4,12 @@ import Button from "../components/Button.astro";
 import PageHeader from "../components/PageHeader.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
-import CmsEcho from "../components/islands/CmsEcho";
-import { getContent } from "../lib/content/repository";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
 
-const { services, serviceImages, ctaImage } = getContent();
-const seo = getPageSeo("services");
+const { services, serviceImages, ctaImage } = await loadPublicContent();
+const { pages: cmsPages } = await loadPublicPages();
+const servicesPage = cmsPages.services;
+const seo = await loadPublicSeo("services");
 
 const icons: Record<string, string> = {
   camera:
@@ -43,9 +43,9 @@ const checkSvg =
   ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
-    title="Photobooth experiences"
-    eyebrow="Our booths"
-    lede="Three ways to put a photo studio in the middle of your event, each styled, staffed and built to keep the line moving."
+    title={servicesPage.header.title}
+    eyebrow={servicesPage.header.eyebrow}
+    lede={servicesPage.header.lede}
     imageSrc={services[0] && serviceImages?.[services[0].id]?.src}
     imageAlt={serviceImages?.[services[0].id]?.alt}
   >
@@ -125,17 +125,16 @@ const checkSvg =
 
   <CtaBand
     id="services-enquire"
-    eyebrow="Not sure which booth?"
-    headline="Tell us about the event."
-    lede="Share your date, venue and guest numbers and we'll recommend the setup that fits best."
+    eyebrow={servicesPage.ctaBand.eyebrow}
+    headline={servicesPage.ctaBand.headline}
+    lede={servicesPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel="Start an enquiry"
+    primaryLabel={servicesPage.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel="Compare packages"
-    imageSrc={ctaImage?.src}
-    imageAlt={ctaImage?.alt}
+    secondaryLabel={servicesPage.ctaBand.secondaryLabel}
+    imageSrc={servicesPage.ctaBand.image.src || ctaImage?.src}
+    imageAlt={servicesPage.ctaBand.image.alt || ctaImage?.alt}
   />
-  <CmsEcho page="services" client:idle />
 </BaseLayout>
 
 <style>

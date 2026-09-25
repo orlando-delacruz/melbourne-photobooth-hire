@@ -6,10 +6,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import type { CmsImage, CmsPageKey, PageMeta, SeoPageKey } from "../../../lib/cms/types";
-import { PAGE_META_DEFAULTS } from "../../../lib/cms/types";
+import type { PageMeta, SeoPageKey } from "../../../lib/cms/types";
 import { pageMetaSchema } from "../../../lib/cms/schemas";
-import { cmsRepository } from "../../../lib/cms/repository";
+import { loadSeo, saveSeo } from "../../../lib/supabase/seo";
 import { AdField, ImageField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel } from "../groups";
 import { HighlightPill, toFieldErrors } from "../ModuleCrud";
@@ -40,54 +39,6 @@ interface EditorNotice {
   title: string;
   body?: string;
   list?: string[];
-}
-
-function emptyImage(): CmsImage {
-  return { key: null, src: "", alt: "" };
-}
-
-/** Merges saved values over the field defaults so older saves stay editable. */
-function normalizeSeo(value: unknown): PageMeta {
-  const parsed = pageMetaSchema.safeParse(value);
-  if (parsed.success) return parsed.data;
-  const base = (value && typeof value === "object" ? value : {}) as Partial<PageMeta>;
-  const image = base.ogImage && typeof base.ogImage === "object" ? base.ogImage : emptyImage();
-  return {
-    seoTitle: typeof base.seoTitle === "string" ? base.seoTitle : "",
-    seoDescription: typeof base.seoDescription === "string" ? base.seoDescription : "",
-    ogImage: {
-      key: typeof image.key === "string" ? image.key : null,
-      src: typeof image.src === "string" ? image.src : "",
-      alt: typeof image.alt === "string" ? image.alt : "",
-      caption: typeof image.caption === "string" ? image.caption : undefined,
-    },
-    keywords: base.keywords ?? PAGE_META_DEFAULTS.keywords,
-    canonicalUrl: base.canonicalUrl ?? PAGE_META_DEFAULTS.canonicalUrl,
-    ogTitle: base.ogTitle ?? PAGE_META_DEFAULTS.ogTitle,
-    ogDescription: base.ogDescription ?? PAGE_META_DEFAULTS.ogDescription,
-    noindex: base.noindex ?? PAGE_META_DEFAULTS.noindex,
-    nofollow: base.nofollow ?? PAGE_META_DEFAULTS.nofollow,
-  };
-}
-
-async function loadPageSeo(key: SeoPageKey): Promise<PageMeta> {
-  if (key === "privacy" || key === "terms") {
-    return normalizeSeo(
-      await cmsRepository.loadSection(key === "privacy" ? "seo-privacy" : "seo-terms"),
-    );
-  }
-  const section = (await cmsRepository.loadSection(key as CmsPageKey)) as { seo?: unknown };
-  return normalizeSeo(section?.seo);
-}
-
-async function savePageSeo(key: SeoPageKey, seo: PageMeta): Promise<void> {
-  if (key === "privacy" || key === "terms") {
-    await cmsRepository.saveSection(key === "privacy" ? "seo-privacy" : "seo-terms", seo);
-    return;
-  }
-  const pageKey = key as CmsPageKey;
-  const section = (await cmsRepository.loadSection(pageKey)) as Record<string, unknown>;
-  await cmsRepository.saveSection(pageKey, { ...section, seo });
 }
 
 function robotsFor(seo: PageMeta): string {
@@ -128,11 +79,20 @@ export default function SeoEditor() {
   useEffect(() => {
     let live = true;
     (async () => {
-      const entries = await Promise.all(
-        SEO_PAGES.map(async (page) => [page.key, await loadPageSeo(page.key)] as const),
-      );
-      if (!live) return;
-      setRecords(Object.fromEntries(entries) as Record<SeoPageKey, PageMeta>);
+      try {
+        const entries = await Promise.all(
+          SEO_PAGES.map(async (page) => [page.key, await loadSeo(page.key)] as const),
+        );
+        if (!live) return;
+        setRecords(Object.fromEntries(entries) as Record<SeoPageKey, PageMeta>);
+      } catch {
+        if (!live) return;
+        setNotice({
+          tone: "error",
+          title: "Could not load SEO settings.",
+          body: "Check your connection and refresh the page.",
+        });
+      }
     })();
     return () => {
       live = false;
@@ -168,7 +128,7 @@ export default function SeoEditor() {
     }
     setBusy(true);
     try {
-      await savePageSeo(view.key, parsed.data);
+      await saveSeo(view.key, parsed.data);
       setRecords((current) => (current ? { ...current, [view.key]: parsed.data } : current));
       setDraft(null);
       setErrors(new Map());
@@ -181,7 +141,17 @@ export default function SeoEditor() {
     }
   }, [draft, view]);
 
-  if (!records) return <Skeleton />;
+  if (!records)
+    return (
+      <div className="ad-stack">
+        {notice ? (
+          <Notice tone={notice.tone} title={notice.title} list={notice.list}>
+            {notice.body ? <p>{notice.body}</p> : null}
+          </Notice>
+        ) : null}
+        <Skeleton />
+      </div>
+    );
 
   if (view.name === "detail" && draft) {
     const page = SEO_PAGES.find((entry) => entry.key === view.key) ?? SEO_PAGES[0];

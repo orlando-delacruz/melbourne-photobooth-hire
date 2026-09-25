@@ -4,14 +4,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Mail, Trash2 } from "lucide-react";
 import {
-  adminInquirySource,
   byNewest,
   formatInquiryDate,
   formatInquiryDateTime,
   gmailComposeUrl,
 } from "../../lib/cms/inquiries";
+import { inquirySource } from "../../lib/supabase/inquiries";
 import type { AdminInquiry } from "../../lib/cms/inquiries";
-import { Skeleton } from "./fields";
+import { Notice, Skeleton } from "./fields";
 import { confirmDelete, notifyError, notifySuccess } from "./alerts";
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -27,15 +27,26 @@ export default function InquiriesView() {
   const [inquiries, setInquiries] = useState<AdminInquiry[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const source = inquirySource();
 
   useEffect(() => {
     let live = true;
-    adminInquirySource.list().then((value) => {
-      if (live) setInquiries(value);
-    });
+    source
+      .list()
+      .then((value) => {
+        if (live) setInquiries(value);
+      })
+      .catch(() => {
+        if (live) {
+          setInquiries([]);
+          setLoadError(true);
+        }
+      });
     return () => {
       live = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selected = inquiries?.find((inquiry) => inquiry.id === selectedId) ?? null;
@@ -47,8 +58,8 @@ export default function InquiriesView() {
     }
     setDeleting(true);
     try {
-      await adminInquirySource.remove(selected.id);
-      const remaining = await adminInquirySource.list();
+      await source.remove(selected.id);
+      const remaining = await source.list();
       setInquiries(remaining);
       setSelectedId(null);
       void notifySuccess("Inquiry deleted.");
@@ -57,7 +68,7 @@ export default function InquiriesView() {
     } finally {
       setDeleting(false);
     }
-  }, [selected]);
+  }, [selected, source]);
 
   if (!inquiries) return <Skeleton />;
   const sorted = [...inquiries].sort(byNewest);
@@ -123,65 +134,72 @@ export default function InquiriesView() {
   }
 
   return (
-    <section className="ad-panel" aria-label="All inquiries">
-      <div className="ad-panel-head">
-        <div>
-          <h2>All inquiries</h2>
-          <p className="ad-panel-lede">
-            {inquiries.length} {inquiries.length === 1 ? "enquiry" : "enquiries"} from the website
-            contact form, newest first.
-          </p>
+    <div className="ad-stack">
+      {loadError ? (
+        <Notice tone="error" title="Could not load inquiries.">
+          <p>Check your connection and refresh the page.</p>
+        </Notice>
+      ) : null}
+      <section className="ad-panel" aria-label="All inquiries">
+        <div className="ad-panel-head">
+          <div>
+            <h2>All inquiries</h2>
+            <p className="ad-panel-lede">
+              {inquiries.length} {inquiries.length === 1 ? "enquiry" : "enquiries"} from the website
+              contact form, newest first.
+            </p>
+          </div>
         </div>
-      </div>
-      {sorted.length === 0 ? (
-        <div className="ad-empty">
-          <h3>No inquiries yet</h3>
-          <p>Enquiries from the website contact form will appear here.</p>
-        </div>
-      ) : (
-        <div className="ad-table-wrap">
-          <table className="ad-table">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col" className="ad-hide-sm">
-                  Email
-                </th>
-                <th scope="col">Event date</th>
-                <th scope="col">Event type</th>
-                <th scope="col" className="ad-hide-sm">
-                  Guests
-                </th>
-                <th scope="col">Submitted</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((inquiry) => (
-                <tr
-                  key={inquiry.id}
-                  className="ad-table-rowlink"
-                  tabIndex={0}
-                  onClick={() => setSelectedId(inquiry.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setSelectedId(inquiry.id);
-                    }
-                  }}
-                  aria-label={`View inquiry from ${inquiry.name}`}
-                >
-                  <td>{inquiry.name}</td>
-                  <td className="ad-hide-sm">{inquiry.email}</td>
-                  <td>{formatInquiryDate(inquiry.eventDate)}</td>
-                  <td>{inquiry.eventType || "Not specified"}</td>
-                  <td className="ad-hide-sm">{inquiry.guests || "-"}</td>
-                  <td>{formatInquiryDateTime(inquiry.submittedAt)}</td>
+        {sorted.length === 0 ? (
+          <div className="ad-empty">
+            <h3>No inquiries yet</h3>
+            <p>Enquiries from the website contact form will appear here.</p>
+          </div>
+        ) : (
+          <div className="ad-table-wrap">
+            <table className="ad-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col" className="ad-hide-sm">
+                    Email
+                  </th>
+                  <th scope="col">Event date</th>
+                  <th scope="col">Event type</th>
+                  <th scope="col" className="ad-hide-sm">
+                    Guests
+                  </th>
+                  <th scope="col">Submitted</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
+              </thead>
+              <tbody>
+                {sorted.map((inquiry) => (
+                  <tr
+                    key={inquiry.id}
+                    className="ad-table-rowlink"
+                    tabIndex={0}
+                    onClick={() => setSelectedId(inquiry.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedId(inquiry.id);
+                      }
+                    }}
+                    aria-label={`View inquiry from ${inquiry.name}`}
+                  >
+                    <td>{inquiry.name}</td>
+                    <td className="ad-hide-sm">{inquiry.email}</td>
+                    <td>{formatInquiryDate(inquiry.eventDate)}</td>
+                    <td>{inquiry.eventType || "Not specified"}</td>
+                    <td className="ad-hide-sm">{inquiry.guests || "-"}</td>
+                    <td>{formatInquiryDateTime(inquiry.submittedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

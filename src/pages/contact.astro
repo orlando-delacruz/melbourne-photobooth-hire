@@ -2,28 +2,24 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import PageHeader from "../components/PageHeader.astro";
-import { getContent } from "../lib/content/repository";
-import { getEventTypes, getPageSeo } from "../lib/content/cmsSource";
+import {
+  loadPublicContent,
+  loadPublicEventTypes,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
 import "../styles/inquiry-form.css";
 
-const { site, serviceImages } = getContent();
-const eventTypeOptions = getEventTypes();
-const seo = getPageSeo("contact");
+const { serviceImages } = await loadPublicContent();
+const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
+const contactPage = cmsPages.contact;
+const eventTypeOptions = await loadPublicEventTypes();
+const seo = await loadPublicSeo("contact");
+// Spam protection renders only when a site key is configured; the server
+// verifies the token when its secret is set (see src/pages/api/inquiries.ts).
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
 
-const steps = [
-  {
-    title: "Send your details",
-    detail: "Your date, venue and rough guest numbers are plenty to start.",
-  },
-  {
-    title: "We reply with options",
-    detail: "Availability, the right booth for the room and a clear quote.",
-  },
-  {
-    title: "Lock in your date",
-    detail: "A 20% deposit confirms your date, with the balance due on the day.",
-  },
-];
+const steps = contactPage.steps;
 ---
 
 <BaseLayout
@@ -41,16 +37,16 @@ const steps = [
   ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
-    title="Make an enquiry"
-    eyebrow="Let's plan your night"
-    lede="Tell us about your event and we'll confirm availability, recommend the right booth and put together a clear quote."
+    title={contactPage.header.title}
+    eyebrow={contactPage.header.eyebrow}
+    lede={contactPage.header.lede}
     imageSrc={serviceImages?.["roaming-photobooth"]?.src}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
 
   <section class="section contact" aria-labelledby="contact-form-heading">
     <aside class="contact-aside">
-      <h2 id="contact-next">What happens next</h2>
+      <h2 id="contact-next">{contactPage.asideHeading}</h2>
       <ol class="next-steps">
         {steps.map((step, index) => (
           <li>
@@ -66,12 +62,12 @@ const steps = [
       </ol>
       <dl class="aside-facts">
         <div class="aside-fact">
-          <dt>Service area</dt>
-          <dd>{site.serviceAreaStatement}</dd>
+          <dt>{contactPage.serviceAreaLabel}</dt>
+          <dd>{siteSettings.serviceAreaStatement}</dd>
         </div>
         <div class="aside-fact">
-          <dt>Typical reply</dt>
-          <dd>Within one business day.</dd>
+          <dt>{contactPage.typicalReplyLabel}</dt>
+          <dd>{contactPage.typicalReplyValue}</dd>
         </div>
       </dl>
     </aside>
@@ -94,12 +90,24 @@ const steps = [
           </svg>
         </span>
         <div>
-          <h2 id="contact-form-heading">Event enquiry</h2>
-          <p>Share a few details and we'll reply with availability and a clear quote.</p>
+          <h2 id="contact-form-heading">{contactPage.formTitle}</h2>
+          <p>{contactPage.formLede}</p>
         </div>
       </header>
-      <InquiryForm client:visible eventTypes={eventTypeOptions} />
-      <p class="form-foot">We use your details only to respond to this enquiry.</p>
+      <InquiryForm
+        client:visible
+        eventTypes={eventTypeOptions}
+        turnstileSiteKey={turnstileSiteKey}
+      />
+      {turnstileSiteKey ? (
+        <script
+          is:inline
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          async
+          defer
+        ></script>
+      ) : null}
+      <p class="form-foot">{contactPage.formFoot}</p>
     </div>
   </section>
 </BaseLayout>

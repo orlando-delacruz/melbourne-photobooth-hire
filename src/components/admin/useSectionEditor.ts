@@ -7,9 +7,13 @@ import { useForm } from "react-hook-form";
 import type { FieldErrors, FieldValues, UseFormReturn } from "react-hook-form";
 import type * as z from "zod";
 import { zodResolver } from "../../lib/validation/inquiry";
-import type { StoreSectionKey } from "../../lib/cms/types";
-import type { SectionMeta } from "../../lib/cms/repository";
-import { cmsRepository } from "../../lib/cms/repository";
+import type { PageSectionKey } from "../../lib/supabase/pages";
+import {
+  getPageMeta,
+  loadPageSection,
+  resetPageSection,
+  savePageSection,
+} from "../../lib/supabase/pages";
 import { firstErrorPath, flattenErrors } from "./fields";
 import { confirmDiscardChanges, confirmResetSection, notifyError, notifySuccess } from "./alerts";
 
@@ -20,7 +24,7 @@ export interface EditorNotice {
   list?: string[];
 }
 
-export function useSectionEditor<K extends StoreSectionKey>(
+export function useSectionEditor<K extends PageSectionKey>(
   section: K,
   schema: z.ZodType<unknown>,
 ): {
@@ -49,12 +53,21 @@ export function useSectionEditor<K extends StoreSectionKey>(
 
   useEffect(() => {
     let live = true;
-    cmsRepository.loadSection(section).then((value: unknown) => {
-      if (!live) return;
-      setLoaded(value);
-      reset(value as never);
-    });
-    cmsRepository.getMeta().then((meta: Record<StoreSectionKey, SectionMeta>) => {
+    loadPageSection(section)
+      .then((value: unknown) => {
+        if (!live) return;
+        setLoaded(value);
+        reset(value as never);
+      })
+      .catch(() => {
+        if (!live) return;
+        setNotice({
+          tone: "error",
+          title: "Could not load this section.",
+          body: "Check your connection and refresh the page.",
+        });
+      });
+    getPageMeta().then((meta) => {
       if (live) setSavedAt(meta[section]?.savedAt ?? null);
     });
     return () => {
@@ -75,10 +88,10 @@ export function useSectionEditor<K extends StoreSectionKey>(
     setSaving(true);
     setNotice(null);
     const values = form.getValues();
-    cmsRepository
-      .saveSection(section, values)
+    savePageSection(section, loaded, values)
       .then(({ savedAt: at }) => {
         reset(values);
+        setLoaded(values);
         setSavedAt(at);
         void notifySuccess("Section saved.");
       })
@@ -89,7 +102,7 @@ export function useSectionEditor<K extends StoreSectionKey>(
         );
       })
       .finally(() => setSaving(false));
-  }, [form, reset, section]);
+  }, [form, loaded, reset, section]);
 
   const onInvalid = useCallback(
     (fieldErrors: FieldErrors) => {
@@ -126,8 +139,7 @@ export function useSectionEditor<K extends StoreSectionKey>(
   const onResetSection = useCallback(() => {
     void confirmResetSection().then((confirmed) => {
       if (!confirmed) return;
-      cmsRepository
-        .resetSection(section)
+      resetPageSection(section)
         .then((value) => {
           setLoaded(value);
           reset(value as never);

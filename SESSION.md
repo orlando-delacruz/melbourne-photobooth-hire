@@ -4,8 +4,8 @@
 
 - **Last updated:** 2026-09-24
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `develop` (HEAD `964066f` "cleanup: admin ui modules"; working tree **clean**, in sync with `origin/develop` — all CMS work committed)
-- **Mode:** frontend-only. No backend, API, or database work was done.
+- **Branch:** `develop` (HEAD `f92361d` "enhance: ux for admin panel"; working tree **clean**, **1 commit ahead of `origin/develop`** — push pending)
+- **Mode:** frontend-only. No backend, API, or database work was done. One allowed dependency addition: `sweetalert2`.
 
 ---
 
@@ -16,6 +16,7 @@
 - **Source of truth:** root `AGENTS.md`, `docs/*.md`, root `CONTEXT.md` glossary. `docs/DECISIONS.md` holds accepted decision records.
 - **Roadmap state:** **Phase 2** (frontend on centralized mock data). Phases 3-7 (Supabase CMS, server endpoints/EmailJS/Turnstile, integration testing, deploy, maintenance) **not started**.
 - **Content:** everything is provisional/placeholder through the `getContent()` seam (`src/lib/content/mock.ts`). Production remains blocked on client confirmation.
+- **Decisions on record:** DEC-001 through DEC-023 (`docs/DECISIONS.md`).
 
 ---
 
@@ -81,6 +82,10 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 - **Terminology:** `CONTEXT.md` binding (inquiry not booking, customer not user, etc.). Site copy still uses "booking" in the hire/policy sense in places.
 - **`.sr-only`** is defined per page/component (not global).
 - `Card.astro` note: `featured` + light tone renders a dark premium card; CTA tone switches to `dark` when featured.
+- **Module CRUD pattern (this session):** list → detail → edit/delete and Add → create → list, as in-island state via `useModuleList` (precedent: `InquiriesView`). Per-item Zod `.element` validation, whole-section `saveSection` persist, `confirmDelete` + `notifySuccess`/`notifyError` from `alerts.ts`. No `window.confirm`/`alert` anywhere in `src/`.
+- **AdminShell props:** `title` (topbar h1) + `heading` (content h2, defaults to title) + `lede` (content only). SaveBar renders only when dirty.
+- **New store sections** must be added in five places: `StoreSectionKey`, `STORE_SECTIONS`, `SectionValue`, `seedFor`, `load()` (`repository.ts`) plus `CmsContent`/`cmsSeed`. Storage key is still `mph-cms-v2`.
+- **Proven verification techniques:** (a) runtime schema-vs-seed checks by copying `src/lib` to a temp dir with `.ts`-suffixed relative imports and importing with system Node; (b) `dist/` head-identity diffs for fallback safety; (c) bundle greps for labels/chunks. Temp scripts live outside the repo.
 
 ---
 
@@ -101,10 +106,11 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 - **All imagery is Pexels stock**, pricing/policies are provisional Shot&Prints-derived reference values. Production blocked until client-confirmed.
 - Marquee WCAG 2.2.2: no visible pause control (client choice); pause is via hover/keyboard focus + reduced-motion. Flagged in DEC-015.
 - `docs/*.md` still contain em-dashes (documentation only; not cleaned).
-- **All work committed.** HEAD `964066f` on `develop`, tree clean, in sync with `origin/develop`.
+- **Push pending.** `f92361d` is 1 commit ahead of `origin/develop`.
+- **Live-browser QA outstanding for everything in §11** (module CRUD, Swal dialogs incl. centered positioning, savebar show/hide, Pages dropdown, topbar titles, event-type dropdown echo, SEO save flow, OG upload). No browser tooling or loopback HTTP in this environment; static + runtime proofs only.
+- **Known behavior notes:** empty Event Types module degrades the contact dropdown to "Select…" only; uploaded OG blobs resolve at build only via remote `src` until the Phase 3 backend; `home.eventTypes` and the `EVENT_TYPES` const were intentionally deleted (dead data / hardcoded list); homepage chips still render the plural mock list.
 
 ---
-
 ## 10. CMS frontend session (2026-09-22)
 
 - Built the frontend-only CMS under `/admin/` (DEC-017): dashboard, Home, Services, Packages, Gallery, About, FAQ, Contact, Site Settings editors.
@@ -121,7 +127,50 @@ Note: DEC-014/015 record the client authorising **placeholder content and loopin
 
 ---
 
-## 11. How to continue
+## 11. Admin CMS feature session (2026-09-24, this session)
+
+All work below is committed in `f92361d` ("enhance: ux for admin panel"). Plan mode was used for the module-UI and SEO plans; everything else was built directly. New decisions DEC-019 through DEC-023.
+
+1. **Modules list/detail plan + user answers.** Planned the Services/Packages/Gallery/FAQs list-and-detail pattern; user confirmed: in-component state (no new routes), drop move/duplicate/reset, literal Add labels.
+2. **Modules list/detail build (DEC-019 core).** New shared `src/components/admin/ModuleCrud.tsx` (`useModuleList`, `HighlightPill`, `DetailRow`, `ModuleImage`/`ModuleThumb`, `toFieldErrors`); all four module editors rewritten to list → detail → edit/delete and Add → create → list with per-item Zod `.element` validation, whole-section `saveSection` persistence, confirmed deletes (last-item guard on Services/Packages); `useModuleEditor.ts` bulk hook deleted; `admin.css` gained `ad-pill`/`ad-thumb`/`ad-detail-media`.
+3. **Seed/schema save-blockers found by executing real schemas vs real seed (DEC-019).** Services seed built `image.src` from whole image objects (`??`/`?.` precedence bug hidden by an `as` cast) — this was also rendering `src="[object Object]"` on live public pages; fixed to `?.src` per branch and removed the cast. Packages schema required non-empty `customBadge` for every item while seeds store `""` for non-custom; relaxed to capped string with the `superRefine` custom-only guard preserved. Verified: all 23 seeded items validate; guard still blocks blank custom.
+4. **Required service badges (DEC-020).** `ServiceItem.badge?: string` → required `badgeType` (basic/most-popular/best-value/custom, no bare option) + `customBadge`, with `serviceBadgeText()`; seeds map legacy labels to custom and the badgeless 360 booth to Basic (user answers: 360=Basic, reuse packages featured treatment, migrate saved data on load). Repository migrates legacy saves on load (text→custom, empty→Basic). Admin form uses a dropdown + conditional custom input (new blanks default Basic). Public `Service` gains `featured`; homepage passes it into the existing `Card` featured treatment; services page toggles `service--featured` on the section; `CmsEcho` resolves service badge/featured and updates pills client-side.
+5. **Dedicated SEO module (DEC-021).** New top-level SEO sidebar group + `/admin/seo` + `SeoEditor.tsx` (9 pages: 7 CMS + Privacy/Terms via new `seo-privacy`/`seo-terms` sections; SERP preview; non-blocking counts 50-60/150-160; upload-backed OG image; Twitter mirrors OG; OG URL/type derived). `PageMeta` extended with planning-only `keywords` (never rendered), `canonicalUrl`, `ogTitle`/`ogDescription`, `noindex`/`nofollow` — all defaulted, zero migration. `SeoGroup` deleted from all 7 Website CMS forms. `BaseLayout` gains `canonicalUrl`, `nofollow`, `ogTitle`, `ogDescription`, `ogImageAlt`; `getPageSeo()` helper; all 9 pages wired with hardcoded fallbacks. User answers: include privacy/terms, Twitter mirrors OG, keep hero fallback. Proof: all 10 pages' title/meta/link tags byte-identical pre/post (caught and fixed one real deviation: explicit OG alt overriding hero alt on privacy/terms).
+6. **SweetAlert2 standard alerts (DEC-022).** Installed `sweetalert2@11.26.25` (only new dep). Central `src/components/admin/alerts.ts` (lazy import = SSR-safe, code-split chunk; `ad-button` classes + one destructive variant; focus starts on Cancel). All 16 `window.confirm` sites converted (deletes, sub-item removes, new image-remove confirm, discard/reset); operational results → toasts/error modals, validation summaries stay inline, no pre-save confirms, `beforeunload` kept. Follow-up: all dialogs forced to true centered modals (`MODAL_BASE`: `position:center` + backdrop), success toast → auto-dismissing centered modal, `ad-swal-container` z-index 2000 (only higher z in repo is the public grain overlay, not loaded in admin).
+7. **Admin top bar (title-only) + distinct content headings.** `AdminShell` topbar renders `<h1>` only; content opens with `ad-page-head` (h2 + lede) when a lede exists; new `heading` prop (defaults to title) so pairs differ: topbar short label vs content descriptive (`Homepage`/`Edit Homepage`, `Services`/`Services module`, `Dashboard`/`Content overview`, `Inquiries`/`Enquiries`, `Settings`/`Site settings`). Login standalone, untouched.
+8. **Event Types module (DEC-023).** New `mod-event-types` collection `{id, label}` (array order = dropdown order) with list/detail/add/edit + Up/Down reorder persisted immediately; seeded with the 8 documented dropdown values verbatim. Deleted the hardcoded `EVENT_TYPES` const and the never-rendered `home.eventTypes` field (type/schema/seed/HomeEditor panel/dashboard count; chips heading group kept). `getEventTypes()` feeds the contact island as SSR prop + live repository echo in the editing browser; submission validation unchanged. Homepage chips keep their plural mock list untouched.
+9. **SaveBar visibility.** Renders only when `dirty || saving` (existing RHF state, no new system); plus mobile `min-width: 0` grid hardening. Proven: zero `ad-savebar` markup in all 13 admin pages' SSR HTML.
+10. **Sidebar Pages dropdown.** "Website CMS" caption replaced by a collapsible **Pages** group (chevron, `aria-expanded`, server-rendered open state when a child route is active; inline script toggle following the drawer pattern).
+
+### Files added this session
+
+- `src/components/admin/ModuleCrud.tsx` (shared list/detail primitives + `useModuleList`)
+- `src/components/admin/alerts.ts` (central SweetAlert2 system)
+- `src/components/admin/editors/SeoEditor.tsx`, `src/components/admin/editors/EventTypesModuleEditor.tsx`
+- `src/pages/admin/seo.astro`, `src/pages/admin/modules/event-types.astro`
+
+### Files removed this session
+
+- `src/components/admin/useModuleEditor.ts` (bulk-edit hook, superseded)
+- `SeoGroup` in `src/components/admin/groups.tsx` (SEO lives in its own module now)
+
+### Key files modified this session
+
+- Admin: `AdminShell.astro` (title-only topbar, content `ad-page-head`, `heading` prop, Pages dropdown), `SaveBar.tsx` (dirty gate), `InquiriesView.tsx`, `ModuleCrud.tsx`, `fields.tsx` (image-remove confirm), `useSectionEditor.ts` (Swal results), `sections.ts` (SEO + Event Types entries), 4 module editors, `SeoEditor`, 7 page editors (SeoGroup out), `HomeEditor.tsx` (dead event-types list out), `DashboardView.tsx` (module count), `admin.css`.
+- Data: `cms/types.ts` (service badges, `SeoPageKey`, `PAGE_META_DEFAULTS`, `EventTypeItem`), `cms/schemas.ts` (service badges, PageMeta extension, event-types schema, home `eventTypes` out), `cms/seed.ts` (badge mapping, image-src fix, SEO legal sections, event-type seeds), `cms/repository.ts` (new section keys, service migration, `load()` additions), `content/cmsSource.ts` (`getPageSeo`, `getEventTypes`), `content/types.ts` (`Service.featured`), `validation/inquiry.ts` (`EVENT_TYPES` out).
+- Public: `BaseLayout.astro` (SEO props, derived robots/OG), 9 pages wired for SEO, `index.astro` (service `featured`), `services.astro` (`service--featured`), `contact.astro` + `InquiryForm.tsx` (dropdown from module + echo), `CmsEcho.tsx` (service badges).
+- Meta: `package.json` + lock (`sweetalert2`), `AdminLayout.astro` (swal CSS), `docs/DECISIONS.md` (DEC-019..023).
+
+### Validation this session
+
+- `npm run check` → 0/0/0, `npm run format` → clean, `npm run build` → 26→27 pages, every step.
+- Runtime Node proofs (temp-dir copies, never in repo): seed-vs-schema for all modules, custom-badge guard behavior, service badge mapping + featured derivation, legacy service migration, all-9 `getPageSeo` validity + old-shape default fill + canonical vetting, event-types seed/order/validation.
+- `dist` proofs: Add-label bundles, no `useModuleEditor` remnants, no `[object Object]`, head-identity across 10 pages, contact dropdown options match module order, sidebar entries, featured-card states, savebar absence, toggle markup/CSS/handler.
+- **Not verified:** live browser interaction for any of the above (no browser tooling or loopback HTTP in this environment). Code review + static/runtime proofs only. Recommend a manual pass: module CRUD, dialogs, savebar show/hide, Pages dropdown, topbar titles, event-type dropdown echo, SEO save flow, at 375px + desktop.
+
+---
+
+## 12. How to continue
 
 1. Read `AGENTS.md`, `CONTEXT.md`, and relevant `docs/` before changing anything.
 2. Inspect existing implementation before edits; follow the conventions in section 6.

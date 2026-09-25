@@ -1,11 +1,11 @@
 // Public content adapter: builds the public SiteContent contract from the
 // CMS modules (DEC-018). Module collections are the single source of truth:
-// the build renders module data, and the CmsEcho island applies any saved
-// admin edits (highlights, badges, uploaded images) client-side.
+// prerendered pages embed live module data at build time (highlighted items
+// only, per the public RLS policies) via lib/supabase/public.ts.
 
 import { cmsSeed } from "../cms/seed";
 import { BADGE_LABELS, serviceBadgeText } from "../cms/types";
-import type { CmsPageKey, PageMeta, SeoPageKey } from "../cms/types";
+import type { CmsModules, CmsPageKey, PageMeta, SeoPageKey } from "../cms/types";
 import type { Faq, GalleryItem, Package, SampleImage, Service, SiteContent } from "./types";
 import { mockContent } from "./mock";
 
@@ -18,8 +18,8 @@ export function getEventTypes(): string[] {
   return cmsSeed.modules["event-types"].map((item) => item.label);
 }
 
-function serviceImage(id: string): SampleImage | undefined {
-  const item = cmsSeed.modules.services.find((service) => service.id === id);
+function serviceImage(modules: CmsModules, id: string): SampleImage | undefined {
+  const item = modules.services.find((service) => service.id === id);
   if (!item) return undefined;
   return { src: item.image.src, alt: item.image.alt || item.name };
 }
@@ -34,8 +34,8 @@ export function getPageSeo(key: SeoPageKey): PageMeta {
   return cmsSeed.pages[key as CmsPageKey].seo;
 }
 
-export function buildSiteContent(): SiteContent {
-  const services: Service[] = cmsSeed.modules.services.map((item) => ({
+export function buildSiteContent(modules: CmsModules = cmsSeed.modules): SiteContent {
+  const services: Service[] = modules.services.map((item) => ({
     id: item.id,
     name: item.name,
     summary: item.summary,
@@ -47,7 +47,7 @@ export function buildSiteContent(): SiteContent {
     highlight: item.highlight,
   }));
 
-  const packages: Package[] = cmsSeed.modules.packages.map((item) => {
+  const packages: Package[] = modules.packages.map((item) => {
     const badge =
       item.badgeType === "custom"
         ? item.customBadge || undefined
@@ -67,7 +67,7 @@ export function buildSiteContent(): SiteContent {
     };
   });
 
-  const gallery: GalleryItem[] = cmsSeed.modules.gallery.map((item) => ({
+  const gallery: GalleryItem[] = modules.gallery.map((item) => ({
     id: item.id,
     src: item.image.src,
     alt: item.image.alt,
@@ -75,7 +75,7 @@ export function buildSiteContent(): SiteContent {
     highlight: item.highlight,
   }));
 
-  const faqs: Faq[] = cmsSeed.modules.faqs.map((item) => ({
+  const faqs: Faq[] = modules.faqs.map((item) => ({
     id: item.id,
     question: item.question,
     answer: item.answer,
@@ -83,8 +83,8 @@ export function buildSiteContent(): SiteContent {
   }));
 
   const serviceImages: Record<string, SampleImage> = {};
-  for (const item of cmsSeed.modules.services) {
-    const image = serviceImage(item.id);
+  for (const item of modules.services) {
+    const image = serviceImage(modules, item.id);
     if (image) serviceImages[item.id] = image;
   }
 

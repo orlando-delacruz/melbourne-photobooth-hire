@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Twenty-three decision records exist (DEC-001 through DEC-023). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Twenty-six decision records exist (DEC-001 through DEC-026). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -278,6 +278,9 @@ Twenty-three decision records exist (DEC-001 through DEC-023). Existing selectio
 | DEC-021 | Dedicated SEO module with per-page metadata | Accepted   | 2026-09-24 |
 | DEC-022 | SweetAlert2 as the standard admin alert system | Accepted   | 2026-09-24 |
 | DEC-023 | Event Types module as the contact-form dropdown source | Accepted   | 2026-09-24 |
+| DEC-024 | Supabase backend foundation on free-tier limits + hybrid output | Accepted   | 2026-09-24 |
+| DEC-025 | Middleware admin guard with server-rendered admin pages | Accepted   | 2026-09-24 |
+| DEC-026 | Inquiry endpoint: store-first receipt, gated integrations | Accepted   | 2026-09-24 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -688,6 +691,65 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-INQ-008..010), `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, DEC-018/DEC-019/DEC-022.
 - **Supersedes / Superseded by:** —.
 - **Open questions or follow-up:** Supabase adapter (Phase 3); client confirmation of the dropdown values; real-browser pass of the module CRUD and dropdown echo.
+
+### DEC-024 — Supabase backend foundation on free-tier limits + hybrid output
+
+- **ID:** DEC-024
+- **Title:** Minimal Supabase + Vercel hybrid foundation sized for free plans
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The admin CMS is per-browser only (localStorage `mph-cms-v2`, IndexedDB blobs, mock inquiries) and the Astro build is fully static, so there is no production persistence, auth, or server endpoint. The operator runs Vercel Hobby and Supabase free, which cap function invocations, database size (500 MB), storage (1 GB) and idle projects. The requirement is a real backend without outgrowing those limits or rewriting working pages.
+- **Decision:**
+  1. **Dependencies.** `@supabase/supabase-js` + `@supabase/ssr` (session handling) and `@astrojs/vercel` v11 (matches Astro 7) are the only additions. No Express/second backend, no realtime, no codegen tooling.
+  2. **Hybrid output.** The Vercel adapter with Astro 7 static-first behavior; every existing page stays prerendered/static and only future `src/pages/api/*` routes run as serverless functions, keeping Hobby invocations at zero until the inquiry endpoint lands.
+  3. **Credential split.** `src/lib/supabase/client.ts` (anon key, browser-safe singleton) vs `src/lib/supabase/server.ts` (service-role, server-only). Secrets live in `.env`/Vercel settings, documented in `.env.example`; the service-role key never enters the browser bundle.
+  4. **Lean schema.** `supabase/schema.sql` mirrors `cms/types.ts` exactly (services, packages, gallery_items, faqs, event_types, page_contents JSONB, page_seo, inquiries minimal, admin_users allow-list) with one `cms-media` public bucket; pgcrypto only, highlight/order/recency indexes, 2 MB upload cap retained.
+  5. **Security.** `supabase/rls.sql` enables RLS everywhere: anon reads highlighted items/page copy/SEO/event types and inserts inquiries only; authenticated admins via `is_admin()` do all CRUD. Storage policies mirror this. RLS is never disabled.
+  6. **Seed.** `supabase/seed.sql` upserts the current provisional seed verbatim (slugs as idempotency keys) so the first backed render matches the live site; page copy/SEO shells stay empty until Phase 7/11 so hardcoded fallbacks keep rendering.
+- **Alternatives considered:** Full server output — rejected; it would run every page as a function on Hobby for no benefit. Separate Node backend — rejected per architecture; Astro endpoints already cover the one privileged operation (inquiry insert + delivery).
+- **Rationale:** Smallest production backend that preserves the ModuleCrud UX, CmsEcho crawlability, SweetAlert2 feedback and validation caps while fitting free-tier quotas.
+- **Consequences:** Requires a Supabase project, SQL runs (schema, rls, storage, seed) and one `admin_users` row before auth/CRUD phases proceed. Public pages and admin UI are untouched until wired phase by phase.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md`, `docs/API.md`, `docs/SECURITY.md`, `docs/TECH-STACK.md`, DEC-017/DEC-018/DEC-023.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Supabase project provisioning; first admin allow-list insert; client confirmation of provisional seed copy; real-browser pass after wiring.
+
+### DEC-025 — Middleware admin guard with server-rendered admin pages
+
+- **ID:** DEC-025
+- **Title:** Supabase Auth cookie sessions with middleware route guard and sign-out
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** `/admin/login` validated input but created no session, and every admin page was static HTML reachable without sign-in. Static pages bypass middleware on Vercel, and browser localStorage sessions are invisible to the server, so a guard needs both cookie sessions and server-rendered admin pages.
+- **Decision:**
+  1. **Cookie sessions.** The browser client uses `@supabase/ssr` `createBrowserClient` (cookies, not localStorage) so `src/middleware.ts` can read the session server-side. No custom password storage; Supabase Auth only.
+  2. **Middleware guard.** All `/admin/*` except `/admin/login` require a session whose user id is in `public.admin_users`; otherwise redirect to `/admin/login` (non-allow-listed sessions are signed out). With env vars absent, the guard passes through to preserve pre-provisioning local behavior.
+  3. **Server-rendered admin.** The 16 protected admin pages set `prerender = false` so the guard executes on Vercel; the 9 public pages and `/admin/login` stay prerendered/static. Admin traffic is one operator, negligible on Hobby.
+  4. **Login/logout UX.** `LoginForm` signs in via `signInWithPassword` with loading state, plain-language error mapping and redirect-on-existing-session; the unconnected fallback remains when env is absent. A sidebar `SignOutButton` clears cookies and returns to login. Validation summaries stay inline per DEC-022.
+- **Alternatives considered:** Client-side guard island only — rejected; static HTML would still serve and route hiding is not authorization. Full-server output — rejected; public pages gain nothing from functions on Hobby.
+- **Rationale:** Smallest server-enforced auth inside the existing shell, login UI and RLS model; RLS remains the data backstop even if a page were ever cached.
+- **Consequences:** Admin pages cost one function invocation per view (one operator). CMS data wiring (Phases 5+) reuses the same cookie session.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/SECURITY.md`, `docs/TECH-STACK.md`, DEC-017/DEC-022/DEC-024.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Real-browser login/logout/session-expiry pass; Vercel env vars for preview/production.
+
+### DEC-026 — Inquiry endpoint: store-first receipt with gated integrations
+
+- **ID:** DEC-026
+- **Title:** POST /api/inquiries stores durably, verifies when configured, forwards best-effort
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The contact form needs a working submission path before Turnstile and EmailJS credentials exist. The alternatives are a dead form (503 until keys land) or a dishonest success. Meanwhile the inquiries table with an admin-visible list makes a stored record a genuine receipt.
+- **Decision:**
+  1. **Store-first.** The endpoint server-validates with the shared Zod schema, inserts via the service-role client (anon can never read the table), and answers success on durable storage. The admin list at `/admin/inquiries` shows every receipt with the existing Gmail-compose response action.
+  2. **Turnstile verifies when configured.** With `TURNSTILE_SECRET_KEY` set, missing/invalid tokens are rejected (400). Without it, submissions are accepted and this gap is explicit here, not silent: anonymous insert is minimal-field, rate abuse is bounded by table size/free-tier monitoring, and keys should be added promptly.
+  3. **EmailJS forwards best-effort.** With `EMAILJS_*` set, the endpoint forwards after storing; delivery failure is server-logged only and never fails the receipt, because nothing is lost (the admin list holds it).
+  4. **Fail-safe otherwise.** Unreadable payloads and validation failures answer 400 with plain messages; a missing service-role key or DB failure answers 503 with a contact-directly fallback. No raw errors reach visitors; input is preserved on failure; the submit button disables while sending.
+- **Alternatives considered:** Dead-until-configured 503 — rejected; it withholds working functionality (storage + admin visibility) for want of the email nicety. Success-only-on-email-delivery — rejected while keys are absent; adopted automatically once forwarding succeeds consistently.
+- **Rationale:** Smallest honest working system: real receipt today, stricter spam posture and automatic Gmail delivery the moment keys land, no code changes needed then.
+- **Consequences:** Requires `SUPABASE_SERVICE_ROLE_KEY` at runtime (server only). Until Turnstile/EmailJS keys exist, spam filtering and Gmail auto-delivery are pending — tracked explicitly in the final report, not silently dropped.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/SECURITY.md`, DEC-024.
+- **Supersedes / Superseded by:** —.
+- **Open questions or follow-up:** Turnstile + EmailJS key provisioning; live submit/delete round-trip in a browser; Vercel runtime env vars.
 
 ## 22. Related Documentation
 

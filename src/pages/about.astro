@@ -5,11 +5,12 @@ import PageHeader from "../components/PageHeader.astro";
 import SectionHeading from "../components/SectionHeading.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
-import { getContent } from "../lib/content/repository";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
 
-const { about, site, serviceImages, showcaseImages, ctaImage } = getContent();
-const seo = getPageSeo("about");
+const { serviceImages, showcaseImages, ctaImage } = await loadPublicContent();
+const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
+const aboutPage = cmsPages.about;
+const seo = await loadPublicSeo("about");
 
 const storyImage = showcaseImages?.[0] ?? serviceImages?.["premium-photobooth"];
 
@@ -57,9 +58,9 @@ function valueIconSvg(id: string, size = 22): string {
   ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
-    title={about.headline}
-    eyebrow={about.eyebrow}
-    lede={about.lede}
+    title={aboutPage.header.title}
+    eyebrow={aboutPage.header.eyebrow}
+    lede={aboutPage.header.lede}
     imageSrc={serviceImages?.["roaming-photobooth"]?.src}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
@@ -67,10 +68,10 @@ function valueIconSvg(id: string, size = 22): string {
   <section class="section story" aria-labelledby="story-heading">
     <Reveal client:visible className="story-copy-col" variant="rise">
       <div class="story-copy">
-        <p class="eyebrow eyebrow--rule">The business</p>
-        <h2 id="story-heading">Photobooths for people who care how the night feels.</h2>
+        <p class="eyebrow eyebrow--rule">{aboutPage.storyEyebrow}</p>
+        <h2 id="story-heading">{aboutPage.storyHeading}</h2>
         <div class="prose">
-          {about.story.map((paragraph) => (
+          {aboutPage.story.map((paragraph) => (
             <p>{paragraph}</p>
           ))}
         </div>
@@ -88,7 +89,7 @@ function valueIconSvg(id: string, size = 22): string {
   <section class="stats bleed on-dark" aria-label="At a glance">
     <div class="container">
       <dl class="stats-grid">
-        {about.stats.map((stat, index) => (
+        {aboutPage.stats.map((stat, index) => (
           <div class="stat">
             <dt class="stat-value">
               <span
@@ -107,14 +108,14 @@ function valueIconSvg(id: string, size = 22): string {
 
   <section class="section" aria-labelledby="values-heading">
     <SectionHeading
-      eyebrow="How we work"
+      eyebrow={aboutPage.valuesHeading.eyebrow}
       id="values-heading"
-      title="Three things we never treat as optional"
-      lede="The standards behind every booking, no matter the size of the event."
+      title={aboutPage.valuesHeading.title}
+      lede={aboutPage.valuesHeading.lede}
       size="lg"
     />
     <div class="values">
-      {about.values.map((value, index) => (
+      {aboutPage.values.map((value, index) => (
         <Reveal client:visible delay={index * 0.06} variant="scale">
           <article class="value">
             <div class="value-head">
@@ -134,15 +135,17 @@ function valueIconSvg(id: string, size = 22): string {
   <section class="section" aria-labelledby="about-next">
     <div class="about-next">
       <div>
-        <h2 id="about-next">See the booths, then see the packages.</h2>
-        <p>{site.serviceAreaStatement} Ready to talk dates?</p>
+        <h2 id="about-next">{aboutPage.next.heading}</h2>
+        <p>
+          {siteSettings.serviceAreaStatement} {aboutPage.next.suffix}
+        </p>
       </div>
       <p class="about-next-ctas">
         <Button href="/services" variant="secondary" size="lg" arrow>
-          View services
+          {aboutPage.next.servicesLabel}
         </Button>
         <Button href="/contact" variant="primary" size="lg" arrow>
-          Enquire now
+          {aboutPage.next.enquireLabel}
         </Button>
       </p>
     </div>
@@ -150,15 +153,15 @@ function valueIconSvg(id: string, size = 22): string {
 
   <CtaBand
     id="about-enquire"
-    eyebrow="Let's make something memorable"
-    headline="Bring the booth to your event."
-    lede="Tell us the date and venue and we'll handle the styling, the setup and the prints."
+    eyebrow={aboutPage.ctaBand.eyebrow}
+    headline={aboutPage.ctaBand.headline}
+    lede={aboutPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel="Enquire now"
+    primaryLabel={aboutPage.ctaBand.primaryLabel}
     secondaryHref="/gallery"
-    secondaryLabel="View gallery"
-    imageSrc={ctaImage?.src}
-    imageAlt={ctaImage?.alt}
+    secondaryLabel={aboutPage.ctaBand.secondaryLabel}
+    imageSrc={aboutPage.ctaBand.image.src || ctaImage?.src}
+    imageAlt={aboutPage.ctaBand.image.alt || ctaImage?.alt}
   />
 </BaseLayout>
 

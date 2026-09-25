@@ -5,13 +5,13 @@ import PageHeader from "../components/PageHeader.astro";
 import CtaBand from "../components/CtaBand.astro";
 import GalleryTrigger from "../components/GalleryTrigger.astro";
 import Reveal from "../components/islands/Reveal";
-import CmsEcho from "../components/islands/CmsEcho";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
-import { getContent } from "../lib/content/repository";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
 
-const { gallery, ctaImage, serviceImages } = getContent();
-const seo = getPageSeo("gallery");
+const { gallery, ctaImage, serviceImages } = await loadPublicContent();
+const { pages: cmsPages } = await loadPublicPages();
+const galleryPage = cmsPages.gallery;
+const seo = await loadPublicSeo("gallery");
 const headerImage = serviceImages?.["360-video-booth"]?.src;
 ---
 
@@ -30,22 +30,19 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
   ogDescription={seo.ogDescription || undefined}
 >
   <PageHeader
-    title="Gallery"
-    eyebrow="Real event moments"
-    lede="A look at the booths, backdrops and moments we stage across Melbourne."
+    title={galleryPage.header.title}
+    eyebrow={galleryPage.header.eyebrow}
+    lede={galleryPage.header.lede}
     imageSrc={headerImage}
     imageAlt={serviceImages?.["360-video-booth"]?.alt}
   />
 
   {gallery.length === 0 ? (
     <div class="empty-state section">
-      <h2>No images are available yet.</h2>
-      <p>
-        Once approved event photos are ready, this gallery will showcase real moments from the
-        booth.
-      </p>
+      <h2>{galleryPage.emptyState.title}</h2>
+      <p>{galleryPage.emptyState.body}</p>
       <Button href="/contact" variant="primary" size="lg" arrow>
-        Enquire now
+        {galleryPage.emptyState.actionLabel}
       </Button>
     </div>
   ) : (
@@ -69,19 +66,18 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
 
   <CtaBand
     id="gallery-enquire"
-    eyebrow="Your night next"
-    headline="Want your event to look like this?"
-    lede="Tell us the date, venue and the mood you're going for and we'll take it from there."
+    eyebrow={galleryPage.ctaBand.eyebrow}
+    headline={galleryPage.ctaBand.headline}
+    lede={galleryPage.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel="Enquire now"
+    primaryLabel={galleryPage.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel="View packages"
-    imageSrc={ctaImage?.src}
-    imageAlt={ctaImage?.alt}
+    secondaryLabel={galleryPage.ctaBand.secondaryLabel}
+    imageSrc={galleryPage.ctaBand.image.src || ctaImage?.src}
+    imageAlt={galleryPage.ctaBand.image.alt || ctaImage?.alt}
   />
 
   <GalleryLightbox client:idle />
-  <CmsEcho page="gallery" client:idle />
 </BaseLayout>
 
 <style>

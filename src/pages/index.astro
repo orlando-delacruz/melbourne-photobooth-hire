@@ -9,25 +9,27 @@ import GalleryTrigger from "../components/GalleryTrigger.astro";
 import ReviewsMarquee from "../components/ReviewsMarquee.astro";
 import Reveal from "../components/islands/Reveal";
 import GalleryLightbox from "../components/islands/GalleryLightbox";
-import CmsEcho from "../components/islands/CmsEcho";
 import SectionHeading from "../components/SectionHeading.astro";
-import { getContent } from "../lib/content/repository";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
 
 const {
   services,
   packages,
   eventTypes,
-  processSteps,
   faqs,
-  testimonials,
   heroBackgroundImage,
-  heroStats,
   serviceImages,
   gallery,
   ctaImage,
-} = getContent();
-const seo = getPageSeo("home");
+} = await loadPublicContent();
+const { pages: cmsPages } = await loadPublicPages();
+const home = cmsPages.home;
+// Module records plus page copy are the truth; mock carryovers fill only
+// shapes the page blob does not own (homepage occasion chips).
+const processSteps = home.steps;
+const testimonials = home.testimonials;
+const heroStats = home.hero.stats;
+const seo = await loadPublicSeo("home");
 
 // Homepage sections render highlighted module items only.
 const highlightedServices = services.filter((service) => service.highlight !== false);
@@ -106,14 +108,14 @@ function eventIconSvg(label: string, size = 16): string {
   preloadImage={heroBackgroundImage?.src}
 >
   <Hero
-    headline="Turn the room into a studio."
-    supporting="Open-air booths, roaming setups and 360 video for weddings, birthdays and corporate events, with prints guests keep and QR downloads in seconds."
+    headline={home.hero.headline}
+    supporting={home.hero.supporting}
     primaryHref="/contact"
-    primaryLabel="Enquire now"
+    primaryLabel={home.hero.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel="View packages"
-    backgroundSrc={heroBackgroundImage?.src}
-    backgroundAlt={heroBackgroundImage?.alt}
+    secondaryLabel={home.hero.secondaryLabel}
+    backgroundSrc={home.hero.background.src || heroBackgroundImage?.src}
+    backgroundAlt={home.hero.background.alt || heroBackgroundImage?.alt}
     stats={heroStats}
     scrollHref="#services-heading"
     scrollLabel="Scroll to our booths"
@@ -123,42 +125,30 @@ function eventIconSvg(label: string, size = 16): string {
     <div class="intro-grid">
       <Reveal client:visible>
         <div>
-          <p class="eyebrow eyebrow--rule">The experience</p>
-          <h2 id="intro-heading">Styled for the room it's in.</h2>
+          <p class="eyebrow eyebrow--rule">{home.intro.eyebrow}</p>
+          <h2 id="intro-heading">{home.intro.heading}</h2>
         </div>
       </Reveal>
       <Reveal client:visible delay={0.08}>
         <div class="intro-body">
-          <p>
-            A photobooth is more than a camera in the corner. We design the lighting, the backdrop
-            and the print around your event, then run it with the kind of hosting that gets even the
-            quietest guest in front of the lens.
-          </p>
+          <p>{home.intro.body}</p>
           <dl class="promises">
-            <div class="promise">
-              <dt>
-                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("clock")} />
-                Arrive early, set up quietly
-              </dt>
-              <dd>Ready before the first guest walks in.</dd>
-            </div>
-            <div class="promise">
-              <dt>
-                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("qrcode")} />
-                Prints and QR in seconds
-              </dt>
-              <dd>HD prints in hand, downloads on their phone.</dd>
-            </div>
-            <div class="promise">
-              <dt>
-                <span class="promise-icon" aria-hidden="true" set:html={promiseIconSvg("users")} />
-                One local Melbourne team
-              </dt>
-              <dd>From enquiry to pack-down, same people.</dd>
-            </div>
+            {home.intro.promises.map((promise, index) => (
+              <div class="promise">
+                <dt>
+                  <span
+                    class="promise-icon"
+                    aria-hidden="true"
+                    set:html={promiseIconSvg(["clock", "qrcode", "users"][index] ?? "clock")}
+                  />
+                  {promise.title}
+                </dt>
+                <dd>{promise.detail}</dd>
+              </div>
+            ))}
           </dl>
           <Button href="/about" variant="tertiary" tone="dark" arrow>
-            More about us
+            {home.intro.aboutLabel}
           </Button>
         </div>
       </Reveal>
@@ -168,10 +158,10 @@ function eventIconSvg(label: string, size = 16): string {
   <section class="section on-dark" aria-labelledby="services-heading">
     <SectionHeading
       tone="dark"
-      title="Three ways to bring the room into the frame"
-      eyebrow="The booths"
+      title={home.servicesHeading.title}
+      eyebrow={home.servicesHeading.eyebrow}
       id="services-heading"
-      lede="Every hire includes HD prints, QR downloads and full setup and pack-down by our team."
+      lede={home.servicesHeading.lede}
       size="lg"
     />
     <div class="booths-grid">
@@ -189,7 +179,7 @@ function eventIconSvg(label: string, size = 16): string {
             imageSrc={serviceImages?.[service.id]?.src}
             imageAlt={serviceImages?.[service.id]?.alt}
             href="/services"
-            ctaLabel="Explore the booths"
+            ctaLabel={home.servicesCardLabel}
             cmsId={service.id}
           />
         </Reveal>
@@ -203,14 +193,14 @@ function eventIconSvg(label: string, size = 16): string {
         <div class="showcase-head">
           <SectionHeading
             tone="dark"
-            title="The kind of night we stage"
-            eyebrow="Styled moments"
+            title={home.showcaseHeading.title}
+            eyebrow={home.showcaseHeading.eyebrow}
             id="showcase-heading"
-            lede="Backdrops, lighting and props chosen to match the room, not a default kit."
+            lede={home.showcaseHeading.lede}
           />
           <p class="showcase-cta">
             <Button href="/gallery" variant="secondary" tone="dark" arrow>
-              View gallery
+              {home.showcaseLabel}
             </Button>
           </p>
         </div>
@@ -235,10 +225,10 @@ function eventIconSvg(label: string, size = 16): string {
   <section class="section on-dark" aria-labelledby="packages-heading">
     <SectionHeading
       tone="dark"
-      title="All-inclusive hire, priced up front"
-      eyebrow="Packages"
+      title={home.packagesHeading.title}
+      eyebrow={home.packagesHeading.eyebrow}
       id="packages-heading"
-      lede="No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry."
+      lede={home.packagesHeading.lede}
       size="lg"
     />
     <div class="card-grid">
@@ -262,7 +252,7 @@ function eventIconSvg(label: string, size = 16): string {
     </div>
     <p class="packages-note">
       <Button href="/packages" variant="secondary" tone="dark" arrow>
-        Compare all packages
+        {home.packagesCompareLabel}
       </Button>
     </p>
   </section>
@@ -270,10 +260,10 @@ function eventIconSvg(label: string, size = 16): string {
   <section class="section on-dark" aria-labelledby="process-heading">
     <SectionHeading
       tone="dark"
-      title="From first enquiry to the first flash"
-      eyebrow="How it works"
+      title={home.processHeading.title}
+      eyebrow={home.processHeading.eyebrow}
       id="process-heading"
-      lede="Three steps between you and a room full of prints."
+      lede={home.processHeading.lede}
       size="lg"
     />
     <ol class="steps">
@@ -300,10 +290,10 @@ function eventIconSvg(label: string, size = 16): string {
         <ReviewsMarquee
           testimonials={testimonials}
           tone="dark"
-          eyebrow="Reviews"
-          title="What hosts and guests say"
+          eyebrow={home.reviewsHeading.eyebrow}
+          title={home.reviewsHeading.title}
           id="reviews-heading"
-          lede="A few words from recent weddings, birthdays and corporate nights."
+          lede={home.reviewsHeading.lede}
         />
       </Reveal>
     </section>
@@ -312,10 +302,10 @@ function eventIconSvg(label: string, size = 16): string {
   <section class="section on-dark" aria-labelledby="faq-heading">
     <SectionHeading
       tone="dark"
-      title="Answers before you ask"
-      eyebrow="Good to know"
+      title={home.faqHeading.title}
+      eyebrow={home.faqHeading.eyebrow}
       id="faq-heading"
-      lede="Quick answers to the questions we hear most."
+      lede={home.faqHeading.lede}
       size="lg"
     />
     <Reveal client:visible>
@@ -323,7 +313,7 @@ function eventIconSvg(label: string, size = 16): string {
     </Reveal>
     <p class="faq-cta">
       <Button href="/faq" variant="secondary" tone="dark" arrow>
-        Read all FAQs
+        {home.faqCtaLabel}
       </Button>
     </p>
   </section>
@@ -331,10 +321,10 @@ function eventIconSvg(label: string, size = 16): string {
   <section class="section on-dark" aria-labelledby="event-types-heading">
     <SectionHeading
       tone="dark"
-      title="Every occasion, one booth"
-      eyebrow="Perfect for"
+      title={home.eventTypesHeading.title}
+      eyebrow={home.eventTypesHeading.eyebrow}
       id="event-types-heading"
-      lede="Weddings, birthdays, corporate nights and everything in between."
+      lede={home.eventTypesHeading.lede}
       size="lg"
     />
     <ul class="chip-list">
@@ -349,19 +339,18 @@ function eventIconSvg(label: string, size = 16): string {
 
   <CtaBand
     id="enquire-heading"
-    eyebrow="Ready when you are"
-    headline="Ready to book your night?"
-    lede="Tell us your date and venue, and we'll recommend the booth that fits your event, usually within one business day."
+    eyebrow={home.ctaBand.eyebrow}
+    headline={home.ctaBand.headline}
+    lede={home.ctaBand.lede}
     primaryHref="/contact"
-    primaryLabel="Enquire now"
+    primaryLabel={home.ctaBand.primaryLabel}
     secondaryHref="/packages"
-    secondaryLabel="View packages"
-    imageSrc={ctaImage?.src}
-    imageAlt={ctaImage?.alt}
+    secondaryLabel={home.ctaBand.secondaryLabel}
+    imageSrc={home.ctaBand.image.src || ctaImage?.src}
+    imageAlt={home.ctaBand.image.alt || ctaImage?.alt}
   />
 
   <GalleryLightbox client:idle />
-  <CmsEcho page="home" client:idle />
 </BaseLayout>
 
 <style>

@@ -7,8 +7,8 @@
 //   the homepage renders their highlighted subset.
 //
 // Seed values mirror the content currently rendered by the public pages.
-// The public site reads the same seam at build time and reflects saved admin
-// state client-side (see the CmsEcho island).
+// The public site reads live module data at build time (see
+// lib/supabase/public.ts) and falls back to this seed when unreachable.
 
 export type CmsPageKey = "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact";
 

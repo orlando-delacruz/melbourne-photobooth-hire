@@ -229,6 +229,15 @@
   line-height: var(--leading-snug);
 }
 
+.ad-signout {
+  margin: var(--space-sm) var(--space-xs) var(--space-2xs);
+}
+
+.ad-signout-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .ad-scrim {
   display: none;
 }

@@ -11,6 +11,7 @@ import {
   SEO_SECTION,
   SETTINGS_SECTION,
 } from "./sections";
+import SignOutButton from "./SignOutButton";
 
 interface Props {
   /** Active nav key: "dashboard" or a CMS section key. */
@@ -157,6 +158,9 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
         </li>
       </ul>
     </nav>
+    <div class="ad-signout">
+      <SignOutButton client:load />
+    </div>
     <p class="ad-sidebar-note">Changes go live after saving and publishing.</p>
   </aside>
 

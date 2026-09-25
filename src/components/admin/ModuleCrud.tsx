@@ -5,9 +5,8 @@
 // Astro routes are needed and the admin nav context is preserved.
 
 import { useCallback, useEffect, useState } from "react";
-import type { StoreSectionKey } from "../../lib/cms/types";
-import { cmsRepository } from "../../lib/cms/repository";
-import { getImageUrl } from "../../lib/cms/images";
+import { loadModuleItems, saveModuleItems } from "../../lib/supabase/modules";
+import { getImageUrl } from "../../lib/cms/storage";
 import type { CmsImage } from "../../lib/cms/types";
 import { confirmDelete, notifyError, notifySuccess } from "./alerts";
 
@@ -28,10 +27,19 @@ export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectio
 
   useEffect(() => {
     let live = true;
-    cmsRepository.loadSection(sectionKey).then((value: unknown) => {
-      if (!live) return;
-      setItems(Array.isArray(value) ? (value as T[]) : []);
-    });
+    loadModuleItems<T>(sectionKey)
+      .then((value) => {
+        if (live) setItems(value);
+      })
+      .catch(() => {
+        if (!live) return;
+        setItems([]);
+        setNotice({
+          tone: "error",
+          title: "Could not load items.",
+          body: "Check your connection and refresh the page.",
+        });
+      });
     return () => {
       live = false;
     };
@@ -41,8 +49,8 @@ export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectio
     async (next: T[]) => {
       setBusy(true);
       try {
-        await cmsRepository.saveSection(sectionKey as StoreSectionKey, next);
-        setItems(next);
+        const saved = await saveModuleItems<T>(sectionKey, items ?? [], next);
+        setItems(saved);
         return true;
       } catch {
         void notifyError("Could not save.", "Please try again.");
@@ -51,7 +59,7 @@ export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectio
         setBusy(false);
       }
     },
-    [sectionKey],
+    [items, sectionKey],
   );
 
   const removeById = useCallback(

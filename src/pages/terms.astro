@@ -1,9 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { getPageSeo } from "../lib/content/cmsSource";
+import { loadPublicSeo } from "../lib/supabase/public";
 
-const seo = getPageSeo("terms");
+const seo = await loadPublicSeo("terms");
 ---
 
 <BaseLayout

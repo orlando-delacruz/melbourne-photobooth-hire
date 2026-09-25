@@ -22,7 +22,13 @@ import {
 } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
 import type { CmsImage } from "../../lib/cms/types";
-import { deleteImage, getImageUrl, IMAGE_ACCEPT, putImage } from "../../lib/cms/images";
+import {
+  deleteImage,
+  getImageUrl,
+  getPublicImageUrl,
+  IMAGE_ACCEPT,
+  putImage,
+} from "../../lib/cms/storage";
 import { confirmDestructive } from "./alerts";
 
 /** Flatten RHF nested errors to "path: message" lines for the summary. */
@@ -208,7 +214,7 @@ export function ImageField({
       const id = await putImage(file, "img");
       const next: CmsImage = {
         key: id,
-        src: "",
+        src: getPublicImageUrl(id),
         alt: value.alt,
         caption: value.caption,
       };

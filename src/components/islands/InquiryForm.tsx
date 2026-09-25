@@ -4,19 +4,15 @@ import type { SubmitHandler } from "react-hook-form";
 import { AlertCircle, CheckCircle2, Send } from "lucide-react";
 import { PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
-import { cmsRepository } from "../../lib/cms/repository";
-import type { EventTypeItem } from "../../lib/cms/types";
 
 /**
- * Inquiry form island: Phase 2 client-side validation layer only.
- * Valid data currently resolves to an informational state; server-side
- * validation, Turnstile verification, and EmailJS delivery land in Phase 4.
- *
- * Styling lives in styles/inquiry-form.css (token-backed, server-rendered)
- * rather than styled-components, so the form is styled before hydration.
+ * Inquiry form island: client validation, then POST /api/inquiries which
+ * re-validates server-side, verifies Turnstile when configured and stores
+ * the record. Styling lives in styles/inquiry-form.css (token-backed,
+ * server-rendered) rather than styled-components.
  */
 
-type Phase = "editing" | "ready";
+type Phase = "editing" | "sending" | "received";
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
@@ -28,9 +24,21 @@ function FieldError({ id, message }: { id: string; message?: string }) {
   );
 }
 
-export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
+export default function InquiryForm({
+  eventTypes,
+  turnstileSiteKey,
+}: {
+  eventTypes: string[];
+  turnstileSiteKey?: string;
+}) {
   const [phase, setPhase] = useState<Phase>("editing");
-  const [options, setOptions] = useState<string[]>(eventTypes);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+  // Dropdown options come from the build-time Event Types module data
+  // (loadPublicEventTypes); the module is the single source of truth.
+  const options = eventTypes;
   const noticeRef = useRef<HTMLDivElement>(null);
   const {
     register,
@@ -43,31 +51,84 @@ export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
   });
 
   useEffect(() => {
-    if (phase === "ready") {
+    if (phase === "received") {
       noticeRef.current?.focus();
     }
   }, [phase]);
 
-  // Editing-browser echo: saved Event Types module state refreshes the
-  // dropdown live; otherwise the build-time options stand.
+  // Turnstile widget (no extra dependency): renders only when a site key is
+  // provided; the token travels with the submission for server verification.
   useEffect(() => {
-    let live = true;
-    cmsRepository
-      .loadSection("mod-event-types")
-      .then((value: unknown) => {
-        if (!live || !Array.isArray(value)) return;
-        setOptions((value as EventTypeItem[]).map((item) => item.label));
-      })
-      .catch(() => {
-        // Storage unreadable: keep the build-time options.
-      });
+    if (!turnstileSiteKey || !turnstileRef.current) return;
+    let cancelled = false;
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+      if (api && turnstileRef.current && !cancelled) {
+        window.clearInterval(timer);
+        try {
+          widgetId.current = api.render(turnstileRef.current, {
+            sitekey: turnstileSiteKey,
+            callback: (token: string) => {
+              if (!cancelled) setTurnstileToken(token);
+            },
+            "expired-callback": () => {
+              if (!cancelled) setTurnstileToken(null);
+            },
+          });
+        } catch {
+          // Widget unavailable: the submission goes without a token.
+        }
+      } else if (attempts >= 20 || cancelled) {
+        window.clearInterval(timer);
+      }
+    }, 500);
     return () => {
-      live = false;
+      cancelled = true;
+      window.clearInterval(timer);
     };
-  }, []);
+  }, [turnstileSiteKey]);
 
-  const onValid: SubmitHandler<InquiryInput> = () => {
-    setPhase("ready");
+  interface TurnstileApi {
+    render(
+      container: HTMLElement,
+      options: {
+        sitekey: string;
+        callback?: (token: string) => void;
+        "expired-callback"?: () => void;
+      },
+    ): string;
+    reset(widgetId?: string): void;
+  }
+
+  const onValid: SubmitHandler<InquiryInput> = async (values) => {
+    setSubmitError(null);
+    setPhase("sending");
+    try {
+      const response = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...values, turnstileToken: turnstileToken ?? undefined }),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        ok?: unknown;
+        message?: unknown;
+      } | null;
+      if (response.ok && payload?.ok === true) {
+        setPhase("received");
+        return;
+      }
+      const message =
+        payload && typeof payload.message === "string" && payload.message
+          ? payload.message
+          : "Your enquiry could not be sent. Please try again.";
+      setSubmitError(message);
+      setPhase("editing");
+    } catch {
+      setSubmitError("Your enquiry could not be sent. Check your connection and try again.");
+      setPhase("editing");
+    }
   };
 
   const onInvalid = (fieldErrors: Record<string, unknown>) => {
@@ -79,16 +140,15 @@ export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
 
   const errorCount = Object.keys(errors).length;
 
-  if (phase === "ready") {
+  if (phase === "received") {
     return (
       <div className="iq-notice" ref={noticeRef} tabIndex={-1} role="status">
         <h2 className="iq-notice__title">
           <CheckCircle2 size={22} aria-hidden="true" />
-          Enquiry checked
+          Enquiry received
         </h2>
         <p className="iq-notice__body">
-          Your details pass validation. Online submission is being connected. Please check back soon
-          to send your enquiry.
+          Thanks, your enquiry is with us. We typically reply within one business day.
         </p>
         <button type="button" className="iq-submit" onClick={() => setPhase("editing")}>
           Back to the form
@@ -96,6 +156,8 @@ export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
       </div>
     );
   }
+
+  const sending = phase === "sending";
 
   return (
     <form
@@ -111,6 +173,13 @@ export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
         </span>{" "}
         are required.
       </p>
+
+      {submitError ? (
+        <div className="iq-summary" role="alert">
+          <AlertCircle size={18} aria-hidden="true" />
+          <p>{submitError}</p>
+        </div>
+      ) : null}
 
       {isSubmitted && errorCount > 0 ? (
         <div className="iq-summary" role="alert">
@@ -292,10 +361,16 @@ export default function InquiryForm({ eventTypes }: { eventTypes: string[] }) {
         </div>
       </fieldset>
 
+      {turnstileSiteKey ? (
+        <div className="iq-field">
+          <div ref={turnstileRef} />
+        </div>
+      ) : null}
+
       <div className="iq-actions">
-        <button type="submit" className="iq-submit">
+        <button type="submit" className="iq-submit" disabled={sending}>
           <Send size={18} aria-hidden="true" />
-          Check enquiry
+          {sending ? "Sending…" : "Send enquiry"}
         </button>
       </div>
     </form>
