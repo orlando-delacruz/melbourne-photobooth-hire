@@ -1,9 +1,12 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import { loadPublicSeo } from "../lib/supabase/public";
+import { setPublicCache } from "../lib/http-cache";
 
 const seo = await loadPublicSeo("terms");
+setPublicCache(Astro.response.headers);
 ---
 
 <BaseLayout

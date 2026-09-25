@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Twenty-six decision records exist (DEC-001 through DEC-026). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Twenty-eight decision records exist (DEC-001 through DEC-028). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -281,6 +281,8 @@ Twenty-six decision records exist (DEC-001 through DEC-026). Existing selections
 | DEC-024 | Supabase backend foundation on free-tier limits + hybrid output | Accepted   | 2026-09-24 |
 | DEC-025 | Middleware admin guard with server-rendered admin pages | Accepted   | 2026-09-24 |
 | DEC-026 | Inquiry endpoint: store-first receipt, gated integrations | Accepted   | 2026-09-24 |
+| DEC-027 | Publish-on-demand via guarded Deploy Hook trigger | Superseded | 2026-09-24 |
+| DEC-028 | Server-rendered public pages with edge SWR, no rebuilds | Accepted   | 2026-09-24 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -750,6 +752,44 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/SECURITY.md`, DEC-024.
 - **Supersedes / Superseded by:** —.
 - **Open questions or follow-up:** Turnstile + EmailJS key provisioning; live submit/delete round-trip in a browser; Vercel runtime env vars.
+
+### DEC-027 — Publish-on-demand via guarded Deploy Hook trigger
+
+- **ID:** DEC-027
+- **Title:** Sidebar Publish button triggers a production rebuild; no auto-rebuilds
+- **Status:** Superseded by DEC-028
+- **Date:** 2026-09-24
+- **Context:** Public pages are prerendered static HTML, so saved CMS edits sit in the database invisible until a rebuild, and nothing triggers one. An earlier incident (edits made in an unconfigured admin with silent local-only saves) showed the UI must also state its backend mode out loud.
+- **Decision:**
+  1. **Explicit Publish.** A sidebar `PublishButton` posts to `POST /api/publish`, which re-verifies the admin session + `admin_users` allow-list server-side and then fires a Vercel Deploy Hook. No automatic rebuild on save (protects Hobby build minutes from half-finished drafts); one deployment per deliberate click.
+  2. **Hook URL stays server-side.** `VERCEL_DEPLOY_HOOK_URL` has no `PUBLIC_` prefix and never enters the browser bundle; exposing it client-side would let anyone burn build minutes. The endpoint answers plain-language 401/403/503 on auth or configuration failures.
+  3. **Backend-state banner.** The admin shell renders a warning banner whenever the Supabase env is absent (local-only mode), since islands otherwise degrade to browser storage with success feedback. This closes the exact silent trap from the incident.
+  4. **Loud builds.** The public loaders log `live Supabase snapshot` vs `seed fallback (+reason)` so deploy logs always show which source rendered.
+- **Alternatives considered:** Per-request SSR for public pages — rejected; burns Hobby invocations on every uncached view for content that changes infrequently. DB-webhook auto-redeploy — rejected; fires on drafts and needs secrets in the database. Browser-side hook call — rejected on security grounds.
+- **Rationale:** Smallest change making the existing sidebar copy ("Changes go live after saving and publishing") true while keeping static SEO, performance, and free-tier costs.
+- **Consequences:** Requires creating a Vercel Deploy Hook and setting `VERCEL_DEPLOY_HOOK_URL` (server env). Publishing takes one build duration to appear publicly.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, `docs/SECURITY.md`, DEC-024/DEC-025.
+- **Supersedes / Superseded by:** Superseded by DEC-028 (operator rejected hook/git-based publishing; server rendering removes the need).
+- **Open questions or follow-up:** Deploy Hook provisioning; live publish round-trip; the open asset-layout incident (Phase 18) is unrelated to this flow.
+
+### DEC-028 — Server-rendered public pages with edge SWR, no rebuilds
+
+- **ID:** DEC-028
+- **Title:** Public pages read live Supabase data per request with 60s edge caching
+- **Status:** Accepted
+- **Date:** 2026-09-24
+- **Context:** The operator works in the localhost admin against the production database and expects saves to reach the live site without redeploys, deploy hooks, or git involvement. Prerendered static pages fundamentally cannot do that.
+- **Decision:**
+  1. **Server-render the 9 public pages** (`prerender = false`); the existing live-first loaders run per request with seed fallback unchanged. Admin, login and API routes were already server-side.
+  2. **Edge SWR caching.** One helper sets `Cache-Control: public, s-maxage=60, stale-while-revalidate=300` on public responses; admin/API stay `no-store`. Visitors get fast cached HTML; edits surface within about a minute. Function runs happen only on cache miss/revalidation, negligible on Hobby.
+  3. **Publish flow deleted.** The Deploy Hook endpoint, sidebar button, hook env docs and hook provisioning steps are removed (DEC-027 superseded). The sidebar note now states the minute-scale freshness; the backend-state banner stays as the local-only tripwire.
+  4. **Sitemap lists public URLs explicitly** (`customPages`), since the sitemap integration only auto-discovers prerendered routes. Admin/API stay excluded; robots unchanged.
+- **Alternatives considered:** Keeping static + hook publishing — rejected by the operator (no hooks/git wanted). Per-request SSR without CDN caching — rejected; wastes Hobby invocations for zero user benefit.
+- **Rationale:** One mechanism for freshness with no operator rituals, no extra services, and full SSR HTML for SEO. Localhost saves flow to the live site through the shared database alone.
+- **Consequences:** Public pages cost function runs on cache miss/revalidation (one operator-scale site: negligible). First view after deploy is server-rendered, not prebuilt.
+- **Related documents:** `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, DEC-024/DEC-028 notes in prior reports.
+- **Supersedes / Superseded by:** Supersedes DEC-027.
+- **Open questions or follow-up:** Live save-to-public round-trip timing check; the open asset-layout incident (Phase 18) still needs its evidence.
 
 ## 22. Related Documentation
 

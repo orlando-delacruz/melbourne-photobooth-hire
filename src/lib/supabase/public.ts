@@ -32,7 +32,10 @@ function isConfigured(): boolean {
 
 /** Full public snapshot: live modules when reachable, seed otherwise. */
 export async function loadPublicContent(): Promise<SiteContent> {
-  if (!isConfigured()) return buildSiteContent();
+  if (!isConfigured()) {
+    console.warn("[public-content] Supabase env missing: rendering seed fallback.");
+    return buildSiteContent();
+  }
   try {
     const supabase = getSupabaseServerAnon();
     const [services, packages, gallery, faqs] = await Promise.all([
@@ -42,8 +45,10 @@ export async function loadPublicContent(): Promise<SiteContent> {
       supabase.from("faqs").select("*").order("sort_order"),
     ]);
     if (services.error || packages.error || gallery.error || faqs.error) {
+      console.warn("[public-content] Module query failed: rendering seed fallback.");
       return buildSiteContent();
     }
+    console.log("[public-content] Rendering live Supabase module snapshot.");
     const modules: CmsModules = {
       services: (services.data ?? []).map(serviceFromRow),
       packages: (packages.data ?? []).map(packageFromRow),
@@ -81,12 +86,18 @@ export async function loadPublicPages(): Promise<{
   settings: CmsContent["settings"];
 }> {
   const fallback = { pages: cmsSeed.pages, settings: cmsSeed.settings };
-  if (!isConfigured()) return fallback;
+  if (!isConfigured()) {
+    console.warn("[public-content] Supabase env missing: rendering seed page copy.");
+    return fallback;
+  }
   try {
     const { data, error } = await getSupabaseServerAnon()
       .from("page_contents")
       .select("page_key, content");
-    if (error || !data) return fallback;
+    if (error || !data) {
+      console.warn("[public-content] Page copy query failed: rendering seed page copy.");
+      return fallback;
+    }
     const pages = { ...cmsSeed.pages } as CmsContent["pages"];
     let settings = cmsSeed.settings;
     for (const row of data) {
@@ -117,7 +128,10 @@ export async function loadPublicSeo(key: SeoPageKey): Promise<PageMeta> {
       .select("*")
       .eq("page_key", key)
       .maybeSingle();
-    if (error || !data) return fallback;
+    if (error || !data) {
+      console.warn(`[public-content] SEO query failed for ${key}: using fallback metadata.`);
+      return fallback;
+    }
     if (!data.seo_title.trim() && !data.seo_description.trim()) return fallback;
     return {
       seoTitle: data.seo_title,

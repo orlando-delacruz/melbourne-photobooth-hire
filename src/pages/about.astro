@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import PageHeader from "../components/PageHeader.astro";
@@ -6,11 +7,13 @@ import SectionHeading from "../components/SectionHeading.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
 import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import { setPublicCache } from "../lib/http-cache";
 
 const { serviceImages, showcaseImages, ctaImage } = await loadPublicContent();
 const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
 const aboutPage = cmsPages.about;
 const seo = await loadPublicSeo("about");
+setPublicCache(Astro.response.headers);
 
 const storyImage = showcaseImages?.[0] ?? serviceImages?.["premium-photobooth"];
 

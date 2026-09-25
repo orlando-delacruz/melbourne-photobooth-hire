@@ -238,6 +238,19 @@
   justify-content: center;
 }
 
+/* Backend-state banner: visible only when Supabase env is absent and the
+   admin runs local-only. Warning tone, token-backed like all admin UI. */
+.ad-env-banner {
+  margin: 0 0 var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-md);
+  background: rgba(230, 206, 138, 0.1);
+  color: var(--color-on-ink);
+  font-size: var(--text-small);
+  line-height: var(--leading-snug);
+}
+
 .ad-scrim {
   display: none;
 }

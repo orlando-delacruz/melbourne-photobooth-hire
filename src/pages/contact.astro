@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import PageHeader from "../components/PageHeader.astro";
@@ -8,6 +9,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { setPublicCache } from "../lib/http-cache";
 import "../styles/inquiry-form.css";
 
 const { serviceImages } = await loadPublicContent();
@@ -15,6 +17,7 @@ const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
 const contactPage = cmsPages.contact;
 const eventTypeOptions = await loadPublicEventTypes();
 const seo = await loadPublicSeo("contact");
+setPublicCache(Astro.response.headers);
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;

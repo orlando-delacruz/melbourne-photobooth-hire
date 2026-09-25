@@ -1,15 +1,18 @@
 ---
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/Button.astro";
 import PageHeader from "../components/PageHeader.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Reveal from "../components/islands/Reveal";
 import { loadPublicContent, loadPublicSeo, loadPublicPages } from "../lib/supabase/public";
+import { setPublicCache } from "../lib/http-cache";
 
 const { services, serviceImages, ctaImage } = await loadPublicContent();
 const { pages: cmsPages } = await loadPublicPages();
 const servicesPage = cmsPages.services;
 const seo = await loadPublicSeo("services");
+setPublicCache(Astro.response.headers);
 
 const icons: Record<string, string> = {
   camera:

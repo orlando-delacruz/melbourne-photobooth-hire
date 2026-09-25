@@ -28,6 +28,13 @@ interface Props {
 
 const { active, title, heading, lede, publicHref } = Astro.props;
 
+/** Server-rendered per request: true only when the Supabase env is baked in.
+ *  When false the islands transparently use the local browser store, so the
+ *  shell says so instead of succeeding silently into localStorage. */
+const backendConnected = Boolean(
+  import.meta.env.PUBLIC_SUPABASE_URL && import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+);
+
 /** The Pages group renders expanded when the current route manages a page. */
 const pagesActive = CMS_SECTIONS.some((section) => section.key === active);
 
@@ -161,7 +168,7 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
     <div class="ad-signout">
       <SignOutButton client:load />
     </div>
-    <p class="ad-sidebar-note">Changes go live after saving and publishing.</p>
+    <p class="ad-sidebar-note">Changes go live on the website within about a minute of saving.</p>
   </aside>
 
   <div class="ad-main">
@@ -188,6 +195,12 @@ const closeIcon = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" s
       ) : null}
     </header>
     <main class="ad-content" id="main">
+      {!backendConnected ? (
+        <p class="ad-env-banner" role="status">
+          Local-only mode: Supabase is not connected here, so edits stay in this browser and never
+          reach the live site. Set the public Supabase env vars and redeploy to connect.
+        </p>
+      ) : null}
       {lede ? (
         <div class="ad-page-head">
           <h2>{heading ?? title}</h2>
