@@ -1,4 +1,4 @@
-// About page editor: header, story, values, stats, next-step panel,
+// About page editor: header, story, values, stats,
 // call-to-action band and SEO metadata.
 
 import { useFieldArray } from "react-hook-form";
@@ -237,62 +237,6 @@ export default function AboutEditor() {
             );
           })}
         </ArraySection>
-      </Panel>
-
-      <Panel
-        title="Next step"
-        lede="Panel linking on to services and the enquiry form. The first half of the paragraph comes from Site settings."
-      >
-        <AdField id="next-heading" label="Heading" required error={errorAt(errors, "next.heading")}>
-          <TextInput
-            id="next-heading"
-            type="text"
-            error={errorAt(errors, "next.heading")}
-            {...register("next.heading")}
-          />
-        </AdField>
-        <AdField
-          id="next-suffix"
-          label="Closing line"
-          required
-          hint="Follows the service area statement, for example Ready to talk dates?"
-          error={errorAt(errors, "next.suffix")}
-        >
-          <TextInput
-            id="next-suffix"
-            type="text"
-            error={errorAt(errors, "next.suffix")}
-            {...register("next.suffix")}
-          />
-        </AdField>
-        <div className="ad-grid-2">
-          <AdField
-            id="next-services"
-            label="Services button label"
-            required
-            error={errorAt(errors, "next.servicesLabel")}
-          >
-            <TextInput
-              id="next-services"
-              type="text"
-              error={errorAt(errors, "next.servicesLabel")}
-              {...register("next.servicesLabel")}
-            />
-          </AdField>
-          <AdField
-            id="next-enquire"
-            label="Enquiry button label"
-            required
-            error={errorAt(errors, "next.enquireLabel")}
-          >
-            <TextInput
-              id="next-enquire"
-              type="text"
-              error={errorAt(errors, "next.enquireLabel")}
-              {...register("next.enquireLabel")}
-            />
-          </AdField>
-        </div>
       </Panel>
 
       <Panel title="Call to action" lede="Closing enquiry band on the about page.">

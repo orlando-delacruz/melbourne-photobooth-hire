@@ -54,6 +54,13 @@ export const STAT_ICON_OPTIONS = [
   { value: "qrcode", label: "QR code" },
 ];
 
+/** Hero stat value sources (DEC-037): blank is a manually typed value. */
+export const STAT_SOURCE_OPTIONS = [
+  { value: "", label: "Manual" },
+  { value: "services", label: "Number of services" },
+  { value: "longest-hire", label: "Longest hire window" },
+];
+
 export const RATING_OPTIONS = [
   { value: "", label: "No rating" },
   { value: "1", label: "1 star" },

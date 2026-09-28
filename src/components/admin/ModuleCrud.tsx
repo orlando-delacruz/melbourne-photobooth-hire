@@ -67,6 +67,25 @@ export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectio
     [items, sectionKey],
   );
 
+  /** Reload the list from the database (for out-of-band changes such as
+   * moderation actions, which bypass the whole-list save). */
+  const reload = useCallback(async () => {
+    setBusy(true);
+    try {
+      setItems(await loadModuleItems<T>(sectionKey));
+      return true;
+    } catch {
+      setNotice({
+        tone: "error",
+        title: "Could not reload items.",
+        body: "Check your connection and refresh the page.",
+      });
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }, [sectionKey]);
+
   const removeById = useCallback(
     async (id: string, displayName: string, guard?: { minLength: number; message: string }) => {
       if (!items) return false;
@@ -85,7 +104,7 @@ export function useModuleList<T extends { id: string }>(sectionKey: ModuleSectio
     [items, persist],
   );
 
-  return { items, loaded: items !== null, notice, setNotice, busy, persist, removeById };
+  return { items, loaded: items !== null, notice, setNotice, busy, persist, removeById, reload };
 }
 
 /** Flatten a Zod element-schema failure to per-field messages keyed by dotted path. */

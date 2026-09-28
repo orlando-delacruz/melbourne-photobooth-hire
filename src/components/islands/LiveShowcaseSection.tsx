@@ -27,20 +27,13 @@ export default function LiveShowcaseSection({ initial, initialHome }: LiveShowca
   return (
     <section className="section on-dark" aria-labelledby="showcase-heading">
       <Reveal variant="mask">
-        <div className="showcase-head">
-          <LiveSectionHeading
-            tone="dark"
-            title={heading.title}
-            eyebrow={heading.eyebrow}
-            id="showcase-heading"
-            lede={heading.lede}
-          />
-          <p className="showcase-cta">
-            <LiveButton href="/gallery" variant="secondary" tone="dark" arrow>
-              {showcaseLabel}
-            </LiveButton>
-          </p>
-        </div>
+        <LiveSectionHeading
+          tone="dark"
+          title={heading.title}
+          eyebrow={heading.eyebrow}
+          id="showcase-heading"
+          lede={heading.lede}
+        />
         <ul className="showcase-grid">
           {visible.map((item, index) => (
             <li key={item.id}>
@@ -57,6 +50,11 @@ export default function LiveShowcaseSection({ initial, initialHome }: LiveShowca
             </li>
           ))}
         </ul>
+        <p className="showcase-cta">
+          <LiveButton href="/gallery" variant="secondary" tone="dark" arrow>
+            {showcaseLabel}
+          </LiveButton>
+        </p>
       </Reveal>
     </section>
   );

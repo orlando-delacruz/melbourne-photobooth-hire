@@ -6,7 +6,6 @@ import LiveCtaBand from "../components/islands/LiveCtaBand";
 import LiveAddons from "../components/islands/LiveAddons";
 import LivePolicies from "../components/islands/LivePolicies";
 import LivePlansSection from "../components/islands/LivePlansSection";
-import LiveIncludedBand from "../components/islands/LiveIncludedBand";
 import {
   loadPublicContent,
   loadPublicModules,
@@ -37,11 +36,6 @@ const jumpItems = [
     icon: svgWrap(
       '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
     ),
-  },
-  {
-    href: "#package-included",
-    label: "What's included",
-    icon: svgWrap('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
   },
   {
     href: "#package-addons",
@@ -93,8 +87,6 @@ const jumpItems = [
   </LivePageHeader>
 
   <LivePlansSection client:visible initial={liveModules.packages} initialPage={packagesPage} />
-
-  <LiveIncludedBand client:visible initial={liveModules.packages} initialPage={packagesPage} />
 
   <LiveAddons client:visible initialPage={packagesPage} />
 
@@ -159,75 +151,8 @@ const jumpItems = [
   #package-policies {
     scroll-margin-top: 7rem;
   }
-  .packages-foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    margin-top: var(--space-xl);
-    padding-top: var(--space-lg);
-    border-top: 1px solid var(--color-divider);
-  }
-  .packages-note {
-    margin: 0;
-    max-width: 42rem;
-    color: var(--color-ink-soft);
-  }
   .empty {
     color: var(--color-ink-soft);
-  }
-
-  /* ── Included band ──────────────────────────────────────────────────── */
-
-  .included {
-    background: var(--color-ink);
-    padding-block: clamp(3.5rem, 7vw, 5.5rem);
-    border-block: 1px solid var(--color-ink-hairline);
-    scroll-margin-top: 4rem;
-  }
-  .included-inner {
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-  .included h2 {
-    margin: var(--space-sm) 0 0;
-    max-width: 20ch;
-    color: var(--color-on-ink);
-    font-size: var(--text-h1);
-    line-height: var(--leading-title);
-  }
-  .included .eyebrow {
-    color: var(--color-accent-on-dark);
-  }
-  .included-lede {
-    margin: var(--space-sm) 0 0;
-    max-width: 34rem;
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-lead);
-  }
-  .included-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: var(--space-sm);
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-  }
-  .included-list li {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--space-2xs);
-    align-items: start;
-    color: var(--color-on-ink-secondary);
-    font-size: var(--text-small);
-  }
-  .included-check {
-    display: inline-flex;
-    margin-top: 0.15em;
-    color: var(--color-accent-on-dark);
   }
 
   /* ── Add-ons ────────────────────────────────────────────────────────── */

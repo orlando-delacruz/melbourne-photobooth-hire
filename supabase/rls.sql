@@ -34,6 +34,7 @@ drop policy if exists "Admin full access faqs" on public.faqs;
 drop policy if exists "Public read event types" on public.event_types;
 drop policy if exists "Admin full access event types" on public.event_types;
 drop policy if exists "Public read testimonials" on public.testimonials;
+drop policy if exists "Public read approved testimonials" on public.testimonials;
 drop policy if exists "Admin full access testimonials" on public.testimonials;
 drop policy if exists "Public read page contents" on public.page_contents;
 drop policy if exists "Admin full access page contents" on public.page_contents;
@@ -71,10 +72,14 @@ create policy "Public read event types" on public.event_types
 create policy "Admin full access event types" on public.event_types
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- Testimonials (DEC-034): whole list is public (homepage marquee shows every
--- saved item in order); writes are admin-only.
-create policy "Public read testimonials" on public.testimonials
-  for select to anon using (true);
+-- Testimonials (DEC-034, moderated DEC-035): only approved reviews are
+-- public (homepage marquee shows every approved item in order); writes are
+-- admin-only. Visitor submissions arrive through POST /api/reviews, which
+-- inserts with the service-role client as pending — there is deliberately no
+-- anonymous insert/update/delete policy, so the status can never be forged
+-- from the browser.
+create policy "Public read approved testimonials" on public.testimonials
+  for select to anon using (status = 'approved');
 create policy "Admin full access testimonials" on public.testimonials
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
@@ -108,6 +113,8 @@ create policy "Admins read admin list" on public.admin_users
 
 -- Manual test matrix (run as anon / authed non-admin / authed admin):
 --   anon: select highlighted services ok; select non-highlighted hidden;
+--   anon: select approved testimonials ok; pending/rejected hidden;
+--   anon: insert/update/delete on testimonials denied (endpoint only);
 --   anon: insert into inquiries ok; select from inquiries denied;
 --   non-admin authed: insert/update/delete on services denied;
 --   admin authed: full CRUD on all tables ok.

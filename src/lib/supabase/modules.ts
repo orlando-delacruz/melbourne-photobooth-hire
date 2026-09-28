@@ -151,6 +151,8 @@ export function testimonialFromRow(row: TestimonialRow): TestimonialItem {
     name: row.name,
     eventType: row.event_type,
     rating: row.rating ?? undefined,
+    status: row.status,
+    createdAt: row.created_at,
   };
 }
 
@@ -161,6 +163,7 @@ function testimonialToRow(item: TestimonialItem, sortOrder: number): InsertOf<Te
     name: item.name,
     event_type: item.eventType,
     rating: item.rating ?? null,
+    status: item.status,
     sort_order: sortOrder,
   };
 }
@@ -372,4 +375,23 @@ export async function saveModuleItems<T extends { id: string }>(
   );
 
   return loadModuleItems<T>(sectionKey);
+}
+
+/**
+ * Targeted moderation action for one review (DEC-035): approves or rejects
+ * without rewriting the whole list. The admin browser session carries the
+ * admin-only RLS grant; anonymous users have no write path to the table.
+ */
+export async function setTestimonialStatus(
+  id: string,
+  status: TestimonialItem["status"],
+): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error("CMS backend is not connected.");
+  }
+  const { error } = await getSupabaseBrowser()
+    .from("testimonials")
+    .update({ status })
+    .eq("slug", id);
+  if (error) throw new Error("The review status could not be updated.");
 }

@@ -2,8 +2,12 @@
 //
 // Mirrors ReviewsMarquee.astro (dark tone on the homepage): heading,
 // seamless-loop clone track, initials avatars and star ratings. Rows come
-// from the Testimonials module and patch live; the heading still comes from
-// the home blob. Hides the whole section while the list is empty, same as SSR.
+// from the Testimonials module and patch live; only approved reviews reach
+// this list (enforced by RLS), and the heading still comes from the home
+// blob. Hides the whole section while the list is empty, same as SSR. The
+// section closes with a review-submission trigger: the ReviewModal island
+// (mounted in index.astro) listens for [data-review-open] clicks, so this
+// component stays presentational.
 import type { HomePageContent, TestimonialItem } from "../../lib/cms/types";
 import { fetchTestimonials } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
@@ -107,6 +111,15 @@ export default function LiveMarquee({
           </div>
         </div>
       </Reveal>
+      <p className="reviews-cta">
+        <button
+          type="button"
+          className="button button--secondary button--tone-dark button--lg"
+          data-review-open
+        >
+          <span className="button__label">Send Us a Review</span>
+        </button>
+      </p>
     </section>
   );
 }

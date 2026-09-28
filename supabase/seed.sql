@@ -6,15 +6,14 @@
 
 -- Event types (dropdown order = sort_order).
 insert into public.event_types (slug, label, sort_order) values
-  ('event-type-1', 'Wedding', 0),
-  ('event-type-2', 'Birthday', 1),
-  ('event-type-3', 'Corporate Event', 2),
-  ('event-type-4', 'Engagement Party', 3),
-  ('event-type-5', 'School Formal', 4),
-  ('event-type-6', 'Christmas/End-of-Year', 5),
-  ('event-type-7', 'Private Event', 6),
-  ('event-type-8', 'Other', 7)
+  ('event-type-1', 'Weddings', 0),
+  ('event-type-2', 'Corporate Events', 1),
+  ('event-type-3', 'Birthdays', 2),
+  ('event-type-4', 'Private Celebrations', 3)
 on conflict (slug) do update set label = excluded.label, sort_order = excluded.sort_order;
+-- Removed client-unconfirmed options (superseded by the 4 client-provided types).
+delete from public.event_types where slug in
+  ('event-type-5', 'event-type-6', 'event-type-7', 'event-type-8');
 
 -- Services (all highlighted so seeded rendering matches the public site).
 insert into public.services
@@ -23,7 +22,7 @@ values
   ('premium-photobooth', 'Premium Photobooth', 'custom', 'Most booked',
    'The centrepiece of the room.',
    'An open-air, studio-lit booth that turns any corner of your venue into a photo studio. Professional lighting, a custom print template and a friendly attendant keep the line moving all night.',
-   ARRAY['Open-air, studio-lit setup','Unlimited sessions while you hire','Custom-branded prints in seconds'],
+   ARRAY['Professional setup & styling','Studio-quality photos with custom templates','Personalised event branding & photo layouts','Luxury backdrops & fun props','Instant photo printing + digital sharing','Unlimited photo sessions','Red carpet & golden bollard setup','Professional setup and pack-down service'],
    'camera',
    'https://images.pexels.com/photos/17641795/pexels-photo-17641795.jpeg?auto=compress&cs=tinysrgb&w=900',
    'A guest posing inside a curtained photo booth', true, 0),
@@ -37,7 +36,7 @@ values
   ('360-video-booth', '360 Video Booth', 'basic', '',
    'The shot everyone shares.',
    'A 360° slow-motion platform experience. Guests strike a pose, the camera sweeps around them, and a share-ready clip lands on their phone by QR before they sit back down.',
-   ARRAY['360 slow-motion clips','Instant QR download, no app required','Share-ready in seconds'],
+   ARRAY['360 slow-motion video capture','Personalised video overlays & event branding','Fun props and guest interaction','Instant digital sharing via QR code','Professional lighting for premium videos','Red carpet & golden bollard setup','Professional setup and pack-down service'],
    'video',
    'https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900',
    'Guests celebrating on a dance floor beneath festival lights', true, 2)
@@ -92,7 +91,7 @@ insert into public.faqs (slug, question, answer, highlight, sort_order) values
    'We recommend booking four to six weeks ahead, especially through summer wedding season and end-of-year celebrations. Popular Saturdays fill quickly. If your date is close, reach out anyway and we''ll confirm availability straight away.',
    true, 0),
   ('how-much', 'How much does photobooth hire cost?',
-   'Hire starts at $350 for two hours, $450 for three hours and $600 for four hours. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.',
+   'Price Starts $130. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.',
    true, 1),
   ('whats-included', 'What''s included in every hire?',
    'Every booking includes the full photobooth service, studio-quality lighting and styling, a custom-branded print template, HD printing with unlimited sessions, QR code digital downloads, free use of props, and setup and pack-down by our team.',
@@ -121,16 +120,18 @@ on conflict (slug) do update set
 
 -- Testimonials (DEC-034 one-time seed migration: the 6 home-blob reviews,
 -- kept verbatim so the first module-backed render matches the public site).
-insert into public.testimonials (slug, quote, name, event_type, rating, sort_order) values
-  ('testimonial-1', 'The booth was the heart of the night. Guests queued for it and walked away with prints in hand. The setup was completely seamless.', 'Mia & Jordan', 'Wedding', 5, 0),
-  ('testimonial-2', 'Our team still talks about the 360 clips. It turned a corporate night into something people actually remember.', 'Priya S.', 'Corporate event', 5, 1),
-  ('testimonial-3', 'Setup was quick and the prints looked incredible. The birthday kids would not leave the booth, and neither did the adults.', 'Tara N.', 'Birthday', 5, 2),
-  ('testimonial-4', 'From the first email to pack-down, everything was handled. We did not think about the booth once. It just worked.', 'Daniel R.', 'Corporate event', 5, 3),
-  ('testimonial-5', 'The backdrop matched our styling perfectly and the prints became the favour everyone took home. Beautifully done.', 'Elena & Chris', 'Engagement party', 5, 4),
-  ('testimonial-6', 'Our school formal needed something the students would actually use, and this was it. The queue never stopped.', 'Rebecca M.', 'School formal', 5, 5)
+-- Seeded reviews are explicitly approved (DEC-035): visitor submissions
+-- always arrive as pending through POST /api/reviews instead.
+insert into public.testimonials (slug, quote, name, event_type, rating, status, sort_order) values
+  ('testimonial-1', 'The booth was the heart of the night. Guests queued for it and walked away with prints in hand. The setup was completely seamless.', 'Mia & Jordan', 'Wedding', 5, 'approved', 0),
+  ('testimonial-2', 'Our team still talks about the 360 clips. It turned a corporate night into something people actually remember.', 'Priya S.', 'Corporate event', 5, 'approved', 1),
+  ('testimonial-3', 'Setup was quick and the prints looked incredible. The birthday kids would not leave the booth, and neither did the adults.', 'Tara N.', 'Birthday', 5, 'approved', 2),
+  ('testimonial-4', 'From the first email to pack-down, everything was handled. We did not think about the booth once. It just worked.', 'Daniel R.', 'Corporate event', 5, 'approved', 3),
+  ('testimonial-5', 'The backdrop matched our styling perfectly and the prints became the favour everyone took home. Beautifully done.', 'Elena & Chris', 'Engagement party', 5, 'approved', 4),
+  ('testimonial-6', 'Our school formal needed something the students would actually use, and this was it. The queue never stopped.', 'Rebecca M.', 'School formal', 5, 'approved', 5)
 on conflict (slug) do update set
   quote = excluded.quote, name = excluded.name, event_type = excluded.event_type,
-  rating = excluded.rating, sort_order = excluded.sort_order, updated_at = now();
+  rating = excluded.rating, status = excluded.status, sort_order = excluded.sort_order, updated_at = now();
 
 -- Page copy shells: editors fill these in Phase 7. Seeded empty so public
 -- pages keep their current hardcoded fallbacks until saved content exists.

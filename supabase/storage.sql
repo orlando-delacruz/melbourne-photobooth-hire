@@ -1,6 +1,6 @@
 -- Melbourne Photobooth Hire: Storage bucket + policies (Phase 5).
 -- One public bucket (cms-media) for all CMS uploads. Files stay small
--- (2 MB cap enforced in the app, matching IMAGE_MAX_BYTES) for the free tier.
+-- (10 MB cap enforced in the app, matching IMAGE_MAX_BYTES) for the free tier.
 -- Run in the Supabase SQL editor after schema.sql + rls.sql.
 
 insert into storage.buckets (id, name, public)

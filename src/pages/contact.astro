@@ -4,15 +4,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import InquiryForm from "../components/islands/InquiryForm";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveContactAside from "../components/islands/LiveContactAside";
-import { LiveContactCopyFoot, LiveContactCopyHead } from "../components/islands/LiveContactCopy";
+import { LiveContactCopyHead } from "../components/islands/LiveContactCopy";
 import {
   loadPublicContent,
   loadPublicEventTypes,
+  loadPublicModules,
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
-import "../styles/inquiry-form.css";
 
 const { serviceImages } = await loadPublicContent();
 const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
@@ -20,6 +20,17 @@ const contactPage = cmsPages.contact;
 const eventTypeOptions = await loadPublicEventTypes();
 const seo = await loadPublicSeo("contact");
 setPublicCache(Astro.response.headers);
+// Contextual enquiry (DEC-036): a Service/Package card links to
+// /contact?service=<slug> or ?package=<slug>. Resolve each slug against the
+// public (highlighted) module rows independently; an unknown or absent slug
+// simply leaves that dropdown on its placeholder.
+const modules = await loadPublicModules();
+const publicServices = modules.services.filter((service) => service.highlight !== false);
+const publicPackages = modules.packages.filter((pkg) => pkg.highlight !== false);
+const serviceSlug = Astro.url.searchParams.get("service");
+const packageSlug = Astro.url.searchParams.get("package");
+const initialService = publicServices.find((service) => service.id === serviceSlug)?.name ?? "";
+const initialPackage = publicPackages.find((pkg) => pkg.id === packageSlug)?.name ?? "";
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
@@ -49,53 +60,61 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   />
 
   <section class="section contact" aria-labelledby="contact-form-heading">
-    <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
-
-    <div class="form-card">
-      <header class="form-head">
-        <span class="form-icon" aria-hidden="true">
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.7"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-          </svg>
-        </span>
-        <div>
+    <div class="contact-grid">
+      <div class="form-card">
+        <header class="form-head">
+          <span class="form-icon" aria-hidden="true">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+            </svg>
+          </span>
           <LiveContactCopyHead client:visible initialPage={contactPage} />
-        </div>
-      </header>
-      <InquiryForm
-        client:visible
-        eventTypes={eventTypeOptions}
-        turnstileSiteKey={turnstileSiteKey}
-      />
-      {turnstileSiteKey ? (
-        <script
-          is:inline
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-          async
-          defer
-        ></script>
-      ) : null}
-      <LiveContactCopyFoot client:visible initialPage={contactPage} />
+        </header>
+        <InquiryForm
+          client:visible
+          eventTypes={eventTypeOptions}
+          turnstileSiteKey={turnstileSiteKey}
+          services={publicServices}
+          packages={publicPackages}
+          initialService={initialService || undefined}
+          initialPackage={initialPackage || undefined}
+        />
+      </div>
+
+      <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
     </div>
+    {turnstileSiteKey ? (
+      <script
+        is:inline
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer
+      ></script>
+    ) : null}
   </section>
 </BaseLayout>
 
 <style>
   .contact {
+    position: relative;
+  }
+  /* Single column: the form leads and the details panel sits beneath it,
+     kept to a comfortable reading measure and centred on the page. */
+  .contact-grid {
     display: grid;
     gap: var(--space-xl);
-    grid-template-columns: 1fr;
-    align-items: start;
+    max-width: 48rem;
+    margin-inline: auto;
   }
 
   .form-card {
@@ -105,7 +124,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: clamp(1.5rem, 4vw, 3rem);
-    box-shadow: var(--elevation-2);
   }
   .form-card::before {
     content: "";
@@ -115,47 +133,45 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
     pointer-events: none;
   }
+
+  /* Icon centred on the title line; the lede sits under the title, aligned
+     with the title's left edge. The heading and lede are island-rendered, so
+     scoped styles cannot reach them — :global() targets them from this
+     scoped parent. */
   .form-head {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--space-sm);
+    column-gap: var(--space-sm);
+    row-gap: var(--space-3xs);
     align-items: center;
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--color-divider);
   }
   .form-icon {
+    grid-column: 1;
+    grid-row: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 2.75rem;
     height: 2.75rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-ivory);
+    border: 1px solid var(--color-accent-line);
+    background: color-mix(in srgb, var(--color-accent-wash) 55%, var(--color-ivory));
     color: var(--color-accent-strong);
   }
-  .form-head h2 {
-    margin: 0 0 var(--space-3xs);
+  .form-head :global(h2) {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
     font-size: var(--text-h2);
   }
-  .form-head p {
+  .form-head :global(p) {
+    grid-column: 2;
+    grid-row: 2;
     margin: 0;
     color: var(--color-ink-soft);
     font-size: var(--text-small);
-  }
-  .form-foot {
-    margin: var(--space-lg) 0 0;
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-divider);
-    color: var(--color-ink-faint);
-    font-size: var(--text-small);
-  }
-
-  @media (min-width: 960px) {
-    .contact {
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-      gap: var(--space-2xl);
-    }
   }
 </style>

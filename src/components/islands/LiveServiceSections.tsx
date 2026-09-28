@@ -75,7 +75,12 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
                 </ul>
               ) : null}
               <p className="service-cta">
-                <LiveButton href="/contact" variant="primary" size="lg" arrow>
+                <LiveButton
+                  href={`/contact?service=${encodeURIComponent(service.id)}`}
+                  variant="primary"
+                  size="lg"
+                  arrow
+                >
                   Enquire now
                 </LiveButton>
                 <LiveButton href="/packages" variant="secondary" size="lg">

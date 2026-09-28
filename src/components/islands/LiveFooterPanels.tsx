@@ -18,9 +18,25 @@ export interface LiveFooterPanelsProps {
 export function LiveFooterBrand({ initialSettings }: LiveFooterPanelsProps) {
   const settings = useLiveSettings(initialSettings);
   const socials = settings.socials ?? [];
+  const phones = [settings.phonePrimary, settings.phoneSecondary].filter(
+    (phone): phone is string => Boolean(phone && phone.trim()),
+  );
   return (
     <>
       <p className="brand-statement">{settings.serviceAreaStatement}</p>
+      {phones.length > 0 ? (
+        <p className="footer-contact">
+          {phones.map((phone, index) => (
+            <span key={phone}>
+              {index > 0 ? " · " : null}
+              <a href={`tel:${phone.replace(/[\s()]/g, "")}`}>{phone}</a>
+            </span>
+          ))}
+        </p>
+      ) : null}
+      {settings.transportNote ? (
+        <p className="footer-contact">{settings.transportNote}</p>
+      ) : null}
       {settings.reviewUrl ? (
         <p className="footer-review">
           <a href={settings.reviewUrl}>Leave a Google review</a>
@@ -66,12 +82,19 @@ export function LiveFooterCta({ initialSettings }: LiveFooterPanelsProps) {
 export function LiveFooterBase({ initialSettings }: LiveFooterPanelsProps) {
   const settings = useLiveSettings(initialSettings);
   const year = new Date().getFullYear();
+  const credentials = [
+    settings.abn ? `ABN ${settings.abn}` : null,
+    ...(settings.trustItems ?? []).filter((item) => item && item.trim()),
+  ].filter((item): item is string => Boolean(item));
   return (
     <>
       <p className="footer-copy">
         &copy; {year} {settings.brandName}. All rights reserved.
       </p>
-      <p className="footer-area">{settings.serviceAreaStatement}</p>
+      <p className="footer-area">
+        {settings.serviceAreaStatement}
+        {credentials.length > 0 ? ` · ${credentials.join(" · ")}` : null}
+      </p>
     </>
   );
 }

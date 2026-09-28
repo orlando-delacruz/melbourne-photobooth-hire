@@ -15,18 +15,14 @@ const ROAMING_IMAGE = mockContent.serviceImages?.["roaming-photobooth"];
 const VIDEO360_IMAGE = mockContent.serviceImages?.["360-video-booth"];
 const CTA_IMAGE = mockContent.ctaImage;
 
-const SERVICE_AREA_STATEMENT = "Based in Melbourne, serving surrounding regions.";
+const SERVICE_AREA_STATEMENT = "Melbourne Wide / Victoria Wide";
 
 /** Initial contact-form event types, in dropdown order. */
 const EVENT_TYPE_SEEDS = [
-  "Wedding",
-  "Birthday",
-  "Corporate Event",
-  "Engagement Party",
-  "School Formal",
-  "Christmas/End-of-Year",
-  "Private Event",
-  "Other",
+  "Weddings",
+  "Corporate Events",
+  "Birthdays",
+  "Private Celebrations",
 ];
 
 type CmsImageSeed = CmsContent["pages"]["services"]["header"]["image"];
@@ -59,29 +55,12 @@ export const cmsSeed: CmsContent = {
         },
         stats: mockContent.heroStats ?? [],
       },
-      intro: {
-        eyebrow: "The experience",
-        heading: "Styled for the room it's in.",
-        body: "A photobooth is more than a camera in the corner. We design the lighting, the backdrop and the print around your event, then run it with the kind of hosting that gets even the quietest guest in front of the lens.",
-        promises: [
-          {
-            title: "Arrive early, set up quietly",
-            detail: "Ready before the first guest walks in.",
-          },
-          {
-            title: "Prints and QR in seconds",
-            detail: "HD prints in hand, downloads on their phone.",
-          },
-          { title: "One local Melbourne team", detail: "From enquiry to pack-down, same people." },
-        ],
-        aboutLabel: "More about us",
-      },
       servicesHeading: {
         eyebrow: "The booths",
         title: "Three ways to bring the room into the frame",
         lede: "Every hire includes HD prints, QR downloads and full setup and pack-down by our team.",
       },
-      servicesCardLabel: "Explore the booths",
+      servicesCardLabel: "Enquire now",
       showcaseHeading: {
         eyebrow: "Styled moments",
         title: "The kind of night we stage",
@@ -91,7 +70,7 @@ export const cmsSeed: CmsContent = {
       packagesHeading: {
         eyebrow: "Packages",
         title: "All-inclusive hire, priced up front",
-        lede: "No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
+        lede: "Price Starts $130. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
       },
       packagesCompareLabel: "Compare all packages",
       processHeading: {
@@ -112,11 +91,6 @@ export const cmsSeed: CmsContent = {
         lede: "Quick answers to the questions we hear most.",
       },
       faqCtaLabel: "Read all FAQs",
-      eventTypesHeading: {
-        eyebrow: "Perfect for",
-        title: "Every occasion, one booth",
-        lede: "Weddings, birthdays, corporate nights and everything in between.",
-      },
       ctaBand: {
         eyebrow: "Ready when you are",
         headline: "Ready to book your night?",
@@ -196,28 +170,12 @@ export const cmsSeed: CmsContent = {
       plansHeading: {
         eyebrow: "Choose your hire",
         title: "Priced up front, nothing hidden",
-        lede: "Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
+        lede: "Price Starts $130. Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
       },
       emptyState: {
         title: "Package options will be shown here once confirmed.",
         body: "Until then, please enquire for current options.",
         actionLabel: "Enquire now",
-      },
-      footNote:
-        "Every package can be tailored to your venue and guest numbers. Tell us your date and we'll confirm availability and the best fit.",
-      checkDateLabel: "Check your date",
-      included: {
-        eyebrow: "Included as standard",
-        heading: "Every hire ships with the full setup.",
-        lede: "No hidden extras. From studio lighting to QR downloads, the essentials come with every package.",
-        standardItems: [
-          "Full photobooth service",
-          "Studio-quality lighting and styling",
-          "Custom-branded print template",
-          "HD printing, unlimited sessions",
-          "QR code digital downloads",
-          "Free use of props",
-        ],
       },
       addonsHeading: {
         eyebrow: "Optional extras",
@@ -327,12 +285,6 @@ export const cmsSeed: CmsContent = {
       },
       values: mockContent.about.values,
       stats: mockContent.about.stats,
-      next: {
-        heading: "See the booths, then see the packages.",
-        suffix: "Ready to talk dates?",
-        servicesLabel: "View services",
-        enquireLabel: "Enquire now",
-      },
       ctaBand: {
         eyebrow: "Let's make something memorable",
         headline: "Bring the booth to your event.",
@@ -416,27 +368,11 @@ export const cmsSeed: CmsContent = {
           caption: undefined,
         },
       },
-      asideHeading: "What happens next",
-      steps: [
-        {
-          title: "Send your details",
-          detail: "Your date, venue and rough guest numbers are plenty to start.",
-        },
-        {
-          title: "We reply with options",
-          detail: "Availability, the right booth for the room and a clear quote.",
-        },
-        {
-          title: "Lock in your date",
-          detail: "A 20% deposit confirms your date, with the balance due on the day.",
-        },
-      ],
       serviceAreaLabel: "Service area",
       typicalReplyLabel: "Typical reply",
       typicalReplyValue: "Within one business day.",
       formTitle: "Event enquiry",
       formLede: "Share a few details and we'll reply with availability and a clear quote.",
-      formFoot: "We use your details only to respond to this enquiry.",
       seo: {
         seoTitle: "Contact & Enquire | Photobooth Hire Melbourne",
         seoDescription:
@@ -456,7 +392,23 @@ export const cmsSeed: CmsContent = {
     serviceAreaStatement: SERVICE_AREA_STATEMENT,
     reviewUrl: "",
     messengerUrl: "https://m.me/",
-    socials: [],
+    logo: { key: null, src: "", alt: "" },
+    favicon: { key: null, src: "", alt: "" },
+    socials: [
+      {
+        label: "Instagram",
+        url: "https://www.instagram.com/melbournephotoboothhire.au?stkn=MXQ4dnJoaWd0eTBtcQ%3D%3D&utm_source=qr",
+      },
+      {
+        label: "Facebook",
+        url: "https://www.facebook.com/share/1BV42dwtgq/?mibextid=wwXIfr",
+      },
+    ],
+    phonePrimary: "+61 459918987",
+    phoneSecondary: "+61 402332908",
+    abn: "77363405585",
+    trustItems: ["ABN Registered Business", "Public Liability Insured"],
+    transportNote: "Transportation Allowance Varies Depending to Location",
     footerCta: {
       title: "Ready when you are",
       lede: "Tell us your date and we'll recommend the right booth for your event.",
@@ -560,15 +512,17 @@ export const cmsSeed: CmsContent = {
       answer: faq.answer,
       highlight: true,
     })),
-    // Homepage reviews (DEC-034): every saved testimonial shows in module
-    // order. Seeded from the same provisional reviews as the home blob so
-    // the first module-backed render matches the public site.
+    // Homepage reviews (DEC-034, moderated DEC-035): every approved
+    // testimonial shows in module order. Seeded from the same provisional
+    // reviews as the home blob so the first module-backed render matches
+    // the public site; seeded rows are explicitly approved.
     testimonials: mockContent.testimonials.map((item) => ({
       id: item.id,
       quote: item.quote,
       name: item.name,
       eventType: item.eventType,
       rating: item.rating,
+      status: "approved" as const,
     })),
     // Contact-form dropdown options, preserving the documented candidate
     // values in order (formerly REQ-INQ-009 constants). Array order is the

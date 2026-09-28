@@ -165,6 +165,8 @@ interface ImageFieldProps {
   error?: string;
   altError?: string;
   includeCaption?: boolean;
+  /** Hide the alt-text input (e.g. a favicon, which has no meaningful alt). */
+  showAlt?: boolean;
   hint?: string;
 }
 
@@ -175,6 +177,7 @@ export function ImageField({
   error,
   altError,
   includeCaption,
+  showAlt = true,
   hint,
 }: ImageFieldProps) {
   const [preview, setPreview] = useState<string>("");
@@ -293,20 +296,22 @@ export function ImageField({
             ) : null}
           </div>
           {localError || error ? <p className="ad-error">{localError ?? error}</p> : null}
-          <AdField
-            id={`${inputId}-alt`}
-            label="Alt text"
-            hint="Describes the image for search and screen readers"
-            error={altError}
-          >
-            <TextInput
+          {showAlt ? (
+            <AdField
               id={`${inputId}-alt`}
-              type="text"
-              value={value.alt}
+              label="Alt text"
+              hint="Describes the image for search and screen readers"
               error={altError}
-              onChange={(event) => onChange({ ...value, alt: event.target.value })}
-            />
-          </AdField>
+            >
+              <TextInput
+                id={`${inputId}-alt`}
+                type="text"
+                value={value.alt}
+                error={altError}
+                onChange={(event) => onChange({ ...value, alt: event.target.value })}
+              />
+            </AdField>
+          ) : null}
           {includeCaption ? (
             <AdField id={`${inputId}-caption`} label="Caption">
               <TextInput

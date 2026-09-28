@@ -101,8 +101,8 @@ export default function InquiriesView() {
             <DetailRow label="Event date" value={formatInquiryDate(selected.eventDate)} />
             <DetailRow label="Event type" value={selected.eventType ?? ""} />
             <DetailRow label="Venue" value={selected.venue ?? ""} />
-            <DetailRow label="Guests" value={selected.guests ?? ""} />
-            <DetailRow label="Photobooth" value={selected.photobooth ?? ""} />
+            <DetailRow label="Service" value={selected.service ?? ""} />
+            <DetailRow label="Package" value={selected.package ?? ""} />
             <DetailRow label="Message" value={selected.message ?? ""} />
           </dl>
           <p className="ad-inquiry-actions">
@@ -167,7 +167,7 @@ export default function InquiriesView() {
                   <th scope="col">Event date</th>
                   <th scope="col">Event type</th>
                   <th scope="col" className="ad-hide-sm">
-                    Guests
+                    Service
                   </th>
                   <th scope="col">Submitted</th>
                 </tr>
@@ -191,7 +191,7 @@ export default function InquiriesView() {
                     <td className="ad-hide-sm">{inquiry.email}</td>
                     <td>{formatInquiryDate(inquiry.eventDate)}</td>
                     <td>{inquiry.eventType || "Not specified"}</td>
-                    <td className="ad-hide-sm">{inquiry.guests || "-"}</td>
+                    <td className="ad-hide-sm">{inquiry.service || "-"}</td>
                     <td>{formatInquiryDateTime(inquiry.submittedAt)}</td>
                   </tr>
                 ))}

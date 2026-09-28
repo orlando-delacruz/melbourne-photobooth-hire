@@ -134,7 +134,8 @@ export type Database = {
           message: string | null;
           mobile: string | null;
           name: string;
-          photobooth: string | null;
+          package: string | null;
+          service: string | null;
           venue: string | null;
         };
         Insert: {
@@ -147,7 +148,8 @@ export type Database = {
           message?: string | null;
           mobile?: string | null;
           name: string;
-          photobooth?: string | null;
+          package?: string | null;
+          service?: string | null;
           venue?: string | null;
         };
         Update: {
@@ -160,7 +162,8 @@ export type Database = {
           message?: string | null;
           mobile?: string | null;
           name?: string;
-          photobooth?: string | null;
+          package?: string | null;
+          service?: string | null;
           venue?: string | null;
         };
         Relationships: [];
@@ -355,6 +358,7 @@ export type Database = {
           rating: number | null;
           slug: string;
           sort_order: number;
+          status: Database["public"]["Enums"]["review_status"];
           updated_at: string;
         };
         Insert: {
@@ -366,6 +370,7 @@ export type Database = {
           rating?: number | null;
           slug: string;
           sort_order?: number;
+          status?: Database["public"]["Enums"]["review_status"];
           updated_at?: string;
         };
         Update: {
@@ -377,6 +382,7 @@ export type Database = {
           rating?: number | null;
           slug?: string;
           sort_order?: number;
+          status?: Database["public"]["Enums"]["review_status"];
           updated_at?: string;
         };
         Relationships: [];
@@ -391,6 +397,7 @@ export type Database = {
     Enums: {
       package_badge: "none" | "basic" | "most-popular" | "best-value" | "custom";
       service_badge: "basic" | "most-popular" | "best-value" | "custom";
+      review_status: "pending" | "approved" | "rejected";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -514,6 +521,7 @@ export const Constants = {
     Enums: {
       package_badge: ["none", "basic", "most-popular", "best-value", "custom"],
       service_badge: ["basic", "most-popular", "best-value", "custom"],
+      review_status: ["pending", "approved", "rejected"],
     },
   },
 } as const;

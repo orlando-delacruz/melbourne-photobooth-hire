@@ -346,11 +346,11 @@ A successful website build does not prove that third-party integrations are func
 
 ---
 
-## 11. Google Review Functionality
+## 11. Review Functionality
 
 The website should use the client's Google Business Profile review destination.
 
-It should not implement a custom review submission or review-storage system.
+It implements exactly one on-site review workflow: the confirmed moderated testimonials flow (REQ-REV-008 through REQ-REV-012, DEC-035) — visitor submissions enter as Pending, and only admin-approved reviews show publicly.
 
 Before launch, verify:
 
@@ -358,6 +358,7 @@ Before launch, verify:
 * the link points to the correct client-owned Google review destination
 * the link works from supported devices
 * no development/test review destination remains
+* the on-site review modal submits, lands as Pending in admin, stays off the public site until approved, and appears live after approval
 
 The final Google review URL must be confirmed before production launch.
 

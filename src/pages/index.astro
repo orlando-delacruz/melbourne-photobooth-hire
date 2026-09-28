@@ -6,11 +6,10 @@ import LiveServicesSection from "../components/islands/LiveServicesSection";
 import LiveShowcaseSection from "../components/islands/LiveShowcaseSection";
 import LivePackagesSection from "../components/islands/LivePackagesSection";
 import LiveFaqTeaser from "../components/islands/LiveFaqTeaser";
-import LiveChipsSection from "../components/islands/LiveChipsSection";
 import LiveHomeHero from "../components/islands/LiveHomeHero";
-import LiveIntro from "../components/islands/LiveIntro";
 import LiveSteps from "../components/islands/LiveSteps";
 import LiveMarquee from "../components/islands/LiveMarquee";
+import ReviewModal from "../components/islands/ReviewModal";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import {
   loadPublicContent,
@@ -27,10 +26,17 @@ const { heroBackgroundImage, ctaImage } = await loadPublicContent();
 const liveModules = await loadPublicModules();
 const { pages: cmsPages } = await loadPublicPages();
 const home = cmsPages.home;
+// Module rows are the source of truth; the deprecated home-blob fallback
+// predates moderation and was always public, so it reads as approved.
 const liveTestimonials =
-  liveModules.testimonials.length > 0 ? liveModules.testimonials : home.testimonials;
+  liveModules.testimonials.length > 0
+    ? liveModules.testimonials
+    : home.testimonials.map((item) => ({ ...item, status: "approved" as const }));
 const seo = await loadPublicSeo("home");
 setPublicCache(Astro.response.headers);
+// Spam protection renders only when a site key is configured; the server
+// verifies the token when its secret is set (see src/pages/api/reviews.ts).
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
 ---
 
 <BaseLayout
@@ -53,25 +59,37 @@ setPublicCache(Astro.response.headers);
   <LiveHomeHero
     client:visible
     initial={home.hero}
+    initialServices={liveModules.services}
+    initialPackages={liveModules.packages}
     fallbackBackgroundSrc={heroBackgroundImage?.src}
     fallbackBackgroundAlt={heroBackgroundImage?.alt}
   />
 
-  <LiveIntro client:visible initialHome={home} />
+  <LivePackagesSection client:visible initial={liveModules.packages} initialHome={home} />
 
   <LiveServicesSection client:visible initial={liveModules.services} initialHome={home} />
 
   <LiveShowcaseSection client:visible initial={liveModules.gallery} initialHome={home} />
 
-  <LivePackagesSection client:visible initial={liveModules.packages} initialHome={home} />
-
-  <LiveSteps client:visible initialHome={home} />
-
   <LiveMarquee client:visible initial={liveTestimonials} initialHome={home} />
+
+  <ReviewModal
+    client:idle
+    eventTypes={liveModules["event-types"].map((item) => item.label)}
+    turnstileSiteKey={turnstileSiteKey}
+  />
+  {turnstileSiteKey ? (
+    <script
+      is:inline
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      async
+      defer
+    ></script>
+  ) : null}
 
   <LiveFaqTeaser client:visible initial={liveModules.faqs} initialHome={home} />
 
-  <LiveChipsSection client:visible initial={liveModules["event-types"]} initialHome={home} />
+  <LiveSteps client:visible initialHome={home} />
 
   <LiveCtaBand
     client:visible

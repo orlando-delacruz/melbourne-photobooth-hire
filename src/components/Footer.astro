@@ -1,5 +1,6 @@
 ---
 import type { NavItem } from "./islands/MobileNav";
+import LiveBrandLogo from "./islands/LiveBrandLogo";
 import LiveBrandName from "./islands/LiveBrandName";
 import { LiveFooterBase, LiveFooterBrand, LiveFooterCta } from "./islands/LiveFooterPanels";
 import type { SiteSettingsContent } from "../lib/cms/types";
@@ -15,6 +16,7 @@ const { items, initialSettings } = Astro.props;
   <div class="footer-glow" aria-hidden="true"></div>
   <div class="container footer-top">
     <div class="footer-brand">
+      <LiveBrandLogo client:visible initialSettings={initialSettings} />
       <p class="brand-name">
         <span class="brand-mark" aria-hidden="true">
           <svg

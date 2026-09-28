@@ -1,6 +1,7 @@
 ---
 import type { NavItem } from "./islands/MobileNav";
 import MobileNav from "./islands/MobileNav";
+import LiveBrandLogo from "./islands/LiveBrandLogo";
 import LiveBrandName from "./islands/LiveBrandName";
 import type { SiteSettingsContent } from "../lib/cms/types";
 import { ENQUIRY_HREF } from "../lib/navigation";
@@ -16,6 +17,7 @@ const { items, currentPath, initialSettings } = Astro.props;
 <header class="site-header" data-site-header>
   <div class="container header-inner">
     <a class="brand" href="/">
+      <LiveBrandLogo client:visible initialSettings={initialSettings} />
       <span class="brand-mark" aria-hidden="true">
         <svg
           width="26"

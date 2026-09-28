@@ -1,14 +1,12 @@
 // Live packages plans grid (DEC-033).
 //
 // Mirrors the packages.astro #package-plans section: live heading copy,
-// empty-state branch, card grid (middle card scales like SSR), and the
-// footnote CTA. No highlight filter — the page renders every RLS-visible
-// row, same as SSR.
+// empty-state branch and card grid (middle card scales like SSR).
+// No highlight filter — the page renders every RLS-visible row, same as SSR.
 import type { PackagesPageContent, PackageItem } from "../../lib/cms/types";
 import { fetchPackages, fetchPageContent } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import { packageBadgeText } from "../live/badges";
-import LiveButton from "../live/LiveButton";
 import LiveCard from "../live/LiveCard";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
@@ -51,20 +49,14 @@ export default function LivePlansSection({ initial, initialPage }: LivePlansSect
                 description={pkg.summary}
                 items={pkg.inclusions}
                 featured={pkg.badgeType === "most-popular"}
-                href="/contact"
-                ctaLabel="Enquire now"
+                href={`/contact?package=${encodeURIComponent(pkg.id)}`}
+                ctaLabel="Enquire Now"
                 cmsId={pkg.id}
               />
             </Reveal>
           ))}
         </div>
       )}
-      <div className="packages-foot">
-        <p className="packages-note">{page.footNote}</p>
-        <LiveButton href="/contact" variant="primary" size="lg" arrow>
-          {page.checkDateLabel}
-        </LiveButton>
-      </div>
     </section>
   );
 }

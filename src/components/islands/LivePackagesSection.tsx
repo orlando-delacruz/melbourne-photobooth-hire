@@ -24,6 +24,9 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
   const heading = home.packagesHeading;
   const compareLabel = home.packagesCompareLabel;
   const visible = packages.filter((pkg) => pkg.highlight !== false);
+  // Homepage cards stay scannable: the first four inclusions tease the
+  // list; the Packages page renders every inclusion for each package.
+  const previewInclusions = (pkg: PackageItem): string[] => pkg.inclusions.slice(0, 4);
 
   return (
     <section className="section on-dark" aria-labelledby="packages-heading">
@@ -45,10 +48,10 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
               meta={pkg.durationLabel}
               price={pkg.priceLabel}
               description={pkg.summary}
-              items={pkg.inclusions}
+              items={previewInclusions(pkg)}
               featured={pkg.badgeType === "most-popular"}
-              href="/contact"
-              ctaLabel="Enquire about this package"
+              href={`/contact?package=${encodeURIComponent(pkg.id)}`}
+              ctaLabel="Enquire Now"
               cmsId={pkg.id}
             />
           </Reveal>

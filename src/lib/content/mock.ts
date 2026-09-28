@@ -21,9 +21,14 @@ export const mockContent: SiteContent = {
       summary:
         "An open-air, studio-lit booth that turns any corner of your venue into a photo studio. Professional lighting, a custom print template and a friendly attendant keep the line moving all night.",
       highlights: [
-        "Open-air, studio-lit setup",
-        "Unlimited sessions while you hire",
-        "Custom-branded prints in seconds",
+        "Professional setup & styling",
+        "Studio-quality photos with custom templates",
+        "Personalised event branding & photo layouts",
+        "Luxury backdrops & fun props",
+        "Instant photo printing + digital sharing",
+        "Unlimited photo sessions",
+        "Red carpet & golden bollard setup",
+        "Professional setup and pack-down service",
       ],
     },
     {
@@ -48,9 +53,13 @@ export const mockContent: SiteContent = {
       summary:
         "A 360° slow-motion platform experience. Guests strike a pose, the camera sweeps around them, and a share-ready clip lands on their phone by QR before they sit back down.",
       highlights: [
-        "360° slow-motion clips",
-        "Instant QR download, no app required",
-        "Share-ready in seconds",
+        "360 slow-motion video capture",
+        "Personalised video overlays & event branding",
+        "Fun props and guest interaction",
+        "Instant digital sharing via QR code",
+        "Professional lighting for premium videos",
+        "Red carpet & golden bollard setup",
+        "Professional setup and pack-down service",
       ],
     },
   ],
@@ -280,7 +289,7 @@ export const mockContent: SiteContent = {
       id: "how-much",
       question: "How much does photobooth hire cost?",
       answer:
-        "Hire starts at $350 for two hours, $450 for three hours and $600 for four hours. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.",
+        "Price Starts $130. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.",
     },
     {
       id: "whats-included",
@@ -330,7 +339,7 @@ export const mockContent: SiteContent = {
     heroHeadline: "Capture every moment.",
     heroSupporting:
       "Melbourne's photobooth hire for weddings, birthdays and corporate events, with custom prints and instant QR downloads.",
-    serviceAreaStatement: "Based in Melbourne, serving surrounding regions.",
+    serviceAreaStatement: "Melbourne Wide / Victoria Wide",
     reviewUrl: null,
   },
   about: {
@@ -376,8 +385,8 @@ export const mockContent: SiteContent = {
     alt: "An outdoor event set with elegant tables beneath warm string lights at night",
   },
   heroStats: [
-    { value: "3", label: "booth experiences", icon: "camera" },
-    { value: "4 hrs", label: "longest hire window", icon: "clock" },
+    { value: "3", label: "booth experiences", icon: "camera", source: "services" },
+    { value: "4 hrs", label: "longest hire window", icon: "clock", source: "longest-hire" },
     { value: "HD", label: "prints and QR downloads", icon: "qrcode" },
   ],
   serviceImages: {

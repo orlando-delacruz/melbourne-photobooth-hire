@@ -9,8 +9,8 @@
 import { getSupabaseBrowser, isSupabaseConfigured } from "../supabase/client";
 
 export const IMAGE_ACCEPT = "image/png,image/jpeg,image/webp";
-export const IMAGE_MAX_BYTES = 2 * 1024 * 1024;
-export const IMAGE_TYPES_LABEL = "PNG, JPEG or WebP up to 2 MB";
+export const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+export const IMAGE_TYPES_LABEL = "PNG, JPEG or WebP up to 10 MB";
 
 const BUCKET = "cms-media";
 
@@ -23,7 +23,7 @@ export function validateImageFile(file: File): void {
     throw new ImageFileError("Choose a PNG, JPEG or WebP image.");
   }
   if (file.size > IMAGE_MAX_BYTES) {
-    throw new ImageFileError("Image must be 2 MB or smaller.");
+    throw new ImageFileError("Image must be 10 MB or smaller.");
   }
 }
 

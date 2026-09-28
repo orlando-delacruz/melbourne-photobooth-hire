@@ -1,9 +1,11 @@
 // Live contact aside (DEC-033).
 //
-// Mirrors the contact.astro aside: next-steps from the contact blob, fact
-// rows (blob labels, live service-area statement from settings, blob reply
-// value) and the settings social list. SocialIcon rendering matches the
-// page exactly (label keyword, generic fallback).
+// Owns the contact page's information panel: business facts from the contact
+// blob and site settings (service area, phones, ABN, transport, reply time)
+// plus the settings social list. Rendered as a dark "event noir" panel that
+// balances the light form card; human labels stay CMS-driven, only the icon
+// scaffolding and panel chrome are presentation.
+import { BadgeCheck, Clock, MapPin, Phone, Truck } from "lucide-react";
 import type { ContactContent, SiteSettingsContent } from "../../lib/cms/types";
 import { fetchPageContent } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
@@ -25,30 +27,70 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
     return content ?? initialSettings;
   });
   const socials = settings.socials ?? [];
+  const phones = [settings.phonePrimary, settings.phoneSecondary].filter((phone): phone is string =>
+    Boolean(phone && phone.trim()),
+  );
 
   return (
-    <aside className="contact-aside">
-      <h2 id="contact-next">{contactPage.asideHeading}</h2>
-      <ol className="next-steps">
-        {contactPage.steps.map((step, index) => (
-          <li key={`${step.title}-${index}`}>
-            <span className="next-num" aria-hidden="true">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <div className="next-body">
-              <h3>{step.title}</h3>
-              <p>{step.detail}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
+    <aside className="contact-aside on-dark">
+      <div className="contact-aside__glow" aria-hidden="true" />
       <dl className="aside-facts">
         <div className="aside-fact">
-          <dt>{contactPage.serviceAreaLabel}</dt>
+          <dt className="aside-fact__label">
+            <span className="aside-fact__icon" aria-hidden="true">
+              <MapPin size={16} />
+            </span>
+            {contactPage.serviceAreaLabel}
+          </dt>
           <dd>{settings.serviceAreaStatement}</dd>
         </div>
+        {phones.length > 0 ? (
+          <div className="aside-fact">
+            <dt className="aside-fact__label">
+              <span className="aside-fact__icon" aria-hidden="true">
+                <Phone size={16} />
+              </span>
+              Phone
+            </dt>
+            <dd>
+              {phones.map((phone, index) => (
+                <span key={phone}>
+                  {index > 0 ? " · " : null}
+                  <a href={`tel:${phone.replace(/[\s()]/g, "")}`}>{phone}</a>
+                </span>
+              ))}
+            </dd>
+          </div>
+        ) : null}
+        {settings.abn ? (
+          <div className="aside-fact">
+            <dt className="aside-fact__label">
+              <span className="aside-fact__icon" aria-hidden="true">
+                <BadgeCheck size={16} />
+              </span>
+              ABN
+            </dt>
+            <dd>{settings.abn}</dd>
+          </div>
+        ) : null}
+        {settings.transportNote ? (
+          <div className="aside-fact">
+            <dt className="aside-fact__label">
+              <span className="aside-fact__icon" aria-hidden="true">
+                <Truck size={16} />
+              </span>
+              Transport
+            </dt>
+            <dd>{settings.transportNote}</dd>
+          </div>
+        ) : null}
         <div className="aside-fact">
-          <dt>{contactPage.typicalReplyLabel}</dt>
+          <dt className="aside-fact__label">
+            <span className="aside-fact__icon" aria-hidden="true">
+              <Clock size={16} />
+            </span>
+            {contactPage.typicalReplyLabel}
+          </dt>
           <dd>{contactPage.typicalReplyValue}</dd>
         </div>
       </dl>

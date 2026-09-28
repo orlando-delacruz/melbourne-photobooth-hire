@@ -102,22 +102,8 @@ export interface HeroContent {
   stats: HeroStat[];
 }
 
-export interface IntroPromise {
-  title: string;
-  detail: string;
-}
-
-export interface IntroContent {
-  eyebrow: string;
-  heading: string;
-  body: string;
-  promises: IntroPromise[];
-  aboutLabel: string;
-}
-
 export interface HomePageContent {
   hero: HeroContent;
-  intro: IntroContent;
   servicesHeading: SectionHeadingContent;
   servicesCardLabel: string;
   showcaseHeading: SectionHeadingContent;
@@ -136,15 +122,19 @@ export interface HomePageContent {
   testimonials: TestimonialContent[];
   faqHeading: SectionHeadingContent;
   faqCtaLabel: string;
-  eventTypesHeading: SectionHeadingContent;
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
+
+/** Derived hero stat values (DEC-037); leave unset for a manually typed value. */
+export type HeroStatSource = "services" | "longest-hire";
 
 export interface HeroStat {
   value: string;
   label: string;
   icon?: "camera" | "clock" | "qrcode";
+  /** When set, the value is computed at render from live module data. */
+  source?: HeroStatSource;
 }
 
 export interface ProcessStep {
@@ -181,9 +171,6 @@ export interface PackagesPageContent {
   header: PageHeaderContent;
   plansHeading: SectionHeadingContent;
   emptyState: EmptyStateContent;
-  footNote: string;
-  checkDateLabel: string;
-  included: { eyebrow: string; heading: string; lede: string; standardItems: string[] };
   addonsHeading: SectionHeadingContent;
   addOns: AddOnContent[];
   policies: { eyebrow: string; heading: string; lede: string };
@@ -216,12 +203,6 @@ export interface AboutPageContent {
   valuesHeading: SectionHeadingContent;
   values: AboutValue[];
   stats: AboutStat[];
-  next: {
-    heading: string;
-    suffix: string;
-    servicesLabel: string;
-    enquireLabel: string;
-  };
   ctaBand: CtaBandContent;
   seo: PageMeta;
 }
@@ -248,20 +229,12 @@ export interface FaqPageContent {
 
 export interface ContactContent {
   header: PageHeaderContent;
-  asideHeading: string;
-  steps: ContactStep[];
   serviceAreaLabel: string;
   typicalReplyLabel: string;
   typicalReplyValue: string;
   formTitle: string;
   formLede: string;
-  formFoot: string;
   seo: PageMeta;
-}
-
-export interface ContactStep {
-  title: string;
-  detail: string;
 }
 
 // ── Modules ─────────────────────────────────────────────────────────────────
@@ -334,15 +307,23 @@ export interface FaqItem {
 }
 
 /**
- * One homepage testimonial (DEC-034). Array order is the display order.
- * No highlight flag: every saved testimonial shows, in module order.
+ * One homepage testimonial (DEC-034, moderated DEC-035). Array order is the
+ * display order. Only approved items reach the public marquee (enforced by
+ * RLS); pending items await moderation and rejected items stay hidden.
+ * Visitor submissions always arrive as pending through POST /api/reviews.
  */
+export type ReviewStatus = "pending" | "approved" | "rejected";
+
 export interface TestimonialItem {
   id: string;
   quote: string;
   name: string;
   eventType: string;
   rating?: number;
+  status: ReviewStatus;
+  /** Submission date/time from the database; the server owns it and the
+   * admin save path never writes it. */
+  createdAt?: string;
 }
 
 /** One contact-form event type option. Array order is the display order. */
@@ -373,6 +354,19 @@ export interface SiteSettingsContent {
   reviewUrl: string;
   messengerUrl: string;
   socials: SocialLink[];
+  /** Global website logo (header and footer). Empty falls back to the built-in mark. */
+  logo?: CmsImage;
+  /** Browser favicon. Empty falls back to the bundled SVG. */
+  favicon?: CmsImage;
+  /** Contact phone numbers shown in the footer and on the contact page. */
+  phonePrimary?: string;
+  phoneSecondary?: string;
+  /** Australian Business Number shown in the footer and contact aside. */
+  abn?: string;
+  /** Business credentials (for example registration and insurance statements). */
+  trustItems?: string[];
+  /** Transport fee note shown in the footer and on the contact page. */
+  transportNote?: string;
   footerCta: { title: string; lede: string; label: string };
 }
 

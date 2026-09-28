@@ -1,20 +1,17 @@
 // Live about page regions (DEC-033).
 //
-// Story, stats, values and next-step blocks with live copy from the about
-// blob (plus live service-area statement from settings for the next-step
-// line). The story image derives from the Gallery/Services modules exactly
-// like SSR (first highlighted gallery image, else the premium service
-// image), so image changes propagate too. Icons match SSR: positional
-// stats glyphs, per-id value glyphs with the craft fallback.
+// Story, stats and values blocks with live copy from the about blob. The
+// story image derives from the Gallery/Services modules exactly like SSR
+// (first highlighted gallery image, else the premium service image), so
+// image changes propagate too. Icons match SSR: positional stats glyphs,
+// per-id value glyphs with the craft fallback.
 import type {
   AboutPageContent,
   GalleryItem,
   ServiceItem,
-  SiteSettingsContent,
 } from "../../lib/cms/types";
 import { fetchGallery, fetchPageContent, fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
-import LiveButton from "../live/LiveButton";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
 import { useLiveDoc, useLiveRows } from "./useLiveSync";
@@ -49,24 +46,18 @@ function valueIconSvg(id: string): string {
 
 export interface LiveAboutSectionsProps {
   initialPage: AboutPageContent;
-  initialSettings: SiteSettingsContent;
   initialGallery: GalleryItem[];
   initialServices: ServiceItem[];
 }
 
 export default function LiveAboutSections({
   initialPage,
-  initialSettings,
   initialGallery,
   initialServices,
 }: LiveAboutSectionsProps) {
   const page = useLiveDoc("page_contents", "about", initialPage, async () => {
     const content = (await fetchPageContent("about")) as AboutPageContent | null;
     return content ?? initialPage;
-  });
-  const settings = useLiveDoc("page_contents", "settings", initialSettings, async () => {
-    const content = (await fetchPageContent("settings")) as SiteSettingsContent | null;
-    return content ?? initialSettings;
   });
   const gallery = useLiveRows("gallery_items", initialGallery, fetchGallery);
   const services = useLiveRows("services", initialServices, fetchServices);
@@ -149,25 +140,6 @@ export default function LiveAboutSections({
               </article>
             </Reveal>
           ))}
-        </div>
-      </section>
-
-      <section className="section" aria-labelledby="about-next">
-        <div className="about-next">
-          <div>
-            <h2 id="about-next">{page.next.heading}</h2>
-            <p>
-              {settings.serviceAreaStatement} {page.next.suffix}
-            </p>
-          </div>
-          <p className="about-next-ctas">
-            <LiveButton href="/services" variant="secondary" size="lg" arrow>
-              {page.next.servicesLabel}
-            </LiveButton>
-            <LiveButton href="/contact" variant="primary" size="lg" arrow>
-              {page.next.enquireLabel}
-            </LiveButton>
-          </p>
         </div>
       </section>
     </>

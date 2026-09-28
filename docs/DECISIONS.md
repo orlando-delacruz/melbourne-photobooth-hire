@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty-three decision records exist (DEC-001 through DEC-033). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty-eight decision records exist (DEC-001 through DEC-038). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -288,6 +288,11 @@ Thirty-three decision records exist (DEC-001 through DEC-033). Existing selectio
 | DEC-031 | Inquiry endpoint: strict Gmail delivery, visible failures | Accepted | 2026-09-25 |
 | DEC-032 | Social profiles rendered in footer, contact and sameAs | Accepted | 2026-09-25 |
 | DEC-033 | Supabase Realtime sync for public content | Accepted | 2026-09-25 |
+| DEC-034 | Testimonials move from the home blob to a Modules collection | Accepted | 2026-09-25 |
+| DEC-035 | Customer review submission with admin moderation | Accepted | 2026-09-28 |
+| DEC-036 | Contextual enquiry: Service/Package selection from CMS | Accepted | 2026-09-28 |
+| DEC-037 | Derived homepage hero stat values | Accepted | 2026-09-28 |
+| DEC-038 | 10 MB upload cap and CMS logo & favicon settings | Accepted | 2026-09-28 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -911,6 +916,81 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/REQUIREMENTS.md` (REQ-REV-005/006/007), `docs/ARCHITECTURE.md`, `docs/DATA-MODEL.md` (§5.6), DEC-018/DEC-024/DEC-033.
 - **Supersedes / Superseded by:** Extends DEC-018 (module pattern) to testimonials; narrows the Homepage editor scope.
 - **Open questions or follow-up:** Apply `schema.sql`/`rls.sql`/`seed.sql`/`migration-realtime.sql` to the live database; verify module CRUD → homepage round-trip; remove the deprecated home-blob testimonials field once prod is saved.
+
+### DEC-035 — Customer review submission with admin moderation
+
+- **ID:** DEC-035
+- **Title:** Customer review submission with admin moderation
+- **Status:** Accepted
+- **Date:** 2026-09-28
+- **Context:** The client explicitly requested a visitor review flow for the homepage Testimonial section: a modal form (name, event type, 1–5 stars, message) whose submissions enter admin as Pending and never show publicly until approved. This directly conflicts with REQ-REV-005/006 (**Must**: no custom review submission system/database) and REQ-OOS-007 plus their restatements across the project docs. Per `docs/DECISIONS.md` §11 a decision cannot override a confirmed requirement, so the owning requirements were amended first (see Related documents) and this record captures the expansion.
+- **Decision:**
+  1. **Fail-closed moderation state.** New `review_status` enum (`pending | approved | rejected`) and `status` column defaulting to `pending`; existing rows backfilled to `approved`. Anonymous RLS reads approved rows only; there is deliberately no anonymous write policy — submissions go through `POST /api/reviews` only.
+  2. **Server endpoint.** `POST /api/reviews` re-validates with a shared Zod schema (name 1–120, event type 1–120, rating int 1–5 required, quote 1–2000), verifies Turnstile when configured, and inserts with the service-role client as `pending` (slug minted server-side, `sort_order` appended). Status is hardcoded and never accepted from the visitor.
+  3. **Public modal.** A "Send as Review" trigger replaces the section's "Enquire now" CTA in `LiveMarquee`; a `ReviewModal` island (lightbox dialog mechanics, token CSS, RHF + shared resolver, inline errors, inline success) posts to the endpoint. No new dependencies.
+  4. **Single admin surface.** The existing `mod-testimonials` editor gains status pills, submitted dates, and Approve/Reject actions (SweetAlert2 confirmations) via a targeted `setTestimonialStatus` update; create/edit/reorder/delete and the whole-list save semantics are preserved, with statuses round-tripped.
+  5. **No new realtime mechanism.** Approve/reject/delete propagate through the existing `testimonials` channel + debounced RLS-filtered refetch (DEC-033).
+- **Alternatives considered:** Dedicated `/admin/reviews` moderation page — rejected (two surfaces managing one table; the module's delete-missing save would threaten out-of-list rows). Direct browser insert with an anon `pending`-only policy — rejected (wider write surface, no Turnstile gate). New CMS fields for the modal labels — rejected (hardcoded "Send as Review"/"Enquire now" matches the header and services-page precedent).
+- **Rationale:** Smallest coherent expansion of the existing testimonials module into a moderated collection: reuses the table, RLS model, endpoint shape, form conventions, modal mechanics, alert system and realtime channel; the public site can only ever render approved rows.
+- **Consequences:** `database.types.ts` extended by hand in CLI shape — re-run `supabase gen types` after migration and diff. Apply `supabase/migration-reviews.sql` once at rollout before the form goes live (the backfill must not re-run afterwards). `homeSchema.testimonials` fallback reads as approved (it predates moderation and was always public).
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-REV-005/006 amended, REQ-REV-008+ added, REQ-OOS-007), `docs/DATA-MODEL.md` (§5.6, §16), `docs/SECURITY.md`, `docs/API.md` (new endpoint), `docs/UI-UX.md` (§16, §26), `docs/PROJECT.md`, `docs/ARCHITECTURE.md`, `docs/TECH-STACK.md`, `docs/ROADMAP.md`, `docs/DEPLOYMENT.md`, `docs/DEVELOPMENT.md`, `docs/TESTING.md`, DEC-034.
+- **Supersedes / Superseded by:** Extends DEC-034 (moderates the module collection it created); amends the REQ-REV-005/006 exclusion with explicit client approval.
+- **Open questions or follow-up:** Apply `supabase/migration-reviews.sql` to the live database; operator browser verification (submit → Pending in admin only; approve → appears live; reject → disappears live); `supabase gen types` regen-diff; visual modal sign-off on mobile/desktop.
+
+### DEC-036 — Contextual enquiry: Service/Package selection from CMS
+
+- **ID:** DEC-036
+- **Title:** Contextual enquiry: Service/Package selection from CMS
+- **Status:** Accepted
+- **Date:** 2026-09-28
+- **Context:** The contact form's provisional fields included "Estimated guests" and a hardcoded "Preferred photobooth" option list (`PHOTOBOOTHS`). The operator reworked the enquiry flow: Service and Package cards must preselect the matching item on the Contact form, the "Preferred photobooth" dropdown must be sourced from the live Services module, a new Packages dropdown must be sourced from the Packages module, and the Estimated guests field must be removed. No option list may be hardcoded (REQ-INQ-010 candidates were provisional; REQ-INQ-008 is **Confirmation Required**).
+- **Decision:**
+  1. **Query-param context.** Service/Package card CTAs link to `/contact?service=<slug>` / `?package=<slug>` using each item's stable `id` (slug) — never display text. `contact.astro` (SSR) resolves each param independently against the public (highlighted) module rows and passes the matched item names to `InquiryForm`. Unknown/absent params leave the dropdown on its placeholder (direct visits unchanged).
+  2. **Live CMS options.** The Service and Package dropdowns read the existing `services` / `packages` modules through `useLiveRows` + `fetchServices`/`fetchPackages`, so options stay in step with admin edits via the DEC-033 realtime channel. Hardcoded `PHOTOBOOTHS` is deleted; no service/package names live in the form.
+  3. **Preserved selection.** RHF `defaultValues` seed the two fields, the selected option is server-rendered via `defaultValue`, and RHF keeps the values through interaction and validation. A small "Enquiring about …" chip makes the contextual item immediately visible.
+  4. **Field-set change.** "Estimated guests" is removed from the form, the shared `inquirySchema`, and the submission payload (the `guests` DB column and its historical values are retained). "Preferred photobooth" becomes "Service"; "Package" is added. Both remain optional, so validation behaviour is unchanged.
+  5. **Persistence.** `supabase/migration-inquiry-service-package.sql` renames `photobooth` → `service` (data preserved) and adds nullable `package`; `schema.sql`, `database.types.ts`, `POST /api/inquiries`, the admin adapter and the admin inquiry views follow. The EmailJS payload keeps a legacy `photobooth` alias of the service value so the current Gmail template keeps rendering, and adds `service` / `package`.
+- **Alternatives considered:** Passing the display name instead of a slug — rejected (renames/duplicates break the link). A second service/package data source — rejected (the modules are the single source). A client-side `location.search` effect — rejected (SSR props avoid a pre-hydration flash and keep the page cacheable per URL). Dropping the `guests` column outright — rejected (destroys historical inquiry data; the column stays, only the form/payload stops using it). Hardcoding Package options — rejected (explicit requirement).
+- **Rationale:** Reuses the existing module data, realtime channel, validation schema and admin views; the only new backend surface is one idempotent migration. The slug-based, SSR-resolved context keeps the form honest (no invented values) and works for the initial render without client JS.
+- **Consequences:** The migration must be applied **before** deploying the matching code, or inserts into `service`/`package` fail. `database.types.ts` was extended by hand in CLI shape — re-run `supabase gen types` after the migration and diff. The admin Guests column/detail row is removed (data retained). The EmailJS template should drop its `{{guests}}` line when convenient.
+- **Related documents:** `docs/REQUIREMENTS.md` (REQ-INQ-008/010), `docs/PROJECT.md` (§11), `docs/API.md` (§6), `docs/UI-UX.md` (§13), `docs/DATA-MODEL.md`, DEC-004/DEC-031/DEC-033.
+- **Supersedes / Superseded by:** Amends DEC-004's provisional field set (Service/Package selections confirmed by the operator); extends DEC-033 (realtime) to the enquiry dropdowns.
+- **Open questions or follow-up:** Apply `supabase/migration-inquiry-service-package.sql` before deploy; `supabase gen types` regen-diff; operator browser verification (card → contact preselection on desktop/mobile, validation keeps the selection); update the EmailJS Gmail template to use `service`/`package` and drop `{{guests}}`; a real submission write test needs approval.
+
+### DEC-037 — Derived homepage hero stat values
+
+- **ID:** DEC-037
+- **Title:** Derived homepage hero stat values
+- **Status:** Accepted
+- **Date:** 2026-09-28
+- **Context:** The homepage hero stat row (`home.hero.stats` — value, label, icon) was entirely hand-typed in Admin → Home. The operator wants the "booth experiences" and hours ("longest hire window") values to stay correct automatically as the Services and Packages modules change, rather than being re-typed. The modules are the single source of truth (DEC-018) and are already public/realtime.
+- **Decision:**
+  1. **Per-stat source.** `HeroStat` gains an optional `source: "services" | "longest-hire"`. A blank source keeps the manually typed value; a set source makes the value derived at render. The admin Home editor gets a "Value source" select per stat and hides the Value input while a source is set (a hint names the source module).
+  2. **Derivation.** `services` renders the count of publicly available services (`highlight !== false`, i.e. the anon-RLS set). `longest-hire` renders the maximum integer parsed from the packages' `durationLabel` values, formatted `"{n} hrs"` (`1 hr` singular), falling back to the stored value when nothing parses. Labels and icons stay CMS copy.
+  3. **Realtime.** `LiveHomeHero` subscribes to `services`/`packages` with the shared `useLiveRows` hooks (the homepage sections' pattern), so the derived values patch live; SSR renders the computed values on first paint because the island renders with the SSR module props.
+  4. **Schema.** The hero stat `value` becomes optional (an automatic stat needs no typed value) with a refinement requiring a value only for manual stats. No table/column change — the data lives in the `page_contents` JSONB blob.
+- **Alternatives considered:** Hardcoding the two stats in the hero component — rejected (labels/icons would lose CMS editing and mixing with the manual "HD" stat became special-cased). Inferring the source from the stat icon or label — rejected (fragile; icon is decorative, label is editable). A structured numeric `durationHours` field on packages — rejected for now (the operator approved parsing the existing duration label; a structured field can supersede this later).
+- **Consequences:** `supabase/migration-hero-stat-sources.sql` is available to stamp `source` on the two existing production stats by label (idempotent, ran once); without it they simply stay manual. Editing a package duration label to a form without a leading number makes `longest-hire` fall back to the stored value.
+- **Related documents:** `docs/UI-UX.md` (§7 homepage hero), `docs/DESIGN-SYSTEM.md` (hero/stat presentation), DEC-018/DEC-033.
+- **Supersedes / Superseded by:** Extends the module-as-source-of-truth model (DEC-018) into the hero stat values.
+- **Open questions or follow-up:** Operator confirms the derived count and hours on the live site after the migration; consider a structured package duration field if labels become non-numeric.
+
+### DEC-038 — 10 MB upload cap and CMS logo & favicon settings
+
+- **ID:** DEC-038
+- **Title:** 10 MB upload cap and CMS logo & favicon settings
+- **Status:** Accepted
+- **Date:** 2026-09-28
+- **Context:** The single CMS image upload path capped files at 2 MB (`IMAGE_MAX_BYTES` in `lib/cms/storage.ts`), and the brand mark/wordmark and browser favicon were code-only (static SVG in `Header.astro`/`Footer.astro`, `/favicon.svg` in `BaseLayout.astro`). The client asked for larger uploads (up to 10 MB) and for the logo and favicon to be managed centrally.
+- **Decision:**
+  1. **Cap 2 MB → 10 MB.** `IMAGE_MAX_BYTES = 10 * 1024 * 1024`; the accept list (PNG/JPEG/WebP) is unchanged; the too-large message and `IMAGE_TYPES_LABEL` read "10 MB". The cap is enforced only in the browser upload validator (`validateImageFile`) — the only writer — so no storage policy or bucket change is needed (`supabase/storage.sql` comment updated).
+  2. **Logo & favicon in Site Wide Settings.** `SiteSettingsContent` gains optional `logo` and `favicon` (`CmsImage`), validated with the existing `optionalImageSchema` and edited with the existing `ImageField` (new `showAlt` option; the favicon omits alt). They live in the existing `page_contents.settings` blob, so `savePageSection`'s existing image GC removes replaced/removed uploads. No new table, bucket or upload system.
+  3. **Public rendering.** A new `LiveBrandLogo` island (realtime via `useLiveSettings`) renders the logo in the header and footer; `:has(.brand-logo)` hides the built-in mark/wordmark so no duplicate controls appear. `BaseLayout` overrides `<link rel="icon">` with the uploaded favicon and derives its MIME from the file extension, falling back to the bundled `/favicon.svg`.
+- **Alternatives considered:** A dedicated logo/favicon table or bucket — rejected (the settings blob is the existing single source; a second store would duplicate upload/GC). Accepting SVG uploads for the favicon — rejected (keep the existing safe raster-only accept list; a PNG favicon is the standard, and the default stays SVG). SSR-only logo (no island) — rejected (the brand name is already live; the island keeps the header/footer consistent without new CSS architecture).
+- **Consequences:** Existing uploads and other CMS image fields are unaffected; `showAlt` defaults true so no existing `ImageField` call site changes. The live settings blob has no `logo`/`favicon` keys, which read as "unset" and fall back to the built-in mark/SVG.
+- **Related documents:** `docs/DESIGN-SYSTEM.md` (§17 media, §31 image guidelines), `docs/SECURITY.md` (upload handling), `docs/DATA-MODEL.md` (settings blob), DEC-024/DEC-028.
+- **Supersedes / Superseded by:** Amends the 2 MB cap described in DEC-017/DEC-024 era docs for the current implementation.
+- **Open questions or follow-up:** Operator browser test of a real 10 MB upload, replace and remove through the admin, and visual sign-off of the logo at header/footer sizes.
 
 ## 22. Related Documentation
 

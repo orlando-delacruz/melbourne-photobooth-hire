@@ -158,28 +158,22 @@ export const homeSchema = z.object({
     background: imageSchema,
     stats: z
       .array(
-        z.object({
-          value: shortText("each stat value", 40),
-          label: shortText("each stat label", 120),
-          icon: z.enum(["camera", "clock", "qrcode"]).optional(),
-        }),
+        z
+          .object({
+            // Automatic stats (see `source`) compute their value at render, so
+            // the stored value is optional; manual stats still require one.
+            value: z.string().trim().max(40, "Each stat value must be 40 characters or fewer."),
+            label: shortText("each stat label", 120),
+            icon: z.enum(["camera", "clock", "qrcode"]).optional(),
+            source: z.enum(["services", "longest-hire"]).optional(),
+          })
+          .refine((stat) => Boolean(stat.source) || stat.value.length > 0, {
+            message: "Enter the stat value.",
+            path: ["value"],
+          }),
       )
       .min(1, "Add at least one hero stat.")
       .max(6),
-  }),
-  intro: z.object({
-    eyebrow: shortText("the eyebrow"),
-    heading: shortText("the heading"),
-    body: longText("the body text", 2000),
-    promises: z
-      .array(
-        z.object({
-          title: shortText("each promise title"),
-          detail: shortText("each promise detail", 300),
-        }),
-      )
-      .max(6),
-    aboutLabel: shortText("the button label", 60),
   }),
   servicesHeading: sectionHeadingSchema,
   servicesCardLabel: shortText("the card button label", 60),
@@ -213,7 +207,6 @@ export const homeSchema = z.object({
     .max(30),
   faqHeading: sectionHeadingSchema,
   faqCtaLabel: shortText("the button label", 60),
-  eventTypesHeading: sectionHeadingSchema,
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
@@ -228,14 +221,6 @@ export const packagesPageSchema = z.object({
   header: pageHeaderSchema,
   plansHeading: sectionHeadingSchema,
   emptyState: emptyStateSchema,
-  footNote: longText("the note below the plans", 600),
-  checkDateLabel: shortText("the button label", 60),
-  included: z.object({
-    eyebrow: shortText("the eyebrow"),
-    heading: shortText("the heading"),
-    lede: longText("the supporting text", 600),
-    standardItems: z.array(shortText("each inclusion", 200)).max(30),
-  }),
   addonsHeading: sectionHeadingSchema,
   addOns: z
     .array(
@@ -284,12 +269,6 @@ export const aboutPageSchema = z.object({
     )
     .max(12),
   stats: z.array(statSchema).max(12),
-  next: z.object({
-    heading: shortText("the heading"),
-    suffix: shortText("the closing line", 200),
-    servicesLabel: shortText("the services button label", 60),
-    enquireLabel: shortText("the enquiry button label", 60),
-  }),
   ctaBand: ctaBandSchema,
   seo: pageMetaSchema,
 });
@@ -309,22 +288,11 @@ export const faqPageSchema = z.object({
 
 export const contactSchema = z.object({
   header: pageHeaderSchema,
-  asideHeading: shortText("the aside heading"),
-  steps: z
-    .array(
-      z.object({
-        title: shortText("each step title"),
-        detail: longText("each step detail", 600),
-      }),
-    )
-    .min(1, "Add at least one step.")
-    .max(8),
   serviceAreaLabel: shortText("the service area label", 80),
   typicalReplyLabel: shortText("the reply label", 80),
   typicalReplyValue: shortText("the reply value", 200),
   formTitle: shortText("the form title"),
   formLede: longText("the form introduction", 400),
-  formFoot: longText("the privacy note", 400),
   seo: pageMetaSchema,
 });
 
@@ -333,6 +301,9 @@ export const settingsSchema = z.object({
   serviceAreaStatement: longText("the service area statement", 400),
   reviewUrl: optionalUrl("the Google review URL"),
   messengerUrl: optionalUrl("the Messenger URL"),
+  /** Optional uploads; blank falls back to the built-in mark / bundled favicon. */
+  logo: optionalImageSchema.optional(),
+  favicon: optionalImageSchema.optional(),
   socials: z
     .array(
       z.object({
@@ -341,6 +312,23 @@ export const settingsSchema = z.object({
       }),
     )
     .max(12),
+  phonePrimary: z
+    .string()
+    .trim()
+    .max(40, "Phone number must be 40 characters or fewer.")
+    .optional(),
+  phoneSecondary: z
+    .string()
+    .trim()
+    .max(40, "Phone number must be 40 characters or fewer.")
+    .optional(),
+  abn: z.string().trim().max(40, "ABN must be 40 characters or fewer.").optional(),
+  trustItems: z.array(shortText("each business credential", 120)).max(8).optional(),
+  transportNote: z
+    .string()
+    .trim()
+    .max(200, "Transport note must be 200 characters or fewer.")
+    .optional(),
   footerCta: z.object({
     title: shortText("the footer heading"),
     lede: longText("the footer text", 400),
@@ -478,6 +466,7 @@ export const testimonialsModuleSchema = z
       name: shortText("the guest name", 120),
       eventType: shortText("the event type", 120),
       rating: z.number().int().min(1).max(5).optional(),
+      status: z.enum(["pending", "approved", "rejected"]),
     }),
   )
   .max(30);

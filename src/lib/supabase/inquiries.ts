@@ -16,8 +16,8 @@ function rowToInquiry(row: {
   event_date: string;
   event_type: string | null;
   venue: string | null;
-  guests: string | null;
-  photobooth: string | null;
+  service: string | null;
+  package: string | null;
   message: string | null;
   created_at: string;
 }): AdminInquiry {
@@ -29,8 +29,8 @@ function rowToInquiry(row: {
     eventDate: row.event_date,
     eventType: row.event_type ?? undefined,
     venue: row.venue ?? undefined,
-    guests: row.guests ?? undefined,
-    photobooth: row.photobooth ?? undefined,
+    service: row.service ?? undefined,
+    package: row.package ?? undefined,
     message: row.message ?? undefined,
     submittedAt: row.created_at,
   };

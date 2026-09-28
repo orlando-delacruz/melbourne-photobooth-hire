@@ -45,7 +45,7 @@ function summarizePage(key: CmsPageKey, content: CmsContent): string {
   switch (key) {
     case "home": {
       const page = content.pages.home;
-      return `${page.hero.stats.length} hero stats, ${page.intro.promises.length} promises, ${page.steps.length} process steps, ${content.modules.testimonials.length} reviews, ${content.modules["event-types"].length} event types`;
+      return `${page.hero.stats.length} hero stats, ${page.steps.length} process steps, ${content.modules.testimonials.length} reviews, ${content.modules["event-types"].length} event types`;
     }
     case "services":
       return "Page header, enquiry band and SEO; items live in Modules";
@@ -58,7 +58,7 @@ function summarizePage(key: CmsPageKey, content: CmsContent): string {
     case "faq":
       return "Page header, search and support copy; questions live in Modules";
     case "contact":
-      return `${content.pages.contact.steps.length} next steps`;
+      return "Page header, aside facts and form copy";
   }
 }
 

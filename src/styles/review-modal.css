@@ -1,0 +1,257 @@
+/* Customer review modal island styles (DEC-035).
+ *
+ * Plain, token-backed CSS (not styled-components) so the dialog is styled in
+ * the server-rendered stylesheet, matching styles/gallery-lightbox.css and
+ * styles/inquiry-form.css. The island loads the inquiry-form field system
+ * and the site button system itself; this file holds the dialog chrome, the
+ * star picker, and the dark-surface overrides that retune those light-theme
+ * systems for the ink panel (labels, required markers, error text and the
+ * submit button all need on-dark treatments to stay legible).
+ */
+
+.rv {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 2rem);
+  color-scheme: dark;
+}
+
+.rv-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 9, 6, 0.88);
+  backdrop-filter: blur(18px) saturate(120%);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+}
+
+.rv-panel {
+  position: relative;
+  width: min(100%, 34rem);
+  max-height: min(92vh, 52rem);
+  overflow-y: auto;
+  margin: 0;
+  background: var(--color-ink);
+  border: 1px solid var(--color-ink-hairline-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-3);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  color: var(--color-on-ink);
+}
+
+.rv-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.rv-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 500;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-on-ink);
+}
+
+.rv-lede {
+  margin: 0 0 var(--space-md);
+  color: var(--color-on-ink-secondary);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}
+
+/* ── Dark-surface retunes for the shared form/button systems ──────────── */
+
+.rv-panel .iq-label {
+  color: var(--color-on-ink);
+}
+
+.rv-panel .iq-req {
+  color: var(--color-accent-on-dark);
+}
+
+.rv-panel .iq-error {
+  color: color-mix(in srgb, var(--color-error) 50%, var(--color-on-ink));
+}
+
+.rv-panel .iq-submit {
+  background: var(--color-accent-on-dark);
+  color: var(--color-ink);
+}
+
+.rv-panel .iq-submit:hover {
+  background: var(--color-accent-on-dark);
+  box-shadow: var(--elevation-2);
+}
+
+.rv-panel .iq-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.rv-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-ink-hairline-strong);
+  background: transparent;
+  color: var(--color-on-ink);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-quick) var(--ease-default),
+    color var(--motion-quick) var(--ease-default);
+}
+
+.rv-close:hover {
+  border-color: var(--color-accent-on-dark);
+  color: var(--color-accent-on-dark);
+}
+
+.rv-close:focus-visible {
+  outline: 2px solid var(--color-accent-on-dark);
+  outline-offset: 2px;
+}
+
+/* Star picker: native radios in ascending DOM order (keyboard order matches
+ * the visual 1-to-5 sequence). Fill is driven by data-active on each star,
+ * set from the hovered-or-selected value in the component. */
+.rv-stars {
+  display: flex;
+  gap: var(--space-3xs);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Five 44px targets plus gaps must fit a 320px viewport (248px inner):
+ * keep the tight gap until there is room to breathe. */
+@media (min-width: 400px) {
+  .rv-stars {
+    gap: var(--space-2xs);
+  }
+}
+
+.rv-stars legend {
+  padding: 0;
+  margin-bottom: var(--space-2xs);
+}
+
+.rv-star {
+  position: relative;
+  display: inline-flex;
+}
+
+.rv-star input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rv-star svg {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: rgba(244, 238, 224, 0.28);
+  transition:
+    color var(--motion-quick) var(--ease-default),
+    transform var(--motion-quick) var(--ease-default);
+}
+
+.rv-star:hover svg {
+  transform: scale(1.08);
+}
+
+.rv-star[data-active="true"] svg {
+  color: var(--color-accent-on-dark);
+}
+
+.rv-star input:focus-visible + svg {
+  outline: 2px solid var(--color-accent-on-dark);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.rv-rating-text {
+  margin: var(--space-2xs) 0 0;
+  min-height: 1.5em;
+  color: var(--color-accent-on-dark);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+
+.rv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+/* Stack the actions full-width on narrow viewports so both stay comfortably
+ * tappable without horizontal overflow. */
+.rv-actions .button {
+  justify-content: center;
+}
+@media (max-width: 639px) {
+  .rv-actions .button {
+    flex: 1 1 100%;
+  }
+}
+
+.rv-success {
+  text-align: center;
+  padding-block: var(--space-md);
+}
+
+.rv-success:focus {
+  outline: none;
+}
+
+.rv-success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent-on-dark);
+  color: var(--color-accent-on-dark);
+  margin-bottom: var(--space-sm);
+}
+
+.rv-success h2 {
+  margin: 0 0 var(--space-2xs);
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 500;
+  color: var(--color-on-ink);
+}
+
+.rv-success p {
+  margin: 0 0 var(--space-md);
+  color: var(--color-on-ink-secondary);
+  font-size: var(--text-small);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-star svg,
+  .rv-close {
+    transition: none;
+  }
+  .rv-star:hover svg {
+    transform: none;
+  }
+}

@@ -141,8 +141,8 @@ export const POST: APIRoute = async ({ request }) => {
     event_date: data.eventDate,
     event_type: data.eventType?.trim() ? data.eventType : null,
     venue: data.venue?.trim() ? data.venue : null,
-    guests: data.guests?.trim() ? data.guests : null,
-    photobooth: data.photobooth?.trim() ? data.photobooth : null,
+    service: data.service?.trim() ? data.service : null,
+    package: data.package?.trim() ? data.package : null,
     message: data.message?.trim() ? data.message : null,
   });
   if (error) {
@@ -151,6 +151,8 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Strict delivery (DEC-031): the stored row is the recovery receipt the
   // admin sees, but success is reported only when EmailJS accepts the send.
+  // `photobooth` is kept as a legacy alias of the service value so the
+  // existing Gmail template keeps rendering until it adopts `service`.
   const emailResult = await forwardEmailJS({
     name: data.name,
     email: data.email,
@@ -158,8 +160,9 @@ export const POST: APIRoute = async ({ request }) => {
     event_date: data.eventDate,
     event_type: data.eventType ?? "",
     venue: data.venue ?? "",
-    guests: data.guests ?? "",
-    photobooth: data.photobooth ?? "",
+    photobooth: data.service ?? "",
+    service: data.service ?? "",
+    package: data.package ?? "",
     message: data.message ?? "",
   });
   if (!emailResult.ok) {

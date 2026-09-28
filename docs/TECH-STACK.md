@@ -285,8 +285,8 @@ These items are intentionally distinguished by kind: Astro integration, open sta
 ### Google Business Profile review link — Requires Confirmation (external link)
 
 * **What:** Client-supplied review URL for the Google review CTA.
-* **For:** `Website → Google Business Profile review link` CTA (REQ-REV-001 through REQ-REV-004).
-* **Why:** The website must not implement a custom review system (REQ-REV-005/006) or display unverified reviews (REQ-REV-007). The actual URL requires client confirmation; no placeholder or guessed URL may be published.
+* **For:** `Website → Google Business Profile review link` CTA (REQ-REV-001 through REQ-REV-004). The single confirmed on-site review workflow (REQ-REV-008 through REQ-REV-012, DEC-035) lives in the selected stack (Astro endpoint, Supabase, Turnstile) with no new technology.
+* **Why:** The website must not implement review functionality beyond that single moderated workflow (REQ-OOS-007) or display unverified reviews (REQ-REV-007). The actual URL requires client confirmation; no placeholder or guessed URL may be published.
 
 ## 19. Analytics
 

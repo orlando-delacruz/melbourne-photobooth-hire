@@ -274,8 +274,8 @@ The intended inquiry form may collect:
 * Event date
 * Event type
 * Event location/venue
-* Estimated guests
-* Preferred photobooth
+* Service
+* Package
 * Additional requirements/message
 
 Suggested event types:
@@ -289,12 +289,7 @@ Suggested event types:
 * Private Event
 * Other
 
-Suggested photobooth options:
-
-* Premium
-* Roaming
-* 360
-* Not Sure
+Service and Package selections are drawn from the confirmed, publicly available Services and Packages content shown on the website rather than a fixed list.
 
 Required fields should be determined by the final requirements and actual implementation.
 
@@ -318,19 +313,23 @@ The CMS should not become a general-purpose enterprise CMS or CRM.
 
 Specific editable content models are documented only once confirmed by the actual data model and requirements documentation.
 
-## 13. Google Reviews
+## 13. Reviews
 
-The website should not implement a custom review platform.
+The website keeps the Google review CTA and adds a single confirmed on-site review workflow with admin moderation (REQ-REV-008 through REQ-REV-012, DEC-035).
 
 The intended approach is:
 
-Website → Google Business Profile review link
+Website → Google Business Profile review link (external review flow)
+
+plus
+
+Homepage Testimonial section → review modal → Pending → admin approval → public marquee (approved only)
 
 The website may include a clear CTA encouraging customers to leave a review.
 
 Do not:
 
-* Build a custom review submission system.
+* Build review functionality beyond the single confirmed moderated workflow.
 * Store Google reviews unnecessarily.
 * Invent review content.
 * Claim Google ratings without verified current data.

@@ -13,7 +13,7 @@ import {
 import { setPublicCache } from "../lib/http-cache";
 
 const { serviceImages, ctaImage } = await loadPublicContent();
-const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
+const { pages: cmsPages } = await loadPublicPages();
 const aboutPage = cmsPages.about;
 // Raw CMS modules seed the story-image derivation in the live island.
 const liveModules = await loadPublicModules();
@@ -47,7 +47,6 @@ setPublicCache(Astro.response.headers);
   <LiveAboutSections
     client:visible
     initialPage={aboutPage}
-    initialSettings={siteSettings}
     initialGallery={liveModules.gallery}
     initialServices={liveModules.services}
   />

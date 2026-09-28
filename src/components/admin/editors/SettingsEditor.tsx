@@ -5,10 +5,22 @@
 import { useFieldArray } from "react-hook-form";
 import { settingsSchema } from "../../../lib/cms/schemas";
 import SaveBar from "../SaveBar";
-import { AdField, ArraySection, ItemCard, Notice, Skeleton, TextArea, TextInput } from "../fields";
+import {
+  AdField,
+  ArraySection,
+  ImageField,
+  ItemCard,
+  Notice,
+  Skeleton,
+  TextArea,
+  TextInput,
+} from "../fields";
 import { Panel, errMsg, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
 import { confirmDestructive } from "../alerts";
+import type { CmsImage } from "../../../lib/cms/types";
+
+const EMPTY_IMAGE: CmsImage = { key: null, src: "", alt: "" };
 
 export default function SettingsEditor() {
   const { form, loaded, saving, notice, savedAt, onSave, onInvalid, onDiscard, onResetSection } =
@@ -18,11 +30,15 @@ export default function SettingsEditor() {
     control,
     watch,
     getValues,
+    setValue,
     handleSubmit,
     formState: { errors, isDirty },
   } = form;
 
   const socials = useFieldArray({ control, name: "socials" });
+  const trustItems = useFieldArray({ control, name: "trustItems" });
+  const logo = (watch("logo") as CmsImage | undefined) ?? EMPTY_IMAGE;
+  const favicon = (watch("favicon") as CmsImage | undefined) ?? EMPTY_IMAGE;
 
   if (!loaded) return <Skeleton />;
 
@@ -64,6 +80,120 @@ export default function SettingsEditor() {
             {...register("serviceAreaStatement")}
           />
         </AdField>
+      </Panel>
+
+      <Panel
+        title="Logo and favicon"
+        lede="Shown in the site header and footer, and as the browser tab icon. Leave blank to keep the built-in mark and default icon."
+      >
+        <ImageField
+          legend="Website logo."
+          hint="A transparent PNG or WebP works best."
+          value={logo}
+          onChange={(next) => setValue("logo", next, { shouldDirty: true })}
+          error={errorAt(errors, "logo")}
+          altError={errorAt(errors, "logo.alt")}
+        />
+        <ImageField
+          legend="Favicon."
+          hint="A square PNG works best."
+          value={favicon}
+          onChange={(next) => setValue("favicon", next, { shouldDirty: true })}
+          error={errorAt(errors, "favicon")}
+          showAlt={false}
+        />
+      </Panel>
+
+      <Panel
+        title="Contact and business details"
+        lede="Phone numbers, ABN, credentials and the transport note shown in the footer and on the contact page. Blank fields stay hidden."
+      >
+        <div className="ad-grid-2">
+          <AdField
+            id="settings-phone-primary"
+            label="Primary phone"
+            error={errMsg(errors.phonePrimary)}
+          >
+            <TextInput
+              id="settings-phone-primary"
+              type="tel"
+              inputMode="tel"
+              error={errMsg(errors.phonePrimary)}
+              {...register("phonePrimary")}
+            />
+          </AdField>
+          <AdField
+            id="settings-phone-secondary"
+            label="Secondary phone"
+            error={errMsg(errors.phoneSecondary)}
+          >
+            <TextInput
+              id="settings-phone-secondary"
+              type="tel"
+              inputMode="tel"
+              error={errMsg(errors.phoneSecondary)}
+              {...register("phoneSecondary")}
+            />
+          </AdField>
+        </div>
+        <AdField id="settings-abn" label="ABN" error={errMsg(errors.abn)}>
+          <TextInput id="settings-abn" type="text" error={errMsg(errors.abn)} {...register("abn")} />
+        </AdField>
+        <AdField
+          id="settings-transport"
+          label="Transport note"
+          error={errMsg(errors.transportNote)}
+        >
+          <TextInput
+            id="settings-transport"
+            type="text"
+            error={errMsg(errors.transportNote)}
+            {...register("transportNote")}
+          />
+        </AdField>
+        <ArraySection
+          title="Business credential list"
+          count={trustItems.fields.length}
+          addLabel="Add credential"
+          onAdd={() => trustItems.append("")}
+          emptyTitle="No credentials"
+          emptyBody="Add a credential to display it on the website."
+        >
+          {trustItems.fields.map((field, index) => {
+            const base = `trustItems.${index}` as const;
+            const label = watch(base) || `Credential ${index + 1}`;
+            return (
+              <ItemCard
+                key={field.id}
+                index={index}
+                title={String(label)}
+                disableUp={index === 0}
+                disableDown={index === trustItems.fields.length - 1}
+                onMoveUp={() => trustItems.move(index, index - 1)}
+                onMoveDown={() => trustItems.move(index, index + 1)}
+                onDuplicate={() => {
+                  const current = getValues("trustItems") as unknown as string[];
+                  trustItems.insert(index + 1, current[index] ?? "");
+                }}
+                onRemove={() => confirmRemove(String(label), () => trustItems.remove(index))}
+              >
+                <AdField
+                  id={`${base}-value`}
+                  label="Credential"
+                  required
+                  error={errorAt(errors, base)}
+                >
+                  <TextInput
+                    id={`${base}-value`}
+                    type="text"
+                    error={errorAt(errors, base)}
+                    {...register(base)}
+                  />
+                </AdField>
+              </ItemCard>
+            );
+          })}
+        </ArraySection>
       </Panel>
 
       <Panel

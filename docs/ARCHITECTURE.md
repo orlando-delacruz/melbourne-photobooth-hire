@@ -601,7 +601,7 @@ Architectural boundaries for each external integration. No credentials, IDs, or 
 * **Cloudflare Turnstile:** spam-protection service. Boundary spans the inquiry island (challenge) and the server endpoint (verification). Secrets stay server-side.
 * **Google Search Console:** indexing and search-monitoring service. The website must be ready for verification and monitoring; no tracking or verification values are defined here.
 * **Google Business Profile:** local presence service. Profile content lives in Google; the website links to the profile where appropriate once confirmed.
-* **Google Business Profile review link:** client-supplied external URL. The website links to it via a clear review CTA; no custom review system or review database exists. The actual URL requires client confirmation.
+* **Google Business Profile review link:** client-supplied external URL. The website links to it via a clear review CTA. The single confirmed on-site review workflow (moderated testimonials, DEC-035) stores reviews with pending/approved/rejected states; anonymous reads serve approved rows only. The actual URL requires client confirmation.
 * **Google Analytics 4 (optional/conditional):** analytics service. Only if confirmed and appropriate. Privacy Policy implications must be handled if adopted. No measurement IDs are defined here.
 
 ---
@@ -676,7 +676,7 @@ The architecture explicitly does **not** include:
 * Checkout
 * CRM
 * Marketing automation
-* Custom review platform or custom review database
+* Review functionality beyond the single confirmed moderated testimonials workflow (DEC-035)
 * Microservices
 * Separate backend framework (no Express, NestJS, or equivalent)
 * Unnecessary state-management infrastructure (no Redux, Zustand, or equivalent)

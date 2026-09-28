@@ -16,6 +16,13 @@ do $$ begin
   create type package_badge as enum ('none', 'basic', 'most-popular', 'best-value', 'custom');
 exception when duplicate_object then null; end $$;
 
+-- Review moderation states mirror the CMS ReviewStatus union. Default is
+-- pending (fail-closed): a review becomes public only after an admin
+-- approves it (DEC-035).
+do $$ begin
+  create type review_status as enum ('pending', 'approved', 'rejected');
+exception when duplicate_object then null; end $$;
+
 -- Reusable updated_at trigger.
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
@@ -103,8 +110,11 @@ create table if not exists public.event_types (
   created_at timestamptz not null default now()
 );
 
--- Testimonials module (mod-testimonials, DEC-034). No highlight flag: every
--- saved testimonial shows on the homepage in sort_order. Max 30 enforced in app.
+-- Testimonials module (mod-testimonials, DEC-034, moderated reviews DEC-035).
+-- No highlight flag: every *approved* testimonial shows on the homepage in
+-- sort_order. Visitor submissions arrive as pending via the server endpoint
+-- and stay invisible until an admin approves them (public RLS reads approved
+-- rows only). Max 30 enforced in app.
 create table if not exists public.testimonials (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
@@ -112,6 +122,7 @@ create table if not exists public.testimonials (
   name text not null check (char_length(name) between 1 and 120),
   event_type text not null check (char_length(event_type) between 1 and 120),
   rating smallint check (rating is null or (rating between 1 and 5)),
+  status review_status not null default 'pending',
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -154,7 +165,8 @@ create table if not exists public.inquiries (
   event_type text check (event_type is null or char_length(event_type) <= 80),
   venue text check (venue is null or char_length(venue) <= 300),
   guests text check (guests is null or char_length(guests) <= 60),
-  photobooth text check (photobooth is null or char_length(photobooth) <= 60),
+  service text check (service is null or char_length(service) <= 200),
+  package text check (package is null or char_length(package) <= 200),
   message text check (message is null or char_length(message) <= 6000),
   created_at timestamptz not null default now()
 );
@@ -195,5 +207,7 @@ create index if not exists idx_packages_highlight on public.packages (highlight,
 create index if not exists idx_gallery_highlight on public.gallery_items (highlight, sort_order);
 create index if not exists idx_faqs_highlight on public.faqs (highlight, sort_order);
 create index if not exists idx_testimonials_order on public.testimonials (sort_order);
+-- Public reads filter approved reviews in display order (DEC-035).
+create index if not exists idx_testimonials_status_order on public.testimonials (status, sort_order);
 create index if not exists idx_event_types_order on public.event_types (sort_order);
 create index if not exists idx_inquiries_created on public.inquiries (created_at desc);

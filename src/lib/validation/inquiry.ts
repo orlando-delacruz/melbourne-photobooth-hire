@@ -10,9 +10,6 @@ import * as z from "zod";
  * REQ-INQ-010. Final confirmation is required before production use.
  */
 
-/** Candidate photobooth options (REQ-INQ-010). Requires client confirmation. */
-export const PHOTOBOOTHS = ["Premium", "Roaming", "360", "Not Sure"] as const;
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const inquirySchema = z.object({
@@ -26,8 +23,10 @@ export const inquirySchema = z.object({
   eventDate: z.string().min(1, "Choose your event date."),
   eventType: z.string().optional(),
   venue: z.string().trim().optional(),
-  guests: z.string().trim().optional(),
-  photobooth: z.string().optional(),
+  // Service and Package selections come from the live Services and Packages
+  // CMS modules (DEC-036), resolved by the Contact page into option names.
+  service: z.string().trim().max(200, "Service is too long.").optional(),
+  package: z.string().trim().max(200, "Package is too long.").optional(),
   message: z.string().trim().optional(),
 });
 

@@ -102,6 +102,8 @@ export interface HeroStat {
   value: string;
   label: string;
   icon?: "camera" | "clock" | "qrcode";
+  /** When set, the value is computed at render from live module data (DEC-037). */
+  source?: "services" | "longest-hire";
 }
 
 export interface AboutValue {

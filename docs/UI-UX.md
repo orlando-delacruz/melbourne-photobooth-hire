@@ -386,7 +386,7 @@ Validation and Spam Protection are enforced server-side at the Astro Server Endp
 
 Constraints:
 
-- The exact field set remains confirmation-dependent. Potential fields (name, email, mobile, event date, event type, event location/venue, estimated guests, preferred photobooth, additional requirements/message) and option lists (event types, photobooth options) in `docs/PROJECT.md` and `docs/REQUIREMENTS.md` are possibilities, not confirmed requirements. The final list of fields — and which are required versus optional — requires client confirmation (per REQ-INQ-008 through REQ-INQ-010).
+- The exact field set remains confirmation-dependent. Potential fields (name, email, mobile, event date, event type, event location/venue, service, package, additional requirements/message) and option lists (event types; Service/Package selections drawn from the publicly available Services/Packages content) in `docs/PROJECT.md` and `docs/REQUIREMENTS.md` are possibilities, not confirmed requirements. The final list of fields — and which are required versus optional — requires client confirmation (per REQ-INQ-008 through REQ-INQ-010).
 - No additional personal-data fields beyond what is confirmed may be introduced without justification (per REQ-INQ-011).
 
 ---
@@ -466,25 +466,35 @@ Secondary CTAs support the journey toward inquiry or toward the review flow; the
 
 ---
 
-## 16. Google Reviews UX
+## 16. Reviews UX
 
-The website uses a simple CTA directing customers to the client's Google Business Profile review page. The flow is `Website → Google Business Profile review link`.
+### 16.1 Google review CTA
+
+The website keeps a simple CTA directing customers to the client's Google Business Profile review page. The flow is `Website → Google Business Profile review link`.
 
 - **Clear labelling.** The CTA communicates that the customer is leaving a review on Google (consistent with the label guidance in Section 15), so there is no surprise when navigation leaves the site.
 - **Appropriate placement.** The CTA appears in at least one appropriate location (for example homepage, contact/inquiry context, or footer) without disrupting the primary inquiry journey (per REQ-REV-003). It is secondary to the inquiry CTA.
-- **External navigation.** The link opens the Google review flow. The visitor understands they are leaving the website. No custom in-site review experience is implied.
+- **External navigation.** The link opens the Google review flow. The visitor understands they are leaving the website.
+
+### 16.2 On-site review submission (DEC-035)
+
+The homepage Testimonial section additionally offers an on-site review form, opened by a clearly labelled "Send Us a Review" button (REQ-REV-008):
+
+- **Modal dialog.** The form opens in a centered modal (backdrop, Escape and backdrop close, focus trap, focus return, body scroll lock), responsive on desktop and mobile like the gallery lightbox pattern in Section 19.
+- **Fields.** Customer name, event type (from the Event Types module), a 1–5 star rating with a visually clear selected state, and the review text. Every field is required and validated with field-associated, non-technical messages (per REQ-REV-012 and the form patterns in Sections 13–14).
+- **Submission states.** Sending state with duplicate-submission prevention; inline success confirmation explaining the review appears after approval; non-technical error states that preserve entered input where practical.
+- **No status control.** The visitor never sees or chooses moderation status; submissions enter as Pending automatically (REQ-REV-009).
 
 The following are not created:
 
-- Custom review forms.
-- Custom rating systems.
+- Custom rating systems beyond the single 1–5 submission scale.
 - Fake review displays.
 - Invented testimonials.
 
 Constraints:
 
-- The review URL requires client confirmation (per REQ-REV-004). No placeholder or guessed URL may be published as the production link.
-- The site must not implement a custom review submission system or custom review database (per REQ-REV-005 and REQ-REV-006) and must not display fake, generated, or unverified reviews or ratings (per REQ-REV-007).
+- The Google review URL requires client confirmation (per REQ-REV-004). No placeholder or guessed URL may be published as the production link.
+- Only admin-approved reviews may appear publicly (per REQ-REV-007 and REQ-REV-010); pending and rejected reviews are never shown on the public site.
 - Genuine testimonials or reviews may be shown only where approved with verified current data.
 
 ---
@@ -775,7 +785,7 @@ Behavior already established by the project requirements, independent of final c
 
 - Public information architecture (Home, Services, Packages, Gallery, About, FAQ, Contact/inquiry, Privacy Policy, Terms & Conditions, 404).
 - Inquiry-based model (inquiry/request flow with validation, spam protection, EmailJS delivery to Gmail, success/error feedback) and exclusion of reservation, payment, checkout, and CRM behavior.
-- Google review CTA pattern (simple external link, no custom review system).
+- Google review CTA pattern (simple external link) plus the confirmed on-site review modal with admin moderation (Section 16.2, DEC-035).
 - Responsive, accessible, mobile-usable presentation across public and (practically) admin surfaces.
 - Loading, empty, success, and error feedback for inquiry, CMS, gallery, and navigation states.
 - CMS product-level behavior (authenticated, organized, validated, safe editing, predictable save behavior) without defined modules or fields.
@@ -787,7 +797,7 @@ Behavior whose exact content depends on client confirmation. The UX accommodates
 
 - Package information (names, durations, prices, inclusions, conditions, add-ons).
 - Service descriptions (final names, descriptions, suitability and setup claims for Premium Photobooth, Roaming Photobooth, and 360 Video Booth).
-- Inquiry fields (final field set; which fields are required versus optional; event-type and photobooth option lists).
+- Inquiry fields (final field set; which fields are required versus optional; event-type list and the Service/Package selections drawn from public content).
 - Testimonials (whether any exist and are approved for publication).
 - About content (company information, founder/team story, credentials, history).
 - FAQ content (final questions and answers).

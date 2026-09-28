@@ -135,7 +135,7 @@ export default function LiveCard({
         ) : null}
         {href && ctaLabel ? (
           <p className="card-cta">
-            <LiveButton href={href} variant="secondary" tone={featured ? "dark" : tone} arrow>
+            <LiveButton href={href} variant="primary" tone={featured ? "dark" : tone} arrow>
               {ctaLabel}
             </LiveButton>
           </p>

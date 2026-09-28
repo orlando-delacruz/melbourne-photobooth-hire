@@ -12,7 +12,6 @@ import {
   Panel,
   SectionHeadingGroup,
   StringList,
-  errMsg,
   errorAt,
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
@@ -32,11 +31,6 @@ export default function PackagesPageEditor() {
   } = form;
 
   const addOns = useFieldArray({ control, name: "addOns" });
-
-  const inclusionsPath = "included.standardItems" as const;
-  const inclusions = (watch(inclusionsPath) as string[]) ?? [];
-  const commitInclusions = (next: string[]) =>
-    setValue(inclusionsPath, next, { shouldDirty: true, shouldValidate: true });
 
   const policiesPath = "bookingPolicies" as const;
   const policies = (watch(policiesPath) as string[]) ?? [];
@@ -117,110 +111,10 @@ export default function PackagesPageEditor() {
               {...register("emptyState.actionLabel")}
             />
           </AdField>
-          <AdField
-            id="plans-foot"
-            label="Note below the plans"
-            required
-            error={errMsg(errors.footNote)}
-          >
-            <TextArea
-              id="plans-foot"
-              rows={3}
-              error={errMsg(errors.footNote)}
-              {...register("footNote")}
-            />
-          </AdField>
-          <AdField
-            id="plans-check"
-            label="Check-date button label"
-            required
-            error={errMsg(errors.checkDateLabel)}
-          >
-            <TextInput
-              id="plans-check"
-              type="text"
-              error={errMsg(errors.checkDateLabel)}
-              {...register("checkDateLabel")}
-            />
-          </AdField>
         </div>
       </Panel>
 
-      <Panel
-        title="Included as standard"
-        lede="Fallback list used when fewer than four inclusions are shared by every plan."
-      >
-        <AdField
-          id="included-eyebrow"
-          label="Eyebrow"
-          required
-          error={errorAt(errors, "included.eyebrow")}
-        >
-          <TextInput
-            id="included-eyebrow"
-            type="text"
-            error={errorAt(errors, "included.eyebrow")}
-            {...register("included.eyebrow")}
-          />
-        </AdField>
-        <AdField
-          id="included-heading"
-          label="Heading"
-          required
-          error={errorAt(errors, "included.heading")}
-        >
-          <TextInput
-            id="included-heading"
-            type="text"
-            error={errorAt(errors, "included.heading")}
-            {...register("included.heading")}
-          />
-        </AdField>
-        <AdField
-          id="included-lede"
-          label="Supporting text"
-          required
-          error={errorAt(errors, "included.lede")}
-        >
-          <TextArea
-            id="included-lede"
-            rows={3}
-            error={errorAt(errors, "included.lede")}
-            {...register("included.lede")}
-          />
-        </AdField>
-        <StringList
-          label="Standard inclusion"
-          addLabel="Add inclusion"
-          emptyText="Standard inclusions show when plans share too little to list automatically."
-          items={inclusions}
-          itemError={(index) => errorAt(errors, `${inclusionsPath}.${index}`)}
-          onChange={(index, value) => {
-            const next = [...inclusions];
-            next[index] = value;
-            commitInclusions(next);
-          }}
-          onAdd={() => commitInclusions([...inclusions, ""])}
-          onRemove={(index) => {
-            void confirmDestructive({
-              title: `Remove inclusion ${index + 1}?`,
-              confirmText: "Remove",
-            }).then((confirmed) => {
-              if (confirmed) commitInclusions(inclusions.filter((_, i) => i !== index));
-            });
-          }}
-          onMove={(index, direction) => {
-            const next = [...inclusions];
-            const target = index + direction;
-            if (target < 0 || target >= next.length) return;
-            const [moved] = next.splice(index, 1);
-            next.splice(target, 0, moved);
-            commitInclusions(next);
-          }}
-        />
-      </Panel>
-
-      <Panel title="Add-ons" lede="Optional extras below the included band.">
+      <Panel title="Add-ons" lede="Optional extras on the packages page.">
         <SectionHeadingGroup prefix="addonsHeading" register={register} errors={errors} />
         <ArraySection
           title="Add-on list"

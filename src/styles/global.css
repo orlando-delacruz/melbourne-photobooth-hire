@@ -268,58 +268,75 @@ body.page-home {
   color: var(--color-on-ink);
 }
 
+/* ── CMS brand logo (Site Wide Settings) ────────────────────────────── */
+
+/* When a logo is uploaded, it replaces the built-in mark + wordmark in the
+   header and footer. `.brand-logo` is rendered by a live island, so the
+   :has rules hide the static fallback and avoid empty/duplicate controls. */
+.brand-logo {
+  display: block;
+  height: clamp(1.75rem, 3.5vw, 2rem);
+  width: auto;
+  max-width: 11rem;
+  object-fit: contain;
+}
+.brand:has(.brand-logo) .brand-mark,
+.brand:has(.brand-logo) .brand-name {
+  display: none;
+}
+.footer-brand:has(.brand-logo) .brand-name {
+  display: none;
+}
+.footer-brand .brand-logo {
+  height: 2.25rem;
+  margin-bottom: var(--space-xs);
+}
+
 /* ── Grids ──────────────────────────────────────────────────────────── */
 
-/* Reusable card grid: stacks to one column on narrow viewports. */
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: var(--space-sm);
-}
-@media (min-width: 900px) {
-  .card-grid {
-    gap: var(--space-md);
-  }
+/* Card grid (Services + Packages): up to 3 cards per row, with incomplete
+   final rows centred. Flex — not grid — so a short last row centres as a
+   group instead of hugging the left edge. Mobile stacks to one column. */
+.card-grid,
+.booths-grid {
+  --card-grid-gap: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--card-grid-gap);
 }
 
 /* Cards sit inside Reveal island wrappers (wrapped in astro-island, which is
-   display: contents). Make the wrapper a stretching column and the card fill
-   it, so cards in a row share equal height. */
+   display: contents). The wrapper is the flex item and the card fills it, so
+   cards in a row share equal height. */
 .card-grid .reveal,
 .booths-grid .reveal {
   display: flex;
   flex-direction: column;
+  flex: 0 1 100%;
 }
 .card-grid .card,
 .booths-grid .card {
   flex: 1 1 auto;
 }
 
-/* ── Chips ──────────────────────────────────────────────────────────── */
-
-.chip-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2xs);
+@media (min-width: 640px) {
+  .card-grid .reveal,
+  .booths-grid .reveal {
+    /* Two per row on tablet (-0.5px guards sub-pixel rounding wrap). */
+    flex-basis: calc((100% - var(--card-grid-gap)) / 2 - 0.5px);
+  }
 }
-.chip-list li {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-2xs) var(--space-sm);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-ink-soft);
-  font-weight: 500;
-  font-size: var(--text-small);
-}
-.on-dark .chip-list li {
-  background: rgba(244, 238, 224, 0.04);
-  border-color: var(--color-ink-hairline-strong);
-  color: var(--color-on-ink-secondary);
+@media (min-width: 1024px) {
+  .card-grid,
+  .booths-grid {
+    --card-grid-gap: var(--space-md);
+  }
+  .card-grid .reveal,
+  .booths-grid .reveal {
+    /* Three per row on desktop; never a fourth column. */
+    flex-basis: calc((100% - 2 * var(--card-grid-gap)) / 3 - 0.5px);
+  }
 }
 
 /* ── Prose (about / legal pages) ────────────────────────────────────── */

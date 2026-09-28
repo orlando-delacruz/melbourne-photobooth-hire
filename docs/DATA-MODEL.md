@@ -131,16 +131,16 @@ Possible content areas named in REQ-CON-002 (none with defined fields): services
   - Whether FAQs are CMS-editable, and by what mechanism, is Confirmation Required (REQ-FAQ-004).
   - FAQ structured data is Conditional only, where technically and semantically valid for published content (REQ-FAQ-005). It must never use invented Q&A.
 
-### 5.6 Testimonials — Conditional and Confirmation Required
+### 5.6 Testimonials — Confirmed moderated workflow (DEC-035)
 
-- **Status:** **Conditional** (only where supported by verified, approved content) and **Confirmation Required**.
-- **Concept:** Optional supporting content shown only where genuine testimonials or reviews are approved with verified current data.
-- **Source:** REQ-REV-007, `docs/REQUIREMENTS.md` Section 23 (testimonials require confirmation), `docs/PROJECT.md` Section 23, `docs/UI-UX.md` Sections 16, 26, `docs/DESIGN-SYSTEM.md` Section 32.
+- **Status:** **Confirmed** as a moderated visitor-review workflow (REQ-REV-008 through REQ-REV-012); content remains **Confirmation Required** in the sense that only admin-approved reviews are genuine published content.
+- **Concept:** Optional supporting content shown only where genuine testimonials or reviews are approved with verified current data. Visitors submit reviews through the homepage modal; submissions enter as Pending and reach the public site only after explicit admin approval.
+- **Source:** REQ-REV-007 through REQ-REV-012, `docs/REQUIREMENTS.md` Section 23 (testimonials require approval), `docs/PROJECT.md` Section 23, `docs/UI-UX.md` Sections 16, 26, `docs/DESIGN-SYSTEM.md` Section 32, DEC-035.
 - **Boundaries:**
-  - There is no custom review entity. REQ-REV-005 and REQ-REV-006 prohibit a custom review submission system and a custom review database.
-  - Fake, generated, or unverified reviews or ratings must never be displayed (REQ-REV-007).
-  - The primary review mechanism is the Google Business Profile review link CTA, which is an external link, not stored data (see `docs/REQUIREMENTS.md` Section 12).
-  - Whether any testimonial content exists, and whether it is CMS-managed, is Confirmation Required. Absent testimonials are simply omitted.
+  - The stored review carries a moderation status (pending, approved, rejected). There is no other review entity and no review-rating aggregation.
+  - Fake, generated, or unverified reviews or ratings must never be displayed (REQ-REV-007); admin approval is the verification gate.
+  - The primary external review mechanism (Google Business Profile review link CTA) is unchanged and remains an external link, not stored data (see `docs/REQUIREMENTS.md` Section 12).
+  - Absent or unapproved testimonials are simply omitted.
 
 ### 5.7 Inquiry Records — Conditional Only
 
@@ -360,7 +360,7 @@ The data model explicitly does **not** include the following unless the client e
 - Complex booking management (status machines, assignments, scheduling workflows).
 - CRM entities (contacts pipeline, follow-ups, notes, tasks, campaigns).
 - Marketing automation entities (segments, campaigns, sends, journeys).
-- Custom Google review system entities (review submissions, ratings stores, moderation queues). The review mechanism is an external link, not stored data.
+- Custom Google review system entities beyond the single confirmed moderated testimonials workflow (REQ-REV-008 through REQ-REV-012, DEC-035): no review submissions store, ratings store, or moderation queue beyond the testimonials table's pending/approved/rejected states. The external review-link mechanism is not stored data.
 - Unnecessary enterprise CMS structures (versions, revisions, audit logs, approval chains, multi-workspace models, theming systems).
 - Separate backend data layer entities (no second database, no service-specific stores, no queues or job tables).
 
@@ -381,7 +381,7 @@ Exact CMS modules, fields, workflows, and policies below require explicit client
 | 5 | Package data (names, durations, prices, inclusions, add-ons, conditions, policies) | **Confirmation Required / Reference-Only inputs** | Reference pricing, inclusions, add-ons, and policies in `docs/PROJECT.md` Sec. 9 and REQ-PKG-002–005 are reference only. Nothing may be published without confirmation (REQ-PKG-006). |
 | 6 | Gallery metadata and CMS mechanism | **Confirmation Required** | Imagery must be real, client-approved (REQ-GAL-001). No categories defined (REQ-GAL-007). CMS manageability unconfirmed (REQ-GAL-006). No bucket names, policies, or metadata fields defined here. |
 | 7 | FAQ data (final questions and answers) | **Confirmation Required** | No FAQ content is defined (REQ-FAQ-003). CMS editability unconfirmed (REQ-FAQ-004). Structured data is Conditional only (REQ-FAQ-005). |
-| 8 | Testimonials (existence and approval) | **Conditional / Confirmation Required** | Only genuine, approved, verified content may appear (REQ-REV-007). No custom review database (REQ-REV-006). |
+| 8 | Testimonials (moderated workflow) | **Confirmed** | Only admin-approved reviews may appear (REQ-REV-007, REQ-REV-010). Submissions arrive as Pending; status is enforced server-side. |
 | 9 | Site and contact settings (business details, service-area statement, hours, links) | **Confirmation Required** | Displayed only once confirmed (REQ-PUB-004). Service-area rules, travel fees, and contact details require confirmation (`docs/PROJECT.md` Sec. 18, 23). |
 | 10 | Publishing workflow (draft versus published, who publishes, what publish changes) | **Confirmation Required** | Published/unpublished as a concept is justified (REQ-CON-004); the workflow itself is unconfirmed. No statuses or transitions defined here. |
 | 11 | Media access model (public versus controlled retrieval) | **Confirmation Required** | Supabase Storage is the confirmed foundation; the access model is undecided (`docs/ARCHITECTURE.md` Sec. 17). Detail belongs in `docs/SECURITY.md`. |

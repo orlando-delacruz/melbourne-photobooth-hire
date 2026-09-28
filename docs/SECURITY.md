@@ -257,7 +257,7 @@ Rules carried from source documents:
 
 - No tracking IDs, measurement IDs, verification values, review URLs, or account information are defined here (REQ-ANA-005, REQ-REV-004).
 - Google Analytics 4 is Conditional/Could only — not mandatory — and only if confirmed and appropriate (REQ-ANA-004; `docs/TECH-STACK.md` Section 19).
-- No custom review system or review database exists (REQ-REV-005, REQ-REV-006); no fake or unverified reviews or ratings are displayed (REQ-REV-007).
+- The confirmed moderated on-site review workflow (REQ-REV-008 through REQ-REV-012, DEC-035): anonymous visitors read approved reviews only; submissions arrive through the server endpoint as pending; no fake or unverified reviews or ratings are displayed (REQ-REV-007).
 
 ---
 
@@ -305,7 +305,7 @@ Unless the client explicitly expands the project and the change is recorded as a
 - A custom auth system or separate authentication service.
 - Enterprise RBAC, approval chains, revision history, or multi-workspace permission machinery.
 - A second backend, second database, or service-specific stores.
-- A custom review database or review-moderation security model.
+- A review-moderation security model beyond the confirmed testimonials workflow (anonymous read of approved rows only, no anonymous writes, server-side pending insert, admin-only moderation).
 - A CRM security model (pipelines, follow-ups, notes, tasks, campaigns).
 - Payment security or PCI scope, because payments are out of scope (REQ-OOS-002, REQ-OOS-003).
 - A reservation/availability security model (calendars, slots, holds, allocation), because real-time booking is out of scope (REQ-OOS-001, REQ-OOS-004).
@@ -370,7 +370,7 @@ This security document is considered complete when:
 9. Third-party boundaries (Supabase, EmailJS, Turnstile, Vercel, Google services where applicable) identify application versus provider responsibility without claiming provider guarantees.
 10. Incident/failure principles (fail safely, no false success, no internals, preserved input where practical, protected admin/content data on integration failure) are stated without inventing operational procedures.
 11. The Confirmation Required matrix covers authentication flow, authorization/role model, RLS policies, inquiry persistence, inquiry fields, retention, storage model and policies, EmailJS configuration, Turnstile configuration, rate limiting/abuse controls, logging policy, CSP/headers, legal/privacy wording, and additional integrations.
-12. Explicit exclusions (no unnecessary infrastructure, custom auth, enterprise RBAC, second backend, review database, CRM model, payment/PCI scope, reservation model, Redis/queues/WAF/microservices without confirmation, invented compliance) are stated.
+12. Explicit exclusions (no unnecessary infrastructure, custom auth, enterprise RBAC, second backend, review systems beyond the confirmed moderated testimonials workflow, CRM model, payment/PCI scope, reservation model, Redis/queues/WAF/microservices without confirmation, invented compliance) are stated.
 13. Shot&Prints is treated as Reference-Only with no carried-over credentials, policies, contact details, or security assumptions.
 14. Related documents are referenced with deferred ownership (DATA-MODEL, API, TESTING, DEVELOPMENT, DEPLOYMENT, DECISIONS) clearly identified.
 15. The document does not invent credentials, policies, schema, roles, environment variables, or unsupported infrastructure; remains consistent with all ten source documents; keeps conditional requirements explicitly conditional; and does not expand the project scope.

@@ -389,7 +389,7 @@ Unless the client explicitly expands the project with a rescoped requirement and
 - Reservation/booking engines, status machines, or scheduling workflows.
 - Payments, checkout, orders, transactions, or refunds.
 - CRM, marketing automation, or follow-up pipelines.
-- Custom review platforms, review databases, moderation queues, or unverified review-rating claims.
+- Review functionality beyond the single confirmed moderated on-site workflow (REQ-REV-008 through REQ-REV-012, DEC-035), or unverified review-rating claims.
 - Guaranteed SEO rankings; ongoing SEO, content, or backlink campaigns; large-scale SEO landing-page production.
 - Enterprise CMS machinery (versions, revisions, audit logs, approval chains, multi-workspace models).
 - Second backends, second databases, queues, webhooks, background jobs, microservices, or API gateways.

@@ -12,7 +12,6 @@ export interface AdminInquiry extends InquiryInput {
 /** Full record for the detail view, including optional fields. */
 export interface AdminInquiryRecord extends AdminInquiry {
   venue: string;
-  guests: string;
   mobile: string;
   message: string;
 }

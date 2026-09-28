@@ -22,6 +22,10 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/mobile-nav.css";
 import "../styles/gallery-lightbox.css";
+// Dialog + form systems used by islands (review modal): loaded globally like
+// the lightbox/nav styles so island CSS never depends on page-level imports.
+import "../styles/inquiry-form.css";
+import "../styles/review-modal.css";
 
 interface Props {
   title: string;
@@ -71,7 +75,19 @@ const brandName = siteSettings.brandName || site.brandName;
 // CMS social profiles (Site Settings). Empty until the client saves real
 // profile URLs, so both the footer/contact blocks and sameAs stay hidden.
 const socials = siteSettings.socials ?? [];
+// CMS favicon (Site Settings): overrides the bundled SVG when uploaded.
+const faviconSrc = siteSettings.favicon?.src;
+const faviconType = faviconSrc ? faviconMime(faviconSrc) : "image/svg+xml";
+const faviconHref = faviconSrc || "/favicon.svg";
 const currentPath = Astro.url.pathname;
+
+/** MIME type for an uploaded favicon, derived from its file extension. */
+function faviconMime(src: string): string {
+  const path = src.split(/[?#]/)[0].toLowerCase();
+  if (path.endsWith(".webp")) return "image/webp";
+  if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+  return "image/png";
+}
 
 const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
 // Canonical URLs are normalised without a trailing slash (root keeps "/"),
@@ -176,7 +192,7 @@ const siteSchema = {
     <link rel="preconnect" href="https://images.pexels.com" crossorigin />
     <link rel="dns-prefetch" href="https://images.pexels.com" />
     {preloadImage ? <link rel="preload" as="image" href={preloadImage} /> : null}
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type={faviconType} href={faviconHref} />
     <StructuredData schema={siteSchema} />
     {structuredData.map((node) => (
       <StructuredData schema={{ "@context": "https://schema.org", ...node }} />

@@ -23,8 +23,11 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
   const services = useLiveRows("services", initial, fetchServices);
   const home = useLiveHome(initialHome);
   const heading = home.servicesHeading;
-  const cardLabel = home.servicesCardLabel;
   const visible = services.filter((service) => service.highlight !== false);
+
+  // Homepage cards stay scannable: the first four highlights tease the
+  // list; the Services page renders every highlight for each booth.
+  const previewHighlights = (service: ServiceItem): string[] => service.highlights.slice(0, 4);
 
   return (
     <section className="section on-dark" aria-labelledby="services-heading">
@@ -47,11 +50,11 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
               icon={service.icon}
               tagline={service.tagline}
               description={service.summary}
-              highlights={service.highlights}
+              highlights={previewHighlights(service)}
               imageSrc={service.image.src || undefined}
               imageAlt={service.image.alt || service.name}
-              href="/services"
-              ctaLabel={cardLabel}
+              href={`/contact?service=${encodeURIComponent(service.id)}`}
+              ctaLabel="Enquire Now"
               cmsId={service.id}
             />
           </Reveal>

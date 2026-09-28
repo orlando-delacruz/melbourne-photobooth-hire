@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { SubmitHandler } from "react-hook-form";
-import { AlertCircle, CheckCircle2, Send } from "lucide-react";
-import { PHOTOBOOTHS, inquirySchema, zodResolver } from "../../lib/validation/inquiry";
+import { AlertCircle, CheckCircle2, Send, Sparkles } from "lucide-react";
+import { inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
-import { fetchEventTypes } from "../../lib/realtime/fetchers";
+import type { PackageItem, ServiceItem } from "../../lib/cms/types";
+import { fetchEventTypes, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
 import { useLiveRows } from "./useLiveSync";
 
 /**
@@ -29,9 +30,18 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 export default function InquiryForm({
   eventTypes,
   turnstileSiteKey,
+  services,
+  packages,
+  initialService,
+  initialPackage,
 }: {
   eventTypes: string[];
   turnstileSiteKey?: string;
+  services: ServiceItem[];
+  packages: PackageItem[];
+  /** Service/package preselected from a contextual enquiry link (DEC-036). */
+  initialService?: string;
+  initialPackage?: string;
 }) {
   const [phase, setPhase] = useState<Phase>("editing");
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -51,6 +61,16 @@ export default function InquiryForm({
     fetchEventTypes,
   );
   const options = liveEventTypes.map((type) => type.label);
+  // Service and Package options come from the live Services/Packages modules
+  // (DEC-036); the live refetch keeps the dropdowns in step with admin edits.
+  const liveServices = useLiveRows("services", services, fetchServices);
+  const livePackages = useLiveRows("packages", packages, fetchPackages);
+  const serviceOptions = liveServices
+    .filter((service) => service.highlight !== false)
+    .map((service) => service.name);
+  const packageOptions = livePackages
+    .filter((pkg) => pkg.highlight !== false)
+    .map((pkg) => pkg.name);
   const noticeRef = useRef<HTMLDivElement>(null);
   const {
     register,
@@ -60,6 +80,12 @@ export default function InquiryForm({
   } = useForm<InquiryInput>({
     resolver: zodResolver(inquirySchema),
     reValidateMode: "onChange",
+    // Preselect from a contextual enquiry link; RHF keeps these values across
+    // interaction and validation, and they are never reset unexpectedly.
+    defaultValues: {
+      service: initialService ?? "",
+      package: initialPackage ?? "",
+    },
   });
 
   useEffect(() => {
@@ -183,9 +209,7 @@ export default function InquiryForm({
           <CheckCircle2 size={22} aria-hidden="true" />
           Enquiry received
         </h2>
-        <p className="iq-notice__body">
-          Thanks, your enquiry is with us. We typically reply within one business day.
-        </p>
+        <p className="iq-notice__body">Thanks, your enquiry is with us.</p>
         <button type="button" className="iq-submit" onClick={() => setPhase("editing")}>
           Back to the form
         </button>
@@ -201,6 +225,7 @@ export default function InquiryForm({
       noValidate
       onSubmit={handleSubmit(onValid, onInvalid)}
       aria-describedby="inquiry-required-note"
+      aria-busy={sending || undefined}
     >
       <p className="iq-form__note" id="inquiry-required-note">
         Fields marked{" "}
@@ -209,6 +234,16 @@ export default function InquiryForm({
         </span>{" "}
         are required.
       </p>
+
+      {initialService || initialPackage ? (
+        <p className="iq-context">
+          <Sparkles size={16} aria-hidden="true" />
+          <span>
+            Enquiring about{" "}
+            <strong>{[initialService, initialPackage].filter(Boolean).join(" + ")}</strong>
+          </span>
+        </p>
+      ) : null}
 
       {submitError ? (
         <div className="iq-summary" role="alert">
@@ -333,7 +368,7 @@ export default function InquiryForm({
             </div>
           </div>
 
-          <div className="iq-field">
+          <div className="iq-field iq-field--wide">
             <label className="iq-label" htmlFor="inquiry-venue">
               Event location / venue <span className="iq-optional">(optional)</span>
             </label>
@@ -347,37 +382,41 @@ export default function InquiryForm({
           </div>
 
           <div className="iq-field">
-            <label className="iq-label" htmlFor="inquiry-guests">
-              Estimated guests <span className="iq-optional">(optional)</span>
-            </label>
-            <input
-              className="iq-control"
-              id="inquiry-guests"
-              type="text"
-              inputMode="numeric"
-              aria-describedby="inquiry-guests-hint"
-              {...register("guests")}
-            />
-            <p className="iq-hint" id="inquiry-guests-hint">
-              An approximate number is fine.
-            </p>
-          </div>
-
-          <div className="iq-field">
-            <label className="iq-label" htmlFor="inquiry-photobooth">
-              Preferred photobooth <span className="iq-optional">(optional)</span>
+            <label className="iq-label" htmlFor="inquiry-service">
+              Service <span className="iq-optional">(optional)</span>
             </label>
             <div className="iq-select-wrap">
               <select
                 className="iq-control iq-select"
-                id="inquiry-photobooth"
-                defaultValue=""
-                {...register("photobooth")}
+                id="inquiry-service"
+                defaultValue={initialService ?? ""}
+                {...register("service")}
               >
                 <option value="">Select…</option>
-                {PHOTOBOOTHS.map((booth) => (
-                  <option key={booth} value={booth}>
-                    {booth}
+                {serviceOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="iq-field">
+            <label className="iq-label" htmlFor="inquiry-package">
+              Package <span className="iq-optional">(optional)</span>
+            </label>
+            <div className="iq-select-wrap">
+              <select
+                className="iq-control iq-select"
+                id="inquiry-package"
+                defaultValue={initialPackage ?? ""}
+                {...register("package")}
+              >
+                <option value="">Select…</option>
+                {packageOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
                   </option>
                 ))}
               </select>

@@ -1,7 +1,7 @@
-// Home page editor (Website CMS): hero, intro, headings and steps.
-// The services, packages, showcase images, FAQ items, testimonials and event
-// types shown on the homepage are managed in Modules; this editor owns the
-// home-only copy.
+// Home page editor (Website CMS): hero, headings and steps.
+// The services, packages, showcase images, FAQ items and testimonials shown
+// on the homepage are managed in Modules; this editor owns the home-only
+// copy. (Event Types stay a module for the contact-form dropdown.)
 
 import { useFieldArray } from "react-hook-form";
 import { homeSchema } from "../../../lib/cms/schemas";
@@ -22,6 +22,7 @@ import {
   CtaBandGroup,
   Panel,
   STAT_ICON_OPTIONS,
+  STAT_SOURCE_OPTIONS,
   STEP_ICON_OPTIONS,
   SectionHeadingGroup,
   errMsg,
@@ -46,7 +47,6 @@ export default function HomeEditor() {
   } = form;
 
   const stats = useFieldArray({ control, name: "hero.stats" });
-  const promises = useFieldArray({ control, name: "intro.promises" });
   const steps = useFieldArray({ control, name: "steps" });
 
   if (!loaded) return <Skeleton />;
@@ -182,6 +182,7 @@ export default function HomeEditor() {
           {stats.fields.map((field, index) => {
             const base = `hero.stats.${index}` as const;
             const title = watch(`${base}.value`) || `Stat ${index + 1}`;
+            const source = watch(`${base}.source`);
             return (
               <ItemCard
                 key={field.id}
@@ -199,19 +200,6 @@ export default function HomeEditor() {
               >
                 <div className="ad-grid-2">
                   <AdField
-                    id={`${base}-value`}
-                    label="Value"
-                    required
-                    error={errorAt(errors, `${base}.value`)}
-                  >
-                    <TextInput
-                      id={`${base}-value`}
-                      type="text"
-                      error={errorAt(errors, `${base}.value`)}
-                      {...register(`${base}.value`)}
-                    />
-                  </AdField>
-                  <AdField
                     id={`${base}-label`}
                     label="Label"
                     required
@@ -224,133 +212,66 @@ export default function HomeEditor() {
                       {...register(`${base}.label`)}
                     />
                   </AdField>
+                  <AdField id={`${base}-icon`} label="Icon" error={errorAt(errors, `${base}.icon`)}>
+                    <AdSelect
+                      id={`${base}-icon`}
+                      error={errorAt(errors, `${base}.icon`)}
+                      {...optionalSelect(register, base + ".icon")}
+                    >
+                      {STAT_ICON_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </AdSelect>
+                  </AdField>
                 </div>
-                <AdField id={`${base}-icon`} label="Icon" error={errorAt(errors, `${base}.icon`)}>
-                  <AdSelect
-                    id={`${base}-icon`}
-                    error={errorAt(errors, `${base}.icon`)}
-                    {...optionalSelect(register, base + ".icon")}
+                <div className="ad-grid-2">
+                  <AdField
+                    id={`${base}-source`}
+                    label="Value source"
+                    hint="Automatic values update from the website modules."
+                    error={errorAt(errors, `${base}.source`)}
                   >
-                    {STAT_ICON_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </AdSelect>
-                </AdField>
+                    <AdSelect
+                      id={`${base}-source`}
+                      error={errorAt(errors, `${base}.source`)}
+                      {...optionalSelect(register, base + ".source")}
+                    >
+                      {STAT_SOURCE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </AdSelect>
+                  </AdField>
+                  {source ? (
+                    <AdField id={`${base}-auto`} label="Value">
+                      <span className="ad-hint" id={`${base}-auto`}>
+                        Calculated from the {source === "services" ? "Services" : "Packages"}{" "}
+                        module.
+                      </span>
+                    </AdField>
+                  ) : (
+                    <AdField
+                      id={`${base}-value`}
+                      label="Value"
+                      required
+                      error={errorAt(errors, `${base}.value`)}
+                    >
+                      <TextInput
+                        id={`${base}-value`}
+                        type="text"
+                        error={errorAt(errors, `${base}.value`)}
+                        {...register(`${base}.value`)}
+                      />
+                    </AdField>
+                  )}
+                </div>
               </ItemCard>
             );
           })}
         </ArraySection>
-      </Panel>
-
-      <Panel title="Intro" lede="The experience section below the hero.">
-        <AdField
-          id="intro-eyebrow"
-          label="Eyebrow"
-          required
-          error={errorAt(errors, "intro.eyebrow")}
-        >
-          <TextInput
-            id="intro-eyebrow"
-            type="text"
-            error={errorAt(errors, "intro.eyebrow")}
-            {...register("intro.eyebrow")}
-          />
-        </AdField>
-        <AdField
-          id="intro-heading"
-          label="Heading"
-          required
-          error={errorAt(errors, "intro.heading")}
-        >
-          <TextInput
-            id="intro-heading"
-            type="text"
-            error={errorAt(errors, "intro.heading")}
-            {...register("intro.heading")}
-          />
-        </AdField>
-        <AdField id="intro-body" label="Body text" required error={errorAt(errors, "intro.body")}>
-          <TextArea
-            id="intro-body"
-            rows={4}
-            error={errorAt(errors, "intro.body")}
-            {...register("intro.body")}
-          />
-        </AdField>
-        <ArraySection
-          title="Promises"
-          count={promises.fields.length}
-          addLabel="Add promise"
-          onAdd={() => promises.append({ title: "", detail: "" })}
-          emptyTitle="No promises"
-          emptyBody="Promises appear as a short list under the intro text."
-        >
-          {promises.fields.map((field, index) => {
-            const base = `intro.promises.${index}` as const;
-            const title = watch(`${base}.title`) || `Promise ${index + 1}`;
-            return (
-              <ItemCard
-                key={field.id}
-                index={index}
-                title={String(title)}
-                disableUp={index === 0}
-                disableDown={index === promises.fields.length - 1}
-                onMoveUp={() => promises.move(index, index - 1)}
-                onMoveDown={() => promises.move(index, index + 1)}
-                onDuplicate={() => {
-                  const current = getValues("intro.promises") as {
-                    title: string;
-                    detail: string;
-                  }[];
-                  promises.insert(index + 1, { ...current[index] });
-                }}
-                onRemove={() => confirmRemove(String(title), () => promises.remove(index))}
-              >
-                <AdField
-                  id={`${base}-title`}
-                  label="Title"
-                  required
-                  error={errorAt(errors, `${base}.title`)}
-                >
-                  <TextInput
-                    id={`${base}-title`}
-                    type="text"
-                    error={errorAt(errors, `${base}.title`)}
-                    {...register(`${base}.title`)}
-                  />
-                </AdField>
-                <AdField
-                  id={`${base}-detail`}
-                  label="Detail"
-                  required
-                  error={errorAt(errors, `${base}.detail`)}
-                >
-                  <TextInput
-                    id={`${base}-detail`}
-                    type="text"
-                    error={errorAt(errors, `${base}.detail`)}
-                    {...register(`${base}.detail`)}
-                  />
-                </AdField>
-              </ItemCard>
-            );
-          })}
-        </ArraySection>
-        <AdField
-          id="intro-about"
-          label="About button label"
-          required
-          error={errorAt(errors, "intro.aboutLabel")}
-        >
-          <TextInput
-            id="intro-about"
-            type="text"
-            error={errorAt(errors, "intro.aboutLabel")}
-            {...register("intro.aboutLabel")}
-          />
-        </AdField>
       </Panel>
 
       <Panel
@@ -520,13 +441,6 @@ export default function HomeEditor() {
             {...register("faqCtaLabel")}
           />
         </AdField>
-      </Panel>
-
-      <Panel
-        title="Event types heading"
-        lede="Heading above the occasion chips on the homepage. The chip options themselves live in the Event Types module."
-      >
-        <SectionHeadingGroup prefix="eventTypesHeading" register={register} errors={errors} />
       </Panel>
 
       <Panel title="Call to action" lede="Closing enquiry band on the homepage.">

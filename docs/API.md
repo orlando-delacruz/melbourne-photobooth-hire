@@ -133,6 +133,38 @@ Distinguishing rules:
 - No inquiry table, field, status, retention, or access design is included here; that belongs to `docs/DATA-MODEL.md` and `docs/SECURITY.md` if the condition is confirmed.
 - Even if confirmed, the branch never grows into a CRM, reservation, payment, follow-up workflow, or availability system (see Section 15).
 
+### 5.3 Confirmed review submission flow
+
+The required flow (REQ-REV-008 through REQ-REV-012, DEC-035) is:
+
+```text
+Visitor
+  ↓
+Review modal (React island; client-side validation for usability)
+  ↓
+Astro Server Endpoint (server-side validation — enforcement layer)
+  ↓
+Turnstile verification (server-side; secret stays server-side)
+  ↓
+Supabase PostgreSQL → testimonial row with status Pending
+  ↓
+Admin moderation (approve → public marquee; reject → stays hidden)
+```
+
+Step responsibilities:
+
+1. **Review modal:** collects name, event type, 1–5 star rating and review text; provides labels, validation feedback, submission-in-progress state, and duplicate-submission prevention. Usability layer only; it never carries moderation status.
+2. **Astro Server Endpoint:** authoritative boundary. Re-validates input, verifies spam-protection evidence, and stores the review as Pending with a server-minted identifier. Never exposes secrets or accepts status from the visitor.
+3. **Turnstile verification:** server-side check that the submission is legitimate before it is stored (same boundary as Section 9).
+4. **Supabase PostgreSQL:** system of record for the moderated testimonials collection. Public retrieval serves approved rows only; pending and rejected rows are admin-visible only (`docs/DATA-MODEL.md` Section 5.6; `docs/SECURITY.md`).
+5. **Admin moderation:** authenticated admins approve, reject, or delete reviews through the CMS; approval makes the review eligible for the public marquee via the existing realtime subscription (no new mechanism).
+
+Distinguishing rules:
+
+- The on-site review workflow is the **single confirmed exception** to REQ-OOS-007; no other review platform, ratings store, moderation queue, or review-rating aggregation exists.
+- Rejected reviews are retained as admin-visible records; they are never published and their existence is never exposed publicly.
+- The external Google review link CTA is unchanged and remains an external link, not stored data.
+
 ---
 
 ## 6. Inquiry Request Contract (Conceptual Level)
@@ -149,15 +181,15 @@ The following are **potential** inquiry fields named in REQ-INQ-008. None is con
 - Event date.
 - Event type.
 - Event location/venue.
-- Estimated guests.
-- Preferred photobooth.
+- Service (a selection from the publicly available Services content).
+- Package (a selection from the publicly available Packages content).
 - Additional requirements/message.
 
 Rules carried from source documents:
 
 - The final set of fields, and which are required versus optional, is **Confirmation Required** (REQ-INQ-008).
 - If event type is collected as a selection, its option list (for example Wedding, Birthday, Corporate Event, Engagement Party, School Formal, Christmas/End-of-Year, Private Event, Other) is **Confirmation Required** (REQ-INQ-009).
-- If preferred photobooth is collected as a selection, its option list (for example Premium, Roaming, 360, Not Sure) is **Confirmation Required** (REQ-INQ-010).
+- If Service and/or Package are collected as selections, their option lists come from the confirmed, publicly available Services and Packages content rather than a hardcoded list (REQ-INQ-010; DEC-036).
 - No additional personal-data fields beyond what is confirmed may be introduced without justification (REQ-INQ-011).
 - Final service names, descriptions, and suitability/setup claims that option lists may reference require client confirmation (REQ-SVC-005) and must not present Shot&Prints reference characteristics as confirmed claims (REQ-SVC-004; see Section 17).
 
@@ -340,7 +372,7 @@ Anything originating from Shot&Prints remains Reference-Only until confirmed (se
 | 1 | Final inquiry fields (field set) | **Confirmation Required** | Potential fields in REQ-INQ-008 are possibilities, not confirmed requirements. No field names, payload structures, formats, or limits defined here. |
 | 2 | Required/optional designation per inquiry field | **Confirmation Required** | REQ-INQ-008. No designation is confirmed by any existing document. |
 | 3 | Event-type option list (if collected as a selection) | **Confirmation Required** | REQ-INQ-009. Example list is illustrative only. |
-| 4 | Preferred-photobooth option list (if collected as a selection) | **Confirmation Required** | REQ-INQ-010. Example list is illustrative only. |
+| 4 | Service/Package selection lists (if collected as selections) | **Confirmation Required** | REQ-INQ-010; options come from the publicly available Services/Packages content (DEC-036), not a separate hardcoded list. |
 | 5 | Inquiry persistence (whether Supabase stores inquiry records) | **Conditional / Confirmation Required** | Default is no storage (REQ-INQ-002). Storage only on explicit confirmation. No schema designed here. |
 | 6 | Combined email-plus-persistence failure semantics | **Confirmation Required** | Only relevant if persistence is confirmed. No combined behavior decided here. |
 | 7 | CMS modules and editable content areas | **Confirmation Required** | REQ-CMS-012, REQ-CON-002. Candidate areas are possibilities with no defined fields. |
@@ -366,7 +398,7 @@ Unless the client explicitly expands the project and the change is recorded as a
 - Payments/checkout (orders, transactions, balances, refunds).
 - CRM (contact pipelines, follow-ups, notes, tasks, campaigns).
 - Marketing automation (segments, campaigns, sends, journeys).
-- Custom review system (review submissions, ratings stores, moderation queues, review-rating claims without verified data).
+- Custom review behavior beyond the single confirmed moderated on-site workflow (Section 5.3; review submissions outside the endpoint, ratings stores, additional moderation queues, review-rating claims without verified data).
 - Separate backend (no Express, NestJS, or equivalent; no second database or service-specific stores).
 - Unnecessary API abstractions (no queues, webhooks, background jobs, microservices, API gateways, global stores, or repository/state-management infrastructure).
 - Enterprise CMS machinery (versions, revisions, audit logs, approval chains, multi-workspace models).
@@ -433,7 +465,7 @@ This API document is considered complete when:
 13. Public content retrieval is limited to confirmed/published content, with drafts, admin data, secrets, and unpublished state excluded.
 14. Error handling, validation principles, security/API boundaries, and external-service dependency boundaries are documented with security and database detail correctly delegated to `docs/SECURITY.md` and `docs/DATA-MODEL.md`.
 15. The Confirmation Required matrix covers final inquiry fields, required/optional designation, inquiry persistence, CMS modules, CMS fields, endpoint structure, request/response schemas, EmailJS configuration, client Gmail destination, Turnstile configuration, media access model, and additional integrations.
-16. Out-of-scope API behavior (real-time availability, reservation/booking engine, payments/checkout, CRM, marketing automation, custom review system, separate backend, unnecessary abstractions) is explicitly excluded, with queues, webhooks, background jobs, microservices, and gateways avoided.
+16. Out-of-scope API behavior (real-time availability, reservation/booking engine, payments/checkout, CRM, marketing automation, review behavior beyond the confirmed moderated workflow, separate backend, unnecessary abstractions) is explicitly excluded, with queues, webhooks, background jobs, microservices, and gateways avoided.
 17. Shot&Prints information is treated as Reference-Only, never as current API/business data, and no additional services or libraries are introduced.
 18. The design stays appropriately small for the agreed ₱15,000 project and preserves the inquiry/request versus booking/reservation distinction.
 19. The document is consistent with all nine source documents, introduces no unsupported endpoint contracts or implementation details, and defers frontend visual behavior to `docs/UI-UX.md` and `docs/DESIGN-SYSTEM.md`.

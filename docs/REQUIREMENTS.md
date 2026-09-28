@@ -226,11 +226,11 @@ No technical specifications of any booth hardware or software are defined in thi
   * Event date
   * Event type
   * Event location/venue
-  * Estimated guests
-  * Preferred photobooth
+  * Service (a selection from the publicly available Services content)
+  * Package (a selection from the publicly available Packages content)
   * Additional requirements/message
 * REQ-INQ-009 (**Confirmation Required**): If event type is collected as a selection, the option list (for example: Wedding, Birthday, Corporate Event, Engagement Party, School Formal, Christmas/End-of-Year, Private Event, Other) REQUIRES confirmation.
-* REQ-INQ-010 (**Confirmation Required**): If preferred photobooth is collected as a selection, the option list (for example: Premium, Roaming, 360, Not Sure) REQUIRES confirmation.
+* REQ-INQ-010 (**Confirmation Required**): If Service and/or Package are collected as selections, the option lists are drawn from the confirmed, publicly available Services and Packages content rather than a separate hardcoded list; the selection itself requires client confirmation (see DEC-036 for the operator-approved direction).
 * REQ-INQ-011 (**Must**): No additional personal-data fields beyond what is confirmed may be introduced without justification.
 
 ### 9.4 Validation — Must
@@ -289,9 +289,14 @@ Product-level requirements only. Modules, content models, and database fields ar
 * REQ-REV-002 (**Must**): The call to action MUST link to the client's Google Business Profile review flow.
 * REQ-REV-003 (**Should**): The call to action SHOULD appear in at least one appropriate placement (for example, homepage, contact/inquiry context, or footer) without disrupting the primary inquiry journey.
 * REQ-REV-004 (**Confirmation Required**): The actual review URL REQUIRES client confirmation (client must supply the Google Business Profile review link). No placeholder or guessed URL may be published as the production link.
-* REQ-REV-005 (**Must**): The system MUST NOT implement a custom review submission system.
-* REQ-REV-006 (**Must**): The system MUST NOT implement a custom review database.
+* REQ-REV-005 (**Superseded by the REQ-REV-008+ moderated on-site review workflow, DEC-035**): The original blanket prohibition on a custom review submission system no longer applies to the single confirmed workflow below; no other review platform behavior is permitted.
+* REQ-REV-006 (**Superseded by the REQ-REV-008+ moderated on-site review workflow, DEC-035**): The original blanket prohibition on a custom review database no longer applies to the single moderated testimonials table (with pending/approved/rejected states) described below; no other review storage is permitted.
 * REQ-REV-007 (**Must**): The website MUST NOT display fake, generated, or unverified reviews or ratings.
+* REQ-REV-008 (**Must**): The website MUST provide a visitor review submission form (name, event type, 1–5 star rating, review text) in the homepage Testimonial section via an accessible modal.
+* REQ-REV-009 (**Must**): Submitted reviews MUST enter the system as Pending automatically; the visitor MUST NOT be able to choose or modify the review status.
+* REQ-REV-010 (**Must**): Only reviews with status Approved MAY appear on the public website. Pending and Rejected reviews MUST NOT be publicly accessible; this MUST be enforced by server-side authorization (RLS), not only by frontend filtering.
+* REQ-REV-011 (**Must**): The CMS MUST let an authenticated admin view each submitted review (name, rating, content, event type, submission date/time, status) and approve, reject, or delete it, with confirmation for destructive or visibility-changing actions.
+* REQ-REV-012 (**Must**): Review submissions MUST be validated server-side and protected by the project's spam-protection mechanism where configured.
 
 ---
 
@@ -475,7 +480,7 @@ Unless the client explicitly expands the project, the following are out of scope
 * REQ-OOS-004: Complex reservation engine or automated reservation allocation.
 * REQ-OOS-005: Full CRM.
 * REQ-OOS-006: Marketing automation.
-* REQ-OOS-007: Custom review platform, custom review database, or review-rating claims without verified data.
+* REQ-OOS-007: Custom review platform beyond the single confirmed moderated on-site review workflow (REQ-REV-008 through REQ-REV-012, DEC-035), or review-rating claims without verified data.
 * REQ-OOS-008: Guaranteed SEO rankings.
 * REQ-OOS-009: Ongoing SEO campaigns.
 * REQ-OOS-010: Continuous content marketing.
