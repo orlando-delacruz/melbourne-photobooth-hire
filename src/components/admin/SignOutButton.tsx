@@ -28,7 +28,7 @@ export default function SignOutButton() {
   return (
     <button
       type="button"
-      className="ad-button ad-button--tertiary ad-signout-button"
+      className="ad-button ad-signout-button"
       onClick={onSignOut}
       disabled={signingOut}
     >

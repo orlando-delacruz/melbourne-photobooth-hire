@@ -1207,18 +1207,18 @@
   background:
     linear-gradient(
       90deg,
-      rgba(13, 9, 6, 0.94) 0%,
-      rgba(13, 9, 6, 0.7) 46%,
-      rgba(13, 9, 6, 0.24) 74%,
-      rgba(13, 9, 6, 0.5) 100%
+      rgba(13, 9, 6, 0.88) 0%,
+      rgba(13, 9, 6, 0.62) 46%,
+      rgba(13, 9, 6, 0.18) 74%,
+      rgba(13, 9, 6, 0.34) 100%
     ),
     linear-gradient(
       180deg,
-      rgba(13, 9, 6, 0.2) 0%,
-      rgba(13, 9, 6, 0.72) 86%,
-      rgba(13, 9, 6, 0.96) 100%
+      rgba(13, 9, 6, 0.1) 0%,
+      rgba(13, 9, 6, 0.46) 86%,
+      rgba(13, 9, 6, 0.7) 100%
     ),
-    radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.14), transparent 55%);
+    radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.18), transparent 55%);
   pointer-events: none;
 }
 .hero-inner {
@@ -1320,12 +1320,12 @@
     background:
       linear-gradient(
         180deg,
-        rgba(13, 9, 6, 0.5) 0%,
-        rgba(13, 9, 6, 0.82) 42%,
-        rgba(13, 9, 6, 0.96) 84%,
-        rgba(13, 9, 6, 1) 100%
+        rgba(13, 9, 6, 0.42) 0%,
+        rgba(13, 9, 6, 0.56) 40%,
+        rgba(13, 9, 6, 0.76) 82%,
+        rgba(13, 9, 6, 0.84) 100%
       ),
-      radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.14), transparent 60%);
+      radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.16), transparent 60%);
   }
   .hero-headline {
     margin: var(--space-sm) 0 var(--space-sm);
@@ -2422,5 +2422,39 @@ html[data-menu-open="true"] .floating-messenger {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* ── Mobile horizontal gallery (gallery page + homepage showcase) ─────── */
+/* Phones browse image galleries by swiping, so below the tablet breakpoint
+   the grid becomes an edge-to-edge horizontal track. The list alone scrolls;
+   html/body use overflow-x: clip, so the page never moves sideways. The
+   negative inline margin lets the first/last card reach the gutters while the
+   content aligns with the page padding. Tablet and desktop keep the
+   multi-column grid above this breakpoint. */
+@media (max-width: 639px) {
+  .gallery-grid,
+  .showcase-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--space-xs);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-inline: var(--page-padding);
+    margin-inline: calc(var(--page-padding) * -1);
+    padding-inline: var(--page-padding);
+    padding-bottom: var(--space-2xs);
+    scrollbar-width: none;
+  }
+  .gallery-grid::-webkit-scrollbar,
+  .showcase-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .gallery-grid > li,
+  .showcase-grid > li {
+    flex: 0 0 min(78vw, 20rem);
+    scroll-snap-align: start;
   }
 }

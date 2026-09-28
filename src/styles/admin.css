@@ -66,6 +66,31 @@
   background: var(--color-ink);
   color: var(--color-on-ink);
   border-right: 1px solid var(--color-ink-border);
+  /* Slim themed scrollbar: the admin does not load the public global.css, so
+     the dark sidebar gets its own subtle track/thumb that turns champagne on
+     hover. Behavior is unchanged (native scrolling, ~10px usable target). */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-border) transparent;
+}
+
+.ad-sidebar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.ad-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ad-sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-ink-border);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: var(--radius-pill);
+}
+
+.ad-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-line);
+  background-clip: padding-box;
 }
 
 .ad-brand {
@@ -229,13 +254,42 @@
   line-height: var(--leading-snug);
 }
 
+/* Sign out sits at the foot of the sidebar and reads as a deliberate action:
+   a bordered on-ink chip with a hairline rule above it, champagne on hover.
+   Scoped under .ad-signout so it outranks the shared .ad-button base. */
 .ad-signout {
   margin: var(--space-sm) var(--space-xs) var(--space-2xs);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-ink-hairline);
 }
 
-.ad-signout-button {
+.ad-signout .ad-signout-button {
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-ink-hairline-strong);
+  border-radius: var(--radius-md);
+  background: rgba(244, 238, 224, 0.05);
+  color: var(--color-on-ink);
+  font-weight: 600;
+}
+
+.ad-signout .ad-signout-button svg {
+  color: currentColor;
+  opacity: 0.92;
+}
+
+.ad-signout .ad-signout-button:hover:not(:disabled),
+.ad-signout .ad-signout-button:focus-visible {
+  background: var(--color-accent-wash);
+  border-color: var(--color-accent-line);
+  color: var(--color-accent-on-dark);
+}
+
+.ad-signout .ad-signout-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Backend-state banner: visible only when Supabase env is absent and the
