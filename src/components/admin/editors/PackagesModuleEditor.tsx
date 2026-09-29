@@ -8,9 +8,9 @@ import type { BadgeType, PackageItem } from "../../../lib/cms/types";
 import { BADGE_LABELS } from "../../../lib/cms/types";
 import { packagesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
-import { AdField, ImageField, Notice, Skeleton, TextArea, TextInput } from "../fields";
+import { AdField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList } from "../groups";
-import { DetailRow, HighlightPill, ModuleImage, toFieldErrors, useModuleList } from "../ModuleCrud";
+import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";
 import { confirmDestructive, notifySuccess } from "../alerts";
 
 type View =
@@ -51,7 +51,6 @@ function blankPackage(): PackageItem {
     badgeType: "none",
     customBadge: "",
     inclusions: [],
-    image: { key: null, src: "", alt: "" },
     highlight: false,
   };
 }
@@ -78,7 +77,7 @@ export default function PackagesModuleEditor() {
   };
 
   const openEdit = (item: PackageItem) => {
-    setDraft({ ...item, inclusions: [...(item.inclusions ?? [])], image: { ...item.image } });
+    setDraft({ ...item, inclusions: [...(item.inclusions ?? [])] });
     setErrors(new Map());
     store.setNotice(null);
     setView({ name: "edit", id: item.id });
@@ -150,7 +149,7 @@ export default function PackagesModuleEditor() {
           title={isEdit ? `Edit ${selected?.name || "package"}` : "Add Package"}
           lede={
             isEdit
-              ? "Update the package content, badge and image, then save."
+              ? "Update the package content and badge, then save."
               : "Describe the new package plan, choose its badge, then save."
           }
         >
@@ -270,14 +269,6 @@ export default function PackagesModuleEditor() {
               setDraft({ ...draft, inclusions: next });
             }}
           />
-          <ImageField
-            legend="Package image."
-            hint="Optional; shown when the package card includes an image."
-            value={draft.image}
-            onChange={(image) => setDraft({ ...draft, image })}
-            error={err("image")}
-            altError={err("image.alt")}
-          />
           <AdField
             id="pkg-highlight"
             label="Highlighted for homepage"
@@ -343,7 +334,6 @@ export default function PackagesModuleEditor() {
               <HighlightPill on={selected.highlight} />
             </span>
           </div>
-          <ModuleImage image={selected.image} />
           <dl className="ad-detail-list">
             <DetailRow label="Badge" value={packageBadgeText(selected)} />
             <DetailRow label="Duration" value={selected.durationLabel} />
@@ -355,7 +345,6 @@ export default function PackagesModuleEditor() {
                 (selected.inclusions ?? []).length ? (selected.inclusions ?? []).join("\n") : ""
               }
             />
-            <DetailRow label="Image alt text" value={selected.image.alt ?? ""} />
             <DetailRow
               label="Homepage"
               value={selected.highlight ? "Shown on homepage" : "Hidden from homepage"}

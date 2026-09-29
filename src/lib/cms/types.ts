@@ -288,7 +288,6 @@ export interface PackageItem {
   badgeType: BadgeType;
   customBadge: string;
   inclusions: string[];
-  image: CmsImage;
   highlight: boolean;
 }
 

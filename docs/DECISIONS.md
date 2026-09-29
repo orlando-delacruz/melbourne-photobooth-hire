@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty-eight decision records exist (DEC-001 through DEC-038). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Thirty-nine decision records exist (DEC-001 through DEC-039). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -293,6 +293,7 @@ Thirty-eight decision records exist (DEC-001 through DEC-038). Existing selectio
 | DEC-036 | Contextual enquiry: Service/Package selection from CMS | Accepted | 2026-09-28 |
 | DEC-037 | Derived homepage hero stat values | Accepted | 2026-09-28 |
 | DEC-038 | 10 MB upload cap and CMS logo & favicon settings | Accepted | 2026-09-28 |
+| DEC-039 | Package image removal (unrendered CMS field) | Accepted | 2026-09-29 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -991,6 +992,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DESIGN-SYSTEM.md` (§17 media, §31 image guidelines), `docs/SECURITY.md` (upload handling), `docs/DATA-MODEL.md` (settings blob), DEC-024/DEC-028.
 - **Supersedes / Superseded by:** Amends the 2 MB cap described in DEC-017/DEC-024 era docs for the current implementation.
 - **Open questions or follow-up:** Operator browser test of a real 10 MB upload, replace and remove through the admin, and visual sign-off of the logo at header/footer sizes.
+
+### DEC-039 — Package image removal (unrendered CMS field)
+
+- **ID:** DEC-039
+- **Title:** Package image removal (unrendered CMS field)
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** `PackageItem.image` existed in the CMS type, schema, seed, database columns, row mappers, and the Packages module editor (`ImageField`, detail preview, alt-text row), but no public consumer ever rendered it: `LivePlansSection` and `LivePackagesSection` pass no `imageSrc` to `LiveCard`, and `cmsSource.buildSiteContent` drops package images. The editor hint ("shown when the package card includes an image") described a state that never occurs, and uploads accumulated unused bytes in the `cms-media` bucket.
+- **Decision:** Full model removal. `PackageItem` loses `image` (type, schema element, seed); the editor loses the upload field, detail preview, alt-text row, and image draft handling; `packageFromRow`/`packageToRow`, `database.types.ts`, and `supabase/schema.sql` lose the three columns. New `supabase/migration-packages-drop-image.sql` deletes orphaned package uploads from `storage.objects` first, then drops `image_key`/`image_src`/`image_alt` (idempotent; operator applies once in the SQL editor before deploy). Services and gallery images are untouched.
+- **Alternatives considered:** Editor-UI-only removal (keep type/schema/columns) — rejected (leaves dead model surface and orphaned columns; the client asked for removal, not hiding). Relying on the save-path storage GC for cleanup — rejected (once the mapper drops the field, `collectImageKeys(previous)` can no longer see old keys, so nothing would be deleted; the migration is the correct one-time mechanism).
+- **Rationale:** Smallest change that eliminates the dead end-to-end path: no public rendering changes (nothing rendered), no new code (existing GC/migration conventions reused), storage reclaimed in the same operator step as the column drop.
+- **Consequences:** Saved package rows keep their `image_*` columns until the migration runs; `packageFromRow` ignores them, so public rendering is unaffected either way. Drafts validate under the slimmer schema (Zod strips unknown keys), and the next admin save writes imageless rows. `optionalImageSchema` stays for the settings logo/favicon. `supabase gen types` regen-diff still owed per convention.
+- **Related documents:** `docs/DATA-MODEL.md` (module concepts), `docs/ARCHITECTURE.md` (§11 CMS, §17 media), `docs/DEPLOYMENT.md` (migration application), DEC-018/DEC-024/DEC-038.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator applies the migration once, re-runs `supabase gen types`, and verifies packages admin save + public `/packages` render in the browser.
 
 ## 22. Related Documentation
 

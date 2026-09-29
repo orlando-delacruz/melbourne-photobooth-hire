@@ -176,9 +176,6 @@ export type Database = {
           duration_label: string;
           highlight: boolean;
           id: string;
-          image_alt: string;
-          image_key: string | null;
-          image_src: string;
           inclusions: string[];
           name: string;
           price_label: string;
@@ -194,9 +191,6 @@ export type Database = {
           duration_label: string;
           highlight?: boolean;
           id?: string;
-          image_alt?: string;
-          image_key?: string | null;
-          image_src?: string;
           inclusions?: string[];
           name: string;
           price_label: string;
@@ -212,9 +206,6 @@ export type Database = {
           duration_label?: string;
           highlight?: boolean;
           id?: string;
-          image_alt?: string;
-          image_key?: string | null;
-          image_src?: string;
           inclusions?: string[];
           name?: string;
           price_label?: string;

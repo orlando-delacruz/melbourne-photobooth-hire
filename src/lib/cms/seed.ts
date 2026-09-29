@@ -492,7 +492,6 @@ export const cmsSeed: CmsContent = {
       badgeType: badgeFor(pkg.badge).badgeType,
       customBadge: badgeFor(pkg.badge).customBadge,
       inclusions: pkg.inclusions,
-      image: { key: null, src: "", alt: "", caption: undefined } as CmsImageSeed,
       highlight: true,
     })),
     gallery: mockContent.gallery.map((item) => ({

@@ -73,7 +73,6 @@ export function packageFromRow(row: PackageRow): PackageItem {
     badgeType: row.badge_type,
     customBadge: row.custom_badge,
     inclusions: row.inclusions,
-    image: { key: row.image_key, src: row.image_src, alt: row.image_alt },
     highlight: row.highlight,
   };
 }
@@ -88,9 +87,6 @@ function packageToRow(item: PackageItem, sortOrder: number): InsertOf<PackageRow
     badge_type: item.badgeType,
     custom_badge: item.customBadge,
     inclusions: item.inclusions ?? [],
-    image_key: item.image.key,
-    image_src: item.image.src,
-    image_alt: item.image.alt ?? "",
     highlight: item.highlight,
     sort_order: sortOrder,
   };

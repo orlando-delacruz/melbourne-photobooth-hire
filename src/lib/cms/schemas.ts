@@ -414,7 +414,6 @@ export const packagesModuleSchema = z
         // otherwise, and seeded non-custom packages store "").
         customBadge: z.string().trim().max(60, "Custom badge text must be 60 characters or fewer."),
         inclusions: z.array(shortText("each inclusion", 200)).max(30),
-        image: optionalImageSchema,
         highlight: z.boolean(),
       })
       .superRefine((value, ctx) => {
