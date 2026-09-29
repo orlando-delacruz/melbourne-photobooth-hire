@@ -794,6 +794,48 @@
   resize: vertical;
 }
 
+/* Selects get a consistent token-coloured chevron instead of the native OS
+   arrow, matching the public form controls. The wrapper exists only to host
+   the chevron pseudo-element (no pseudo-elements on <select>). */
+.ad-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ad-select-wrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.ad-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 1.5px solid var(--color-ink-faint);
+  border-bottom: 1.5px solid var(--color-ink-faint);
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color var(--motion-quick) var(--ease-default);
+}
+
+.ad-select-wrap:hover::after,
+.ad-select-wrap:focus-within::after {
+  border-color: var(--color-ink-soft);
+}
+
+.ad-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .ad-input:hover,
 .ad-textarea:hover,
 .ad-select:hover {

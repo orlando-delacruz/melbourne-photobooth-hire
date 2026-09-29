@@ -163,6 +163,13 @@
 .iq-select {
   appearance: none;
   padding-right: 2.5rem;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Mute the control while the placeholder option is selected. */
+.iq-select:has(option[value=""]:checked) {
+  color: var(--color-ink-faint);
 }
 .iq-select-wrap {
   position: relative;
@@ -177,7 +184,7 @@
   height: 0.55rem;
   border-right: 1.5px solid var(--color-ink-faint);
   border-bottom: 1.5px solid var(--color-ink-faint);
-  transform: translateY(-70%) rotate(45deg);
+  transform: translateY(-50%) rotate(45deg);
   pointer-events: none;
   transition: border-color var(--motion-quick) var(--ease-default);
 }

@@ -292,7 +292,8 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-/* Best Seller ribbon: pinned to the card's top-right corner. */
+/* Package card image badge (Best Seller / Top Rated): pinned to the card's
+   top-right corner, enlarged on phones so it stays prominent on narrow cards. */
 .card-ribbon {
   position: absolute;
   top: var(--space-xs);
@@ -302,6 +303,12 @@
   object-fit: contain;
   z-index: 3;
   pointer-events: none;
+}
+@media (max-width: 639px) {
+  .card-ribbon {
+    width: 7rem;
+    height: 7rem;
+  }
 }
 .card-title {
   margin: 0 0 var(--space-2xs);

@@ -140,15 +140,17 @@ export const AdSelect = forwardRef<HTMLSelectElement, SelectProps>(function AdSe
   ref,
 ) {
   return (
-    <select
-      ref={ref}
-      className="ad-select"
-      aria-invalid={error ? true : undefined}
-      aria-describedby={error ? `${props.id}-error` : undefined}
-      {...props}
-    >
-      {children}
-    </select>
+    <div className="ad-select-wrap">
+      <select
+        ref={ref}
+        className="ad-select"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${props.id}-error` : undefined}
+        {...props}
+      >
+        {children}
+      </select>
+    </div>
   );
 });
 
