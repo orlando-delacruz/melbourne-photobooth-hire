@@ -22,6 +22,16 @@ type View =
   | { name: "create" }
   | { name: "edit"; id: string };
 
+/** List filter: "all" shows every review; otherwise one moderation status. */
+type StatusFilter = "all" | ReviewStatus;
+
+const STATUS_FILTERS: Array<{ key: StatusFilter; label: string }> = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "approved", label: "Approved" },
+  { key: "rejected", label: "Rejected" },
+];
+
 function blankTestimonial(): TestimonialItem {
   return {
     id: createId("testimonial"),
@@ -66,11 +76,21 @@ function StatusPill({ status }: { status: ReviewStatus }) {
 export default function TestimonialsModuleEditor() {
   const store = useModuleList<TestimonialItem>("mod-testimonials");
   const [view, setView] = useState<View>({ name: "list" });
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [draft, setDraft] = useState<TestimonialItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
 
   if (!store.loaded || !store.items) return <Skeleton />;
   const items = store.items;
+
+  // Filtered list for display only: moderation, reorder and detail keep
+  // working on the full-list order, so positions stay truthful.
+  const counts: Record<ReviewStatus, number> = { pending: 0, approved: 0, rejected: 0 };
+  for (const item of items) counts[item.status] += 1;
+  const filtered = statusFilter !== "all";
+  const visible =
+    statusFilter === "all" ? items : items.filter((item) => item.status === statusFilter);
+  const positionOf = (id: string) => items.findIndex((item) => item.id === id) + 1;
 
   const selected =
     (view.name === "detail" || view.name === "edit"
@@ -375,14 +395,15 @@ export default function TestimonialsModuleEditor() {
           {store.notice.body ? <p>{store.notice.body}</p> : null}
         </Notice>
       ) : null}
-      <section className="ad-panel" aria-label="All testimonials">
+      <section className="ad-panel" aria-label="Testimonials">
         <div className="ad-panel-head">
           <div>
-            <h2>All testimonials</h2>
+            <h2>Testimonials</h2>
             <p className="ad-panel-lede">
               {items.length} {items.length === 1 ? "review" : "reviews"} in homepage order,
               including reviews awaiting moderation. Only approved reviews show on the
-              homepage. Select a row for detail, moderation and reorder.
+              homepage. Filter by status, then select a row for detail, moderation and
+              reorder.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -392,13 +413,46 @@ export default function TestimonialsModuleEditor() {
             </button>
           </span>
         </div>
-        {items.length === 0 ? (
+        <div className="ad-filter" role="group" aria-label="Filter by review status">
+          {STATUS_FILTERS.map((option) => {
+            const count = option.key === "all" ? items.length : counts[option.key];
+            return (
+              <button
+                key={option.key}
+                type="button"
+                className="ad-button ad-filter-button"
+                aria-pressed={statusFilter === option.key}
+                disabled={store.busy}
+                onClick={() => setStatusFilter(option.key)}
+              >
+                {option.label}
+                <span className="ad-filter-count">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+        {visible.length === 0 ? (
           <div className="ad-empty">
-            <h3>No testimonials</h3>
-            <p>
-              Add the first review with the Add testimonial button above. The homepage reviews
-              section stays hidden while no approved review exists.
-            </p>
+            {items.length === 0 ? (
+              <>
+                <h3>No testimonials</h3>
+                <p>
+                  Add the first review with the Add testimonial button above. The homepage
+                  reviews section stays hidden while no approved review exists.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>
+                  {statusFilter === "pending"
+                    ? "No pending reviews"
+                    : statusFilter === "approved"
+                      ? "No approved reviews"
+                      : "No rejected reviews"}
+                </h3>
+                <p>Switch the status filter above to see reviews with another status.</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="ad-table-wrap">
@@ -415,7 +469,7 @@ export default function TestimonialsModuleEditor() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((item, index) => (
+                {visible.map((item, index) => (
                   <tr
                     key={item.id}
                     className="ad-table-rowlink"
@@ -429,7 +483,7 @@ export default function TestimonialsModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "testimonial"}`}
                   >
-                    <td>{index + 1}</td>
+                    <td>{positionOf(item.id)}</td>
                     <td>
                       <strong>{(item.name || "Untitled testimonial").slice(0, 90)}</strong>
                       {item.quote ? (
@@ -448,9 +502,9 @@ export default function TestimonialsModuleEditor() {
                         <button
                           type="button"
                           className="ad-icon-button"
-                          disabled={index === 0 || store.busy}
+                          disabled={index === 0 || store.busy || filtered}
                           aria-label={`Move ${item.name || "testimonial"} up`}
-                          title="Move up"
+                          title={filtered ? "Show all reviews to reorder" : "Move up"}
                           onClick={(event) => {
                             event.stopPropagation();
                             void moveAndSave(item.id, -1);
@@ -461,9 +515,9 @@ export default function TestimonialsModuleEditor() {
                         <button
                           type="button"
                           className="ad-icon-button"
-                          disabled={index === items.length - 1 || store.busy}
+                          disabled={index === visible.length - 1 || store.busy || filtered}
                           aria-label={`Move ${item.name || "testimonial"} down`}
-                          title="Move down"
+                          title={filtered ? "Show all reviews to reorder" : "Move down"}
                           onClick={(event) => {
                             event.stopPropagation();
                             void moveAndSave(item.id, 1);
