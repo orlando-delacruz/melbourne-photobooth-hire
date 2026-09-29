@@ -42,11 +42,13 @@
   --color-accent-line-strong: rgba(255, 107, 91, 0.42);
   --color-accent-glow: rgba(255, 158, 144, 0.16);
 
-  /* Coral CTA (client-confirmed primary). Label is deep ink for AA contrast
-     (~6.6:1 on #FF6B5B); white would be ~2.8:1. */
+  /* Coral CTA (client-confirmed primary). Client direction: white label on
+     coral. Contrast note: white on #FF6B5B is ~2.8:1, below the AA bar for
+     body text; kept per explicit direction (mirrors the tokens.css note from
+     the pre-light theme). */
   --color-coral: #ff6b5b;
   --color-coral-strong: #ee5342;
-  --color-on-coral: #1f1814;
+  --color-on-coral: #ffffff;
 
   /* Pure black for package-card text (client direction). */
   --color-black: #000000;

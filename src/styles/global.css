@@ -279,10 +279,21 @@ body.page-home {
   display: none;
 }
 /* Larger navbar lockup: the header brand reads as the site signature.
-   Footer keeps its own size below. */
+   Footer keeps its own size below. Sized up for desktop and mobile. */
 .brand .brand-logo {
-  height: clamp(2.5rem, 5vw, 3.25rem);
-  max-width: 15rem;
+  height: clamp(3.25rem, 5.5vw, 4rem);
+  max-width: 18rem;
+}
+@media (max-width: 639px) {
+  .brand .brand-logo {
+    height: 3.25rem;
+    max-width: 12rem;
+  }
+}
+@media (max-width: 479px) {
+  .brand .brand-logo {
+    max-width: 9.5rem;
+  }
 }
 .footer-brand:has(.brand-logo) .brand-name {
   display: none;

@@ -131,13 +131,19 @@ const { items, currentPath, initialSettings } = Astro.props;
     color: var(--color-accent);
     transition: transform var(--motion-settled) var(--ease-default);
   }
+  /* Built-in fallback mark scales with the enlarged navbar logo. */
+  .brand-mark svg {
+    display: block;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
   .brand:hover .brand-mark {
     transform: rotate(-6deg);
   }
   .brand-name {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: clamp(1.3rem, 1.7vw, 1.6rem);
+    font-size: clamp(1.5rem, 2vw, 1.9rem);
     letter-spacing: var(--tracking-tight);
     line-height: 1;
   }
@@ -241,6 +247,10 @@ const { items, currentPath, initialSettings } = Astro.props;
   @media (max-width: 479px) {
     .header-inner {
       gap: var(--space-xs);
+    }
+    .brand-mark svg {
+      width: 2.5rem;
+      height: 2.5rem;
     }
     .header-cta {
       padding: 0 var(--space-sm);
