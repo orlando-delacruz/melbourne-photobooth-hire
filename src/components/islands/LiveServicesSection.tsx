@@ -30,9 +30,9 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
   const previewHighlights = (service: ServiceItem): string[] => service.highlights.slice(0, 4);
 
   return (
-    <section className="section on-dark" aria-labelledby="services-heading">
+    <section className="section" aria-labelledby="services-heading">
       <LiveSectionHeading
-        tone="dark"
+        tone="light"
         title={heading.title}
         eyebrow={heading.eyebrow}
         id="services-heading"
@@ -43,7 +43,7 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
         {visible.map((service, index) => (
           <Reveal key={service.id} delay={index * 0.08}>
             <LiveCard
-              tone="dark"
+              tone="light"
               title={service.name}
               badge={serviceBadgeText(service)}
               featured={service.badgeType === "most-popular"}

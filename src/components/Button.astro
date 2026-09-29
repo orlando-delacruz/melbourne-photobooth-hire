@@ -136,7 +136,7 @@ const classes = [
   }
   .button--secondary:hover {
     border-color: var(--color-ink);
-    background: rgba(23, 18, 12, 0.04);
+    background: color-mix(in srgb, var(--color-ink) 4%, transparent);
     box-shadow: var(--elevation-1);
   }
 
@@ -176,15 +176,15 @@ const classes = [
     box-shadow: var(--elevation-1);
   }
   .button--secondary.button--tone-dark {
-    border-color: rgba(244, 238, 224, 0.32);
-    /* White label per client direction (dark contexts only). */
-    color: var(--color-on-coral);
-    background: rgba(244, 238, 224, 0.02);
+    border-color: var(--color-ink-hairline-strong);
+    /* Light label on retained dark bands. */
+    color: var(--color-on-ink);
+    background: color-mix(in srgb, var(--color-on-ink) 2%, transparent);
   }
   .button--secondary.button--tone-dark:hover {
     border-color: var(--color-accent-on-dark);
-    color: var(--color-on-coral);
-    background: rgba(230, 206, 138, 0.08);
+    color: var(--color-on-ink);
+    background: var(--color-accent-wash);
   }
   .button--tertiary.button--tone-dark {
     color: var(--color-accent-on-dark);

@@ -34,7 +34,7 @@ export default function LivePageHeader({
   });
 
   return (
-    <header className="page-header bleed on-dark">
+    <header className="page-header bleed">
       {imageSrc ? (
         <>
           <div

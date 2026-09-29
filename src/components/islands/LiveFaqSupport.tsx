@@ -26,7 +26,7 @@ export default function LiveFaqSupport({ initialPage }: { initialPage: FaqPageCo
       />
       <h2>{page.support.heading}</h2>
       <p>{page.support.body}</p>
-      <LiveButton href="/contact" variant="primary" tone="dark" size="lg" arrow>
+      <LiveButton href="/contact" variant="primary" tone="light" size="lg" arrow>
         {page.support.label}
       </LiveButton>
     </div>

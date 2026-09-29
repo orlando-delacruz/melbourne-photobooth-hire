@@ -32,7 +32,7 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
   );
 
   return (
-    <aside className="contact-aside on-dark">
+    <aside className="contact-aside">
       <div className="contact-aside__glow" aria-hidden="true" />
       <dl className="aside-facts">
         <div className="aside-fact">

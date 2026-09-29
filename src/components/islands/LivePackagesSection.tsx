@@ -26,9 +26,9 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
   const visible = packages.filter((pkg) => pkg.highlight !== false);
 
   return (
-    <section className="section on-dark" aria-labelledby="packages-heading">
+    <section className="section" aria-labelledby="packages-heading">
       <LiveSectionHeading
-        tone="dark"
+        tone="light"
         title={heading.title}
         eyebrow={heading.eyebrow}
         id="packages-heading"
@@ -56,7 +56,7 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
         ))}
       </div>
       <p className="packages-note">
-        <LiveButton href="/packages" variant="secondary" tone="dark" arrow>
+        <LiveButton href="/packages" variant="secondary" tone="light" arrow>
           {compareLabel}
         </LiveButton>
       </p>

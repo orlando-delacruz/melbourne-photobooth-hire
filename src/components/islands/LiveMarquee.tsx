@@ -87,11 +87,11 @@ export default function LiveMarquee({
   );
 
   return (
-    <section className="section on-dark reviews" aria-labelledby="reviews-heading">
+    <section className="section reviews" aria-labelledby="reviews-heading">
       <Reveal variant="mask">
-        <div className="reviews-marquee reviews-marquee--dark">
+        <div className="reviews-marquee reviews-marquee--light">
           <LiveSectionHeading
-            tone="dark"
+            tone="light"
             size="lg"
             title={heading.title}
             eyebrow={heading.eyebrow}
@@ -114,7 +114,7 @@ export default function LiveMarquee({
       <p className="reviews-cta">
         <button
           type="button"
-          className="button button--secondary button--tone-dark button--lg"
+          className="button button--secondary button--tone-light button--lg"
           data-review-open
         >
           <span className="button__label">Send Us a Review</span>

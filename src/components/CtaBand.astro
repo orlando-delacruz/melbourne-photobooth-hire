@@ -76,8 +76,12 @@ const {
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(100% 120% at 50% 0%, rgba(230, 206, 138, 0.16), transparent 60%),
-      linear-gradient(180deg, rgba(13, 9, 6, 0.72) 0%, rgba(13, 9, 6, 0.9) 100%);
+      radial-gradient(100% 120% at 50% 0%, var(--color-accent-glow), transparent 60%),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-ink-deep) 72%, transparent) 0%,
+        color-mix(in srgb, var(--color-ink-deep) 90%, transparent) 100%
+      );
   }
   .cta-band__inner {
     position: relative;

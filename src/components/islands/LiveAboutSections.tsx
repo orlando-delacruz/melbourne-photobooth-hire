@@ -93,7 +93,7 @@ export default function LiveAboutSections({
         ) : null}
       </section>
 
-      <section className="stats bleed on-dark" aria-label="At a glance">
+      <section className="stats bleed" aria-label="At a glance">
         <div className="container">
           <dl className="stats-grid">
             {page.stats.map((stat, index) => (

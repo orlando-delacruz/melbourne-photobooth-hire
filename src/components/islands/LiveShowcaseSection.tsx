@@ -25,10 +25,10 @@ export default function LiveShowcaseSection({ initial, initialHome }: LiveShowca
   if (visible.length === 0) return null;
 
   return (
-    <section className="section on-dark" aria-labelledby="showcase-heading">
+    <section className="section" aria-labelledby="showcase-heading">
       <Reveal variant="mask">
         <LiveSectionHeading
-          tone="dark"
+          tone="light"
           title={heading.title}
           eyebrow={heading.eyebrow}
           id="showcase-heading"
@@ -51,7 +51,7 @@ export default function LiveShowcaseSection({ initial, initialHome }: LiveShowca
           ))}
         </ul>
         <p className="showcase-cta">
-          <LiveButton href="/gallery" variant="secondary" tone="dark" arrow>
+          <LiveButton href="/gallery" variant="secondary" tone="light" arrow>
             {showcaseLabel}
           </LiveButton>
         </p>

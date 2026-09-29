@@ -22,7 +22,7 @@
 .rv-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(13, 9, 6, 0.88);
+  background: var(--color-scrim-strong);
   backdrop-filter: blur(18px) saturate(120%);
   -webkit-backdrop-filter: blur(18px) saturate(120%);
 }
@@ -164,7 +164,7 @@
   display: block;
   width: 2.75rem;
   height: 2.75rem;
-  color: rgba(244, 238, 224, 0.28);
+  color: color-mix(in srgb, var(--color-on-ink) 28%, transparent);
   transition:
     color var(--motion-quick) var(--ease-default),
     transform var(--motion-quick) var(--ease-default);

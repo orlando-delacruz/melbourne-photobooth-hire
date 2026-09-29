@@ -80,7 +80,7 @@ const { items, initialSettings } = Astro.props;
     position: absolute;
     inset: auto 0 0 0;
     height: 60%;
-    background: radial-gradient(90% 120% at 15% 120%, rgba(230, 206, 138, 0.1), transparent 70%);
+    background: radial-gradient(90% 120% at 15% 120%, var(--color-accent-wash), transparent 70%);
     pointer-events: none;
   }
   .footer-top {
@@ -149,7 +149,7 @@ const { items, initialSettings } = Astro.props;
     position: relative;
     margin-top: var(--space-xl);
     padding-top: var(--space-md);
-    border-top: 1px solid rgba(244, 238, 224, 0.1);
+    border-top: 1px solid var(--color-ink-hairline);
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2xs) var(--space-md);
@@ -163,7 +163,7 @@ const { items, initialSettings } = Astro.props;
     .footer-cta {
       grid-column: 1 / -1;
       padding-top: var(--space-lg);
-      border-top: 1px solid rgba(244, 238, 224, 0.1);
+      border-top: 1px solid var(--color-ink-hairline);
     }
   }
   @media (min-width: 1080px) {

@@ -11,7 +11,7 @@ interface Props {
 const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
 ---
 
-<header class="page-header bleed on-dark">
+<header class="page-header bleed">
   {imageSrc ? (
     <>
       <div
@@ -35,17 +35,17 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    background: var(--color-ink);
-    color: var(--color-on-ink);
+    background: var(--color-ivory-deep);
+    color: var(--color-ink);
     padding-block: clamp(3.5rem, 8vw, 6.5rem);
-    border-bottom: 1px solid var(--color-ink-hairline);
+    border-bottom: 1px solid var(--color-border);
   }
   .page-header__media {
     position: absolute;
     inset: 0;
     background-size: cover;
     background-position: center;
-    opacity: 0.42;
+    opacity: 0.16;
     z-index: -2;
   }
   .page-header__glow {
@@ -53,8 +53,12 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(120% 90% at 82% 12%, rgba(230, 206, 138, 0.16), transparent 60%),
-      linear-gradient(180deg, rgba(13, 9, 6, 0.25) 0%, rgba(13, 9, 6, 0.72) 100%);
+      radial-gradient(120% 90% at 82% 12%, var(--color-accent-line), transparent 60%),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-ivory) 55%, transparent) 0%,
+        color-mix(in srgb, var(--color-ivory) 88%, transparent) 100%
+      );
   }
   .page-header__inner {
     position: relative;
@@ -65,12 +69,12 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
     font-size: var(--text-title);
     line-height: var(--leading-title);
     letter-spacing: var(--tracking-display);
-    color: var(--color-on-ink);
+    color: var(--color-ink);
   }
   .lede {
     margin: var(--space-sm) 0 0;
     max-width: 44rem;
-    color: var(--color-on-ink-secondary);
+    color: var(--color-ink-soft);
     font-size: var(--text-lead);
   }
   .sr-only {

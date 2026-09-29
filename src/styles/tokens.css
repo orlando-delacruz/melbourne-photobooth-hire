@@ -1,77 +1,89 @@
 /* Design tokens for Melbourne Photobooth Hire.
  *
- * PROVISIONAL: the "event noir" palette (espresso + champagne + ivory) and
- * Fraunces/Inter font pairing are proposals requiring client confirmation
- * before they become production brand values (see docs/DESIGN-SYSTEM.md
- * Sections 5-6, 38). Structural scales (spacing, type steps, breakpoints,
+ * PROVISIONAL: the warm coral palette (client-directed #FF6B5B primary on a
+ * cream/ivory canvas) and Fraunces/Inter font pairing are proposals requiring
+ * client confirmation before they become production brand values (see
+ * docs/DESIGN-SYSTEM.md Sections 5-6, 38; DEC-040). Structural scales (spacing, type steps, breakpoints,
  * radius, elevation, motion) follow the documented design-system decisions
  * (Sections 7-12, 29). Use semantic var() references, never hardcode values.
  */
 
 :root {
-  /* ── Colour: "event noir" ─────────────────────────────────────────────
-   * A warm near-black "darkroom" canvas, ivory photographic paper, and a
-   * single champagne-gold thread that carries eyebrows, rules and numerals. */
-  --color-ink-deep: #0d0906;
-  --color-ink: #17120c;
-  --color-ink-raised: #211a12;
-  --color-ink-border: #3a3128;
-  --color-ink-hairline: rgba(230, 206, 138, 0.16);
-  --color-ink-hairline-strong: rgba(230, 206, 138, 0.32);
+  /* ── Colour: "sunlit coral" ───────────────────────────────────────────
+   * Client-directed primary #FF6B5B on a warm light canvas. Cream/ivory
+   * neutrals carry the page, deep warm charcoal carries text and the few
+   * dark contrast bands (footer, final CTA, overlays), and the coral thread
+   * runs through eyebrows, rules, icons and actions. Provisional until
+   * client sign-off (docs/DESIGN-SYSTEM.md Sections 5-6). */
+  --color-ink-deep: #17110d;
+  --color-ink: #1f1814;
+  --color-ink-raised: #2a211b;
+  --color-ink-border: #43382f;
+  --color-ink-hairline: rgba(255, 255, 255, 0.14);
+  --color-ink-hairline-strong: rgba(255, 255, 255, 0.28);
 
   /* Text on ivory */
-  --color-ink-soft: #4a423a;
-  --color-ink-faint: #675f55;
+  --color-ink-soft: #5c4f46;
+  --color-ink-faint: #72675d;
 
-  /* Ivory / paper */
-  --color-ivory: #f4ede0;
-  --color-ivory-deep: #ebe0cb;
+  /* Cream / paper */
+  --color-ivory: #fbf6ef;
+  --color-ivory-deep: #f3eadf;
   --color-surface: #ffffff;
   --color-elevated: #ffffff;
-  --color-surface-dark: #211a12;
+  --color-surface-dark: #2a211b;
 
-  /* Champagne thread */
-  --color-accent: #7d5f24;
-  --color-accent-strong: #644a19;
-  --color-accent-on-dark: #e6ce8a;
-  --color-accent-wash: rgba(230, 206, 138, 0.1);
-  --color-accent-line: rgba(230, 206, 138, 0.28);
+  /* Coral thread (accent roles on light surfaces) */
+  --color-accent: #c43d2e;
+  --color-accent-strong: #a93122;
+  --color-accent-on-dark: #ff9e90;
+  --color-accent-wash: rgba(255, 107, 91, 0.1);
+  --color-accent-line: rgba(255, 107, 91, 0.3);
+  --color-accent-line-strong: rgba(255, 107, 91, 0.42);
+  --color-accent-glow: rgba(255, 158, 144, 0.16);
 
-  /* Coral CTA (client-confirmed primary button/accent). Client overrode
-     the ink-text pairing with white text: white on coral is ~2.8:1, below
-     the AA bar (REQ-ACC-008 flags this) — kept per explicit direction. */
+  /* Coral CTA (client-confirmed primary). Label is deep ink for AA contrast
+     (~6.6:1 on #FF6B5B); white would be ~2.8:1. */
   --color-coral: #ff6b5b;
-  --color-coral-strong: #e85746;
-  --color-on-coral: #ffffff;
+  --color-coral-strong: #ee5342;
+  --color-on-coral: #1f1814;
 
   /* Pure black for package-card text (client direction). */
   --color-black: #000000;
 
   /* Text on ink */
-  --color-on-ink: #f4eee0;
-  --color-on-ink-secondary: #c6baa4;
-  --color-on-ink-faint: #948a78;
+  --color-on-ink: #fbf6ef;
+  --color-on-ink-secondary: #cbbeb0;
+  --color-on-ink-faint: #9a8c80;
 
   /* Lines */
-  --color-border: #e2d8c6;
-  --color-divider: #ece3d3;
-  --color-border-strong: #cbbda3;
-  --color-input-border: #a2947c;
+  --color-border: #e9dcd0;
+  --color-divider: #f2e9df;
+  --color-border-strong: #d5c4b4;
+  --color-input-border: #b4a392;
 
   /* Semantic */
   --color-success: #1f6e43;
   --color-warning: #8a5a00;
   --color-error: #b3261e;
-  --color-focus: #a85a12;
-  --color-focus-dark: #e6ce8a;
+  --color-focus: #c43d2e;
+  --color-focus-dark: #ff9e90;
 
-  /* Scrims */
-  --color-scrim: rgba(13, 9, 6, 0.62);
-  --color-scrim-strong: rgba(13, 9, 6, 0.84);
+  /* Scrims / overlays */
+  --color-scrim: rgba(31, 24, 20, 0.62);
+  --color-scrim-strong: rgba(31, 24, 20, 0.84);
 
-  /* Legacy role aliases (kept so existing references keep working). */
-  --color-primary: var(--color-ink);
-  --color-primary-contrast: var(--color-ivory);
+  /* Light translucent header (public site is light; mobile-nav panel keeps
+     its own dark overlay tokens below). */
+  --color-header-bg: rgba(251, 246, 239, 0.86);
+  --color-header-bg-scrolled: rgba(251, 246, 239, 0.96);
+  --color-header-border: rgba(31, 24, 20, 0.1);
+  --color-header-shadow: rgba(31, 24, 20, 0.16);
+
+  /* Legacy role aliases (kept so existing references keep working).
+     "Primary" now means the coral brand action. */
+  --color-primary: var(--color-coral);
+  --color-primary-contrast: var(--color-on-coral);
 
   /* ── Typefaces (provisional proposal, self-hosted) ────────────────── */
   --font-display: "Fraunces", "Times New Roman", Georgia, serif;

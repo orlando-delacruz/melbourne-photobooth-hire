@@ -26,9 +26,9 @@ export default function LiveSteps({ initialHome }: { initialHome: HomePageConten
   const home = useLiveHome(initialHome);
 
   return (
-    <section className="section on-dark" aria-labelledby="process-heading">
+    <section className="section" aria-labelledby="process-heading">
       <LiveSectionHeading
-        tone="dark"
+        tone="light"
         title={home.processHeading.title}
         eyebrow={home.processHeading.eyebrow}
         id="process-heading"

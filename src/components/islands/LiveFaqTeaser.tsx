@@ -24,9 +24,9 @@ export default function LiveFaqTeaser({ initial, initialHome }: LiveFaqTeaserPro
   const visible = faqs.filter((faq) => faq.highlight !== false).slice(0, 4);
 
   return (
-    <section className="section on-dark" aria-labelledby="faq-heading">
+    <section className="section" aria-labelledby="faq-heading">
       <LiveSectionHeading
-        tone="dark"
+        tone="light"
         title={heading.title}
         eyebrow={heading.eyebrow}
         id="faq-heading"
@@ -34,10 +34,10 @@ export default function LiveFaqTeaser({ initial, initialHome }: LiveFaqTeaserPro
         size="lg"
       />
       <Reveal>
-        <LiveAccordion items={visible} tone="dark" />
+        <LiveAccordion items={visible} tone="light" />
       </Reveal>
       <p className="faq-cta">
-        <LiveButton href="/faq" variant="secondary" tone="dark" arrow>
+        <LiveButton href="/faq" variant="secondary" tone="light" arrow>
           {ctaLabel}
         </LiveButton>
       </p>

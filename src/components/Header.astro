@@ -96,20 +96,20 @@ const { items, currentPath, initialSettings } = Astro.props;
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(30, 23, 15, 0.84);
+    background: var(--color-header-bg);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border-bottom: 1px solid var(--color-ink-hairline-strong);
-    box-shadow: 0 18px 44px -24px rgba(13, 9, 6, 0);
+    border-bottom: 1px solid var(--color-header-border);
+    box-shadow: 0 18px 44px -24px transparent;
     transition:
       background-color var(--motion-settled) var(--ease-default),
       border-color var(--motion-settled) var(--ease-default),
       box-shadow var(--motion-settled) var(--ease-default);
   }
   .site-header.is-scrolled {
-    background: rgba(20, 15, 9, 0.94);
-    border-bottom-color: var(--color-ink-hairline-strong);
-    box-shadow: 0 18px 44px -20px rgba(13, 9, 6, 0.55);
+    background: var(--color-header-bg-scrolled);
+    border-bottom-color: var(--color-header-border);
+    box-shadow: 0 18px 44px -20px var(--color-header-shadow);
   }
   .header-inner {
     display: flex;
@@ -123,12 +123,12 @@ const { items, currentPath, initialSettings } = Astro.props;
     align-items: center;
     gap: var(--space-2xs);
     margin-right: auto;
-    color: var(--color-on-ink);
+    color: var(--color-ink);
     text-decoration: none;
   }
   .brand-mark {
     display: inline-flex;
-    color: var(--color-accent-on-dark);
+    color: var(--color-accent);
     transition: transform var(--motion-settled) var(--ease-default);
   }
   .brand:hover .brand-mark {
@@ -155,7 +155,7 @@ const { items, currentPath, initialSettings } = Astro.props;
     align-items: center;
     min-height: 44px;
     padding: 0 var(--space-xs);
-    color: var(--color-on-ink-secondary);
+    color: var(--color-ink-soft);
     font-weight: 500;
     font-size: var(--text-small);
     text-decoration: none;
@@ -169,21 +169,21 @@ const { items, currentPath, initialSettings } = Astro.props;
     bottom: 10px;
     height: 2px;
     border-radius: var(--radius-pill);
-    background: var(--color-accent-on-dark);
+    background: var(--color-accent);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--motion-settled) var(--ease-default);
   }
   .nav-link:hover {
-    color: var(--color-on-ink);
+    color: var(--color-ink);
   }
   .nav-link:hover::after {
     transform: scaleX(1);
   }
   .nav-link--current {
-    color: var(--color-on-ink);
+    color: var(--color-ink);
     font-weight: 600;
-    background: rgba(230, 206, 138, 0.1);
+    background: var(--color-accent-wash);
     border-radius: var(--radius-sm);
   }
   .nav-link--current::after {
@@ -222,7 +222,7 @@ const { items, currentPath, initialSettings } = Astro.props;
     transform: translateY(0) scale(0.99);
   }
   .site-header :focus-visible {
-    outline-color: var(--color-focus-dark);
+    outline-color: var(--color-focus);
   }
   .mobile-nav {
     display: none;

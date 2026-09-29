@@ -109,7 +109,7 @@ export default function LiveTrustStrip({
   );
 
   return (
-    <section className="trust-strip on-dark" aria-label="Business details">
+    <section className="trust-strip" aria-label="Business details">
       <div
         className="ts-viewport"
         tabIndex={0}

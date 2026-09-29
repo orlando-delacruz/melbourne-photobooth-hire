@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Thirty-nine decision records exist (DEC-001 through DEC-039). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty decision records exist (DEC-001 through DEC-040). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -293,7 +293,8 @@ Thirty-nine decision records exist (DEC-001 through DEC-039). Existing selection
 | DEC-036 | Contextual enquiry: Service/Package selection from CMS | Accepted | 2026-09-28 |
 | DEC-037 | Derived homepage hero stat values | Accepted | 2026-09-28 |
 | DEC-038 | 10 MB upload cap and CMS logo & favicon settings | Accepted | 2026-09-28 |
-| DEC-039 | Package image removal (unrendered CMS field) | Accepted | 2026-09-29 |
+| DEC-039 | Package image removal (unrendered CMS field)              | Accepted   | 2026-09-29 |
+| DEC-040 | Warm coral brand palette replaces "event noir"            | Accepted   | 2026-09-29 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1007,6 +1008,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DATA-MODEL.md` (module concepts), `docs/ARCHITECTURE.md` (§11 CMS, §17 media), `docs/DEPLOYMENT.md` (migration application), DEC-018/DEC-024/DEC-038.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator applies the migration once, re-runs `supabase gen types`, and verifies packages admin save + public `/packages` render in the browser.
+
+### DEC-040 — Warm coral brand palette replaces "event noir"
+
+- **ID:** DEC-040
+- **Title:** Warm coral brand palette replaces "event noir"
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** The client adopted `#FF6B5B` as the primary brand colour and asked for a cohesive, premium, warm and approachable palette across the whole public site. The existing palette was the dark "event noir" espresso canvas with a champagne-gold thread (`--color-accent #7d5f24`, `--color-accent-on-dark #e6ce8a`), with the coral already used only for primary buttons. The brief asked for light warm neutrals/cream backgrounds, dark readable text, warm-tinted borders, and removal of dark/gold combinations that conflict with the new brand, while preserving accessibility, existing functionality, and the admin panel.
+- **Decision:** Move the public site to a warm light theme built around `#FF6B5B`, keeping every semantic token name in `src/styles/tokens.css` (so all 19 consumer files keep working) and changing only values, plus four new tokens (`--color-accent-line-strong`, `--color-accent-glow`, `--color-header-bg`, `--color-header-bg-scrolled`; `--color-header-border`/`--color-header-shadow`). Key values: page ivory `#fbf6ef`, surface `#ffffff`, ink `#1f1814`, borders `#e9dcd0`/`#f2e9df`/`#d5c4b4`, accessible accent-on-light `--color-accent #c43d2e` / `--color-accent-strong #a93122` (coral for fills via `--color-coral`), accent-on-dark `#ff9e90`. The primary button uses the exact `#FF6B5B` with **deep-ink label** `--color-on-coral #1f1814` (~6.6:1 AA; white on coral was ~2.8:1). Surfaces: homepage canvas, services/packages/showcase/steps/trust-strip/FAQ-teaser/reviews sections, page headers, the 404 page, the contact aside and FAQ support panel become light; the footer and final CTA band stay deep warm-neutral charcoal with coral accents; overlays (mobile nav panel, gallery lightbox, review modal) stay dark. The admin panel keeps its layout and dark shell, sharing the coral accent and the neutral charcoal. Gold/champagne literals (`#fff2c8`, `#f0dca6`, `#e6ce8a`/`rgba(230,206,138,*)`, `#d9b45c`, `#faf3e2`, `rgba(125,95,36,*)`) and brown ink literals (`rgba(13,9,6,*)`, `rgba(23,18,12,*)`, `rgba(30,23,15,*)`) are replaced with tokens or `color-mix()`. Bundled favicon and public `theme-color` follow the new palette.
+- **Alternatives considered:** Keeping the dark "event noir" structure and only swapping gold→coral — rejected (does not satisfy the brief's light warm neutrals, and keeps a dark canvas the client asked to move away from). Fully light with no dark bands — rejected (loses the premium contrast anchor; footer + final CTA kept dark). White label on `#FF6B5B` — rejected (below AA; the brief requires sufficient contrast). Isolating admin from the shared palette — rejected in favour of sharing the brand accent while preserving the admin shell.
+- **Rationale:** Token-first change maximizes consistency and minimizes code churn: values live in one file, and the light/dark split keeps the site warm and approachable without becoming overwhelmingly coral. Deep-ink labels keep the exact brand colour while meeting AA. The retained dark footer/CTA and overlays preserve depth and image legibility.
+- **Consequences:** Public pages, shared components, `live.css` (the island mirror), and the admin accent all shift together; `live.css` and the Astro component `<style>` blocks must stay in sync (both were updated). `--color-primary` now aliases the coral, so `.iq-submit` is coral automatically. The palette remains **provisional** pending client sign-off (docs/DESIGN-SYSTEM.md Sections 5–6). Package-card pure-black text (`--color-black`) is preserved. `#000` mask stops in the marquee/gallery are intentionally untouched.
+- **Related documents:** `docs/DESIGN-SYSTEM.md` (§5–6, values still Requires Confirmation), `docs/UI-UX.md` (CTA hierarchy), `docs/ARCHITECTURE.md` (§6 rendering), `src/styles/tokens.css`, DEC-006/DEC-007 (the superseded provisional "event noir" visual direction, whose palette this replaces).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Client visual sign-off on the palette; browser QA for contrast, hover/focus states, and responsive behaviour; regenerate the badge/OG assets if any carry the old gold; client confirmation remains outstanding for the "5 star rated" hero claim.
 
 ## 22. Related Documentation
 

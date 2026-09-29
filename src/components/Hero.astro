@@ -150,18 +150,18 @@ function heroIconSvg(name: string, size = 18): string {
     background:
       linear-gradient(
         90deg,
-        rgba(244, 237, 224, 0.95) 0%,
-        rgba(244, 237, 224, 0.82) 44%,
-        rgba(244, 237, 224, 0.45) 72%,
-        rgba(244, 237, 224, 0.55) 100%
+        color-mix(in srgb, var(--color-ivory) 95%, transparent) 0%,
+        color-mix(in srgb, var(--color-ivory) 82%, transparent) 44%,
+        color-mix(in srgb, var(--color-ivory) 45%, transparent) 72%,
+        color-mix(in srgb, var(--color-ivory) 55%, transparent) 100%
       ),
       linear-gradient(
         180deg,
-        rgba(244, 237, 224, 0.45) 0%,
-        rgba(244, 237, 224, 0.3) 55%,
-        rgba(244, 237, 224, 0.6) 100%
+        color-mix(in srgb, var(--color-ivory) 45%, transparent) 0%,
+        color-mix(in srgb, var(--color-ivory) 30%, transparent) 55%,
+        color-mix(in srgb, var(--color-ivory) 60%, transparent) 100%
       ),
-      radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.3), transparent 55%);
+      radial-gradient(120% 120% at 85% 0%, var(--color-accent-line), transparent 55%);
     pointer-events: none;
   }
   .hero-inner {
@@ -274,12 +274,12 @@ function heroIconSvg(name: string, size = 18): string {
       background:
         linear-gradient(
           180deg,
-          rgba(244, 237, 224, 0.9) 0%,
-          rgba(244, 237, 224, 0.75) 42%,
-          rgba(244, 237, 224, 0.85) 80%,
-          rgba(244, 237, 224, 0.93) 100%
+          color-mix(in srgb, var(--color-ivory) 90%, transparent) 0%,
+          color-mix(in srgb, var(--color-ivory) 75%, transparent) 42%,
+          color-mix(in srgb, var(--color-ivory) 85%, transparent) 80%,
+          color-mix(in srgb, var(--color-ivory) 93%, transparent) 100%
         ),
-        radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.3), transparent 60%);
+        radial-gradient(140% 80% at 80% 8%, var(--color-accent-line), transparent 60%);
     }
     .hero-headline {
       margin: var(--space-sm) 0 var(--space-sm);

@@ -156,7 +156,11 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, transparent 45%, rgba(13, 9, 6, 0.55) 100%);
+    background: linear-gradient(
+      180deg,
+      transparent 45%,
+      color-mix(in srgb, var(--color-ink-deep) 55%, transparent) 100%
+    );
     opacity: 0.9;
     pointer-events: none;
   }
@@ -306,7 +310,11 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
 
   /* Dark variant (homepage "event noir" cards) */
   .card--dark {
-    background: linear-gradient(180deg, rgba(244, 238, 224, 0.045), rgba(244, 238, 224, 0.01));
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-on-ink) 4.5%, transparent),
+      color-mix(in srgb, var(--color-on-ink) 1%, transparent)
+    );
     border-color: var(--color-ink-hairline);
     color: var(--color-on-ink);
   }
@@ -377,7 +385,7 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
       90deg,
       transparent,
       var(--color-accent-on-dark) 22%,
-      #fff2c8 50%,
+      #ffd9d2 50%,
       var(--color-accent-on-dark) 78%,
       transparent
     );
@@ -390,7 +398,7 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
     height: 65%;
     z-index: 0;
     pointer-events: none;
-    background: radial-gradient(60% 100% at 50% 0%, rgba(230, 206, 138, 0.16), transparent 70%);
+    background: radial-gradient(60% 100% at 50% 0%, var(--color-accent-glow), transparent 70%);
   }
   .card--featured .card-body {
     position: relative;
