@@ -234,7 +234,18 @@ const { items, currentPath, initialSettings } = Astro.props;
     .mobile-nav {
       display: block;
     }
+    /* The Enquire CTA stays visible beside the menu trigger. */
+  }
+  /* Compact screens: tighten spacing and hide the CTA arrow so the brand,
+     CTA, and menu trigger fit without crowding. */
+  @media (max-width: 479px) {
+    .header-inner {
+      gap: var(--space-xs);
+    }
     .header-cta {
+      padding: 0 var(--space-sm);
+    }
+    .header-cta svg {
       display: none;
     }
   }
