@@ -402,90 +402,11 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
     color: var(--color-ink);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
-  /* Featured on a light page: a solid "event noir" card that stands apart from
-     the standard light cards, with the price highlighted in champagne. */
+  /* Featured package headliner: a champagne-tinted light card that stands
+     out among the white siblings while staying fully readable. Used by both
+     package surfaces (homepage + /packages). Ink text roles throughout; the
+     champagne badge and coral CTA come from the shared featured rules. */
   .card--featured.card--light {
-    background: linear-gradient(180deg, var(--color-surface-dark), var(--color-ink));
-    border-color: var(--color-ink-hairline-strong);
-    box-shadow: var(--elevation-3);
-    color: var(--color-on-ink);
-  }
-  .card--featured.card--light:hover {
-    border-color: var(--color-accent-on-dark);
-    box-shadow: var(--elevation-3);
-  }
-  .card--featured.card--light::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
-    z-index: 2;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-accent-on-dark) 22%,
-      #fff2c8 50%,
-      var(--color-accent-on-dark) 78%,
-      transparent
-    );
-  }
-  .card--featured.card--light::after {
-    content: "";
-    position: absolute;
-    inset: -35% -20% auto;
-    height: 65%;
-    z-index: 0;
-    pointer-events: none;
-    background: radial-gradient(60% 100% at 50% 0%, rgba(230, 206, 138, 0.16), transparent 70%);
-  }
-  .card--featured.card--light .card-title,
-  .card--featured.card--light .card-price {
-    color: var(--color-on-ink);
-  }
-  .card--featured.card--light .card-meta {
-    color: var(--color-on-ink-faint);
-  }
-  .card--featured.card--light .card-tagline {
-    color: var(--color-accent-on-dark);
-  }
-  .card--featured.card--light .card-description,
-  .card--featured.card--light .card-inclusions li,
-  .card--featured.card--light .card-highlights li {
-    color: var(--color-on-ink-secondary);
-  }
-  .card--featured.card--light .card-icon {
-    color: var(--color-accent-on-dark);
-    border-color: var(--color-ink-hairline-strong);
-    background: var(--color-accent-wash);
-  }
-  .card--featured.card--light .card-check {
-    color: var(--color-accent-on-dark);
-  }
-  .card--featured.card--light .card-highlights li::before {
-    background: var(--color-accent-on-dark);
-  }
-  .card--featured.card--light .card-price-amount {
-    color: var(--color-accent-on-dark);
-  }
-  .card--featured.card--light .card-price-suffix {
-    color: var(--color-on-ink-faint);
-  }
-
-  /* ── Homepage light cards ───────────────────────────────────────── */
-  /* body.page-home sets light running text, so light cards must pin their
-     own ink roles explicitly (base .card inherits body color). */
-  body.page-home .card--light {
-    color: var(--color-ink);
-  }
-  body.page-home .card--light .card-title {
-    color: var(--color-ink);
-  }
-
-  /* ── Homepage Most Popular headliner ────────────────────────────── */
-  /* Homepage-only champagne-tinted light card among the white siblings;
-     all text stays in ink roles. /packages keeps the shared treatment.
-     The champagne badge and coral CTA come from the shared featured rules. */
-  body.page-home .card--featured.card--light {
     background: linear-gradient(
       180deg,
       var(--color-surface),
@@ -496,14 +417,20 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
     box-shadow:
       0 0 0 1px var(--color-coral),
       var(--elevation-2);
+    color: var(--color-ink);
   }
-  body.page-home .card--featured.card--light:hover {
+  .card--featured.card--light:hover {
     border-color: var(--color-coral-strong);
     box-shadow:
       0 0 0 1px var(--color-coral-strong),
       var(--elevation-2);
   }
-  body.page-home .card--featured.card--light::before {
+  .card--featured.card--light::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    z-index: 2;
     background: linear-gradient(
       90deg,
       transparent,
@@ -512,36 +439,46 @@ const starSvg = `<svg class="card-badge-star" width="12" height="12" viewBox="0 
       transparent
     );
   }
-  body.page-home .card--featured.card--light::after {
+  .card--featured.card--light::after {
     background: none;
   }
-  body.page-home .card--featured.card--light .card-title,
-  body.page-home .card--featured.card--light .card-price,
-  body.page-home .card--featured.card--light .card-price-amount {
+  .card--featured.card--light .card-title,
+  .card--featured.card--light .card-price,
+  .card--featured.card--light .card-price-amount {
     color: var(--color-ink);
   }
-  body.page-home .card--featured.card--light .card-meta,
-  body.page-home .card--featured.card--light .card-price-suffix {
+  .card--featured.card--light .card-meta,
+  .card--featured.card--light .card-price-suffix {
     color: var(--color-ink-faint);
   }
-  body.page-home .card--featured.card--light .card-tagline {
+  .card--featured.card--light .card-tagline {
     color: var(--color-accent-strong);
   }
-  body.page-home .card--featured.card--light .card-description,
-  body.page-home .card--featured.card--light .card-inclusions li,
-  body.page-home .card--featured.card--light .card-highlights li {
+  .card--featured.card--light .card-description,
+  .card--featured.card--light .card-inclusions li,
+  .card--featured.card--light .card-highlights li {
     color: var(--color-ink-soft);
   }
-  body.page-home .card--featured.card--light .card-icon {
+  .card--featured.card--light .card-icon {
     color: var(--color-accent);
     border-color: var(--color-border);
     background: var(--color-ivory);
   }
-  body.page-home .card--featured.card--light .card-check {
+  .card--featured.card--light .card-check {
     color: var(--color-accent);
   }
-  body.page-home .card--featured.card--light .card-highlights li::before {
+  .card--featured.card--light .card-highlights li::before {
     background: var(--color-accent);
+  }
+
+  /* ── Homepage light cards ───────────────────────────────────────── */
+  /* body.page-home sets light running text, so light cards must pin their
+     own ink roles explicitly (base .card inherits body color). */
+  body.page-home .card--light {
+    color: var(--color-ink);
+  }
+  body.page-home .card--light .card-title {
+    color: var(--color-ink);
   }
 
   /* ── Package cards: all text black ──────────────────────────────── */

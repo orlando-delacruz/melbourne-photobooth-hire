@@ -22,6 +22,7 @@
 .iq-context {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2xs);
   margin: 0;
   padding: var(--space-2xs) var(--space-sm);
@@ -31,10 +32,15 @@
   color: var(--color-ink);
   font-size: var(--text-small);
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 .iq-context svg {
   flex-shrink: 0;
   color: var(--color-accent-strong);
+}
+/* Long service/package names must wrap instead of widening the chip. */
+.iq-context span {
+  min-width: 0;
 }
 .iq-context strong {
   font-weight: 600;
@@ -100,6 +106,7 @@
 .iq-label {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: var(--space-2xs);
   font-size: var(--text-small);
   font-weight: 600;
@@ -110,6 +117,7 @@
 
 .iq-control {
   width: 100%;
+  min-width: 0;
   min-height: 3rem;
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--color-input-border);
@@ -181,6 +189,20 @@
 .iq-textarea {
   min-height: 9rem;
   resize: vertical;
+}
+
+/* Turnstile: Cloudflare's widget defaults to a fixed 300px width, wider than
+ * the form/modal inner width on a 320px phone. The widget renders flexibly
+ * (see the islands); these rules are a defensive clamp so nothing overflows
+ * before it initialises or if it ever renders at the default size. */
+.iq-turnstile {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+.iq-turnstile > div,
+.iq-turnstile iframe {
+  max-width: 100%;
 }
 
 .iq-control[type="date"]::-webkit-calendar-picker-indicator {

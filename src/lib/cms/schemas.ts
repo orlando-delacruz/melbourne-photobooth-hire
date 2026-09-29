@@ -415,7 +415,7 @@ export const packagesModuleSchema = z
         customBadge: z.string().trim().max(60, "Custom badge text must be 60 characters or fewer."),
         inclusions: z.array(shortText("each inclusion", 200)).max(30),
         highlight: z.boolean(),
-        bestSeller: z.boolean(),
+        cardBadge: z.enum(["none", "best-seller", "top-rated"]),
       })
       .superRefine((value, ctx) => {
         if (value.badgeType === "custom" && value.customBadge.trim() === "") {

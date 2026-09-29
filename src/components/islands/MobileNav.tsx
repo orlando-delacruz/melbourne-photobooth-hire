@@ -46,7 +46,7 @@ function MenuList({
         ))}
       </ul>
       <a className="mn-cta" href={ctaHref}>
-        Enquire now
+        Book Now
       </a>
     </>
   );

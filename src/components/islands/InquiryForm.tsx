@@ -108,6 +108,9 @@ export default function InquiryForm({
         try {
           widgetId.current = api.render(turnstileRef.current, {
             sitekey: turnstileSiteKey,
+            // Fit the form's inner width on small screens instead of the
+            // fixed 300px default that overflows a 320px phone.
+            size: "flexible",
             callback: (token: string) => {
               if (!cancelled) {
                 setTurnstileToken(token);
@@ -142,6 +145,7 @@ export default function InquiryForm({
       container: HTMLElement,
       options: {
         sitekey: string;
+        size?: "normal" | "compact" | "flexible";
         callback?: (token: string) => void;
         "expired-callback"?: () => void;
         "error-callback"?: () => void;
@@ -437,7 +441,7 @@ export default function InquiryForm({
       </fieldset>
 
       {turnstileSiteKey ? (
-        <div className="iq-field">
+        <div className="iq-field iq-turnstile">
           <div ref={turnstileRef} />
           {turnstileFailed ? (
             <p className="iq-error" role="alert">

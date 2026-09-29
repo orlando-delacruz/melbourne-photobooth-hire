@@ -192,6 +192,9 @@ export default function ReviewModal({
             sitekey: turnstileSiteKey,
             // The dialog surface is dark; the light widget default would glare.
             theme: "dark",
+            // Fit the panel's inner width on small screens instead of the
+            // fixed 300px default that overflows a 320px phone.
+            size: "flexible",
             callback: (token: string) => {
               if (!cancelled) {
                 setTurnstileToken(token);
@@ -234,6 +237,7 @@ export default function ReviewModal({
       options: {
         sitekey: string;
         theme?: string;
+        size?: "normal" | "compact" | "flexible";
         callback?: (token: string) => void;
         "expired-callback"?: () => void;
         "error-callback"?: () => void;
@@ -492,7 +496,7 @@ export default function ReviewModal({
                 </div>
 
                 {turnstileSiteKey ? (
-                  <div className="iq-field">
+                  <div className="iq-field iq-turnstile">
                     <div ref={turnstileRef} />
                     {turnstileFailed ? (
                       <p className="iq-error" role="alert">

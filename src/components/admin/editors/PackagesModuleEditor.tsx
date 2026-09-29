@@ -4,8 +4,8 @@
 
 import { useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
-import type { BadgeType, PackageItem } from "../../../lib/cms/types";
-import { BADGE_LABELS } from "../../../lib/cms/types";
+import type { BadgeType, PackageCardBadge, PackageItem } from "../../../lib/cms/types";
+import { BADGE_LABELS, PACKAGE_CARD_BADGE_LABELS } from "../../../lib/cms/types";
 import { packagesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
 import { AdField, AdSelect, Notice, Skeleton, TextArea, TextInput } from "../fields";
@@ -35,6 +35,12 @@ const BADGE_HINTS: Record<BadgeType, string> = {
   custom: "Shows the custom badge text below.",
 };
 
+const CARD_BADGE_OPTIONS: { value: PackageCardBadge; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "best-seller", label: "Best Seller" },
+  { value: "top-rated", label: "Top Rated" },
+];
+
 export function packageBadgeText(item: PackageItem): string {
   if (item.badgeType === "none") return "No badge";
   if (item.badgeType === "custom") return item.customBadge || "Custom";
@@ -52,7 +58,7 @@ function blankPackage(): PackageItem {
     customBadge: "",
     inclusions: [],
     highlight: false,
-    bestSeller: false,
+    cardBadge: "none",
   };
 }
 
@@ -250,20 +256,25 @@ export default function PackagesModuleEditor() {
             </AdField>
           ) : null}
           <AdField
-            id="pkg-bestseller"
-            label="Best seller"
+            id="pkg-cardbadge"
+            label="Card badge"
             required
-            hint="Best Seller packages show the ribbon badge on the public package card."
-            error={err("bestSeller")}
+            hint="Overlays an image badge in the public card's top-right corner."
+            error={err("cardBadge")}
           >
             <AdSelect
-              id="pkg-bestseller"
-              value={draft.bestSeller ? "best-seller" : "standard"}
-              error={err("bestSeller")}
-              onChange={(e) => setDraft({ ...draft, bestSeller: e.target.value === "best-seller" })}
+              id="pkg-cardbadge"
+              value={draft.cardBadge}
+              error={err("cardBadge")}
+              onChange={(e) =>
+                setDraft({ ...draft, cardBadge: e.target.value as PackageCardBadge })
+              }
             >
-              <option value="standard">Standard</option>
-              <option value="best-seller">Best Seller</option>
+              {CARD_BADGE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </AdSelect>
           </AdField>
           <StringList
@@ -369,10 +380,7 @@ export default function PackagesModuleEditor() {
               value={position > 0 ? `${position} of ${items.length}` : "-"}
             />
             <DetailRow label="Badge" value={packageBadgeText(selected)} />
-            <DetailRow
-              label="Best Seller"
-              value={selected.bestSeller ? "Best Seller" : "Standard"}
-            />
+            <DetailRow label="Card badge" value={PACKAGE_CARD_BADGE_LABELS[selected.cardBadge]} />
             <DetailRow label="Duration" value={selected.durationLabel} />
             <DetailRow label="Price" value={selected.priceLabel} />
             <DetailRow label="Summary" value={selected.summary} />
@@ -451,7 +459,7 @@ export default function PackagesModuleEditor() {
                   </th>
                   <th scope="col">Badge</th>
                   <th scope="col">Highlight</th>
-                  <th scope="col">Best Seller</th>
+                  <th scope="col">Card badge</th>
                   <th scope="col">Reorder</th>
                 </tr>
               </thead>
@@ -479,13 +487,7 @@ export default function PackagesModuleEditor() {
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
                     </td>
-                    <td>
-                      <HighlightPill
-                        on={item.bestSeller}
-                        onLabel="Best Seller"
-                        offLabel="Standard"
-                      />
-                    </td>
+                    <td>{PACKAGE_CARD_BADGE_LABELS[item.cardBadge]}</td>
                     <td>
                       <span className="ad-string-actions">
                         <button

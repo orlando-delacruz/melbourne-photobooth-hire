@@ -74,7 +74,8 @@ export function packageFromRow(row: PackageRow): PackageItem {
     customBadge: row.custom_badge,
     inclusions: row.inclusions,
     highlight: row.highlight,
-    bestSeller: row.best_seller,
+    // Defensive default so a not-yet-migrated database still renders.
+    cardBadge: (row.card_badge ?? "none") as PackageItem["cardBadge"],
   };
 }
 
@@ -89,7 +90,7 @@ function packageToRow(item: PackageItem, sortOrder: number): InsertOf<PackageRow
     custom_badge: item.customBadge,
     inclusions: item.inclusions ?? [],
     highlight: item.highlight,
-    best_seller: item.bestSeller,
+    card_badge: item.cardBadge,
     sort_order: sortOrder,
   };
 }

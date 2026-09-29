@@ -45,7 +45,7 @@ export const cmsSeed: CmsContent = {
         headline: "Turn the room into a studio.",
         supporting:
           "Open-air booths, roaming setups and 360 video for weddings, birthdays and corporate events, with prints guests keep and QR downloads in seconds.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "View packages",
         background: {
           key: null,
@@ -60,7 +60,7 @@ export const cmsSeed: CmsContent = {
         title: "Three ways to bring the room into the frame",
         lede: "Every hire includes HD prints, QR downloads and full setup and pack-down by our team.",
       },
-      servicesCardLabel: "Enquire now",
+      servicesCardLabel: "Book Now",
       showcaseHeading: {
         eyebrow: "Styled moments",
         title: "The kind of night we stage",
@@ -95,7 +95,7 @@ export const cmsSeed: CmsContent = {
         eyebrow: "Ready when you are",
         headline: "Ready to book your night?",
         lede: "Tell us your date and venue, and we'll recommend the booth that fits your event, usually within one business day.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "View packages",
         image: {
           key: null,
@@ -175,7 +175,7 @@ export const cmsSeed: CmsContent = {
       emptyState: {
         title: "Package options will be shown here once confirmed.",
         body: "Until then, please enquire for current options.",
-        actionLabel: "Enquire now",
+        actionLabel: "Book Now",
       },
       addonsHeading: {
         eyebrow: "Optional extras",
@@ -193,7 +193,7 @@ export const cmsSeed: CmsContent = {
         eyebrow: "Ready when you are",
         headline: "Let's lock in your date.",
         lede: "Send your event details and we'll confirm availability and the package that fits.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "Explore the booths",
         image: {
           key: null,
@@ -230,13 +230,13 @@ export const cmsSeed: CmsContent = {
       emptyState: {
         title: "No images are available yet.",
         body: "Once approved event photos are ready, this gallery will showcase real moments from the booth.",
-        actionLabel: "Enquire now",
+        actionLabel: "Book Now",
       },
       ctaBand: {
         eyebrow: "Your night next",
         headline: "Want your event to look like this?",
         lede: "Tell us the date, venue and the mood you're going for and we'll take it from there.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "View packages",
         image: {
           key: null,
@@ -289,7 +289,7 @@ export const cmsSeed: CmsContent = {
         eyebrow: "Let's make something memorable",
         headline: "Bring the booth to your event.",
         lede: "Tell us the date and venue and we'll handle the styling, the setup and the prints.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "View gallery",
         image: {
           key: null,
@@ -334,7 +334,7 @@ export const cmsSeed: CmsContent = {
         eyebrow: "Ready when you are",
         headline: "Questions answered? Let's talk dates.",
         lede: "Send your event details and we'll confirm availability and the right booth for the night.",
-        primaryLabel: "Enquire now",
+        primaryLabel: "Book Now",
         secondaryLabel: "View packages",
         image: {
           key: null,
@@ -412,7 +412,7 @@ export const cmsSeed: CmsContent = {
     footerCta: {
       title: "Ready when you are",
       lede: "Tell us your date and we'll recommend the right booth for your event.",
-      label: "Enquire now",
+      label: "Book Now",
     },
   },
 
@@ -493,7 +493,7 @@ export const cmsSeed: CmsContent = {
       customBadge: badgeFor(pkg.badge).customBadge,
       inclusions: pkg.inclusions,
       highlight: true,
-      bestSeller: false,
+      cardBadge: "none",
     })),
     gallery: mockContent.gallery.map((item) => ({
       id: item.id,

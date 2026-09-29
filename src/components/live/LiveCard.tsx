@@ -4,8 +4,15 @@
 // inclusions with check glyphs, CTA button). Styles from styles/live.css.
 import LiveButton from "./LiveButton";
 import { cardIconSvg } from "./icons";
+import type { PackageCardBadge } from "../../lib/cms/types";
 
 export type LiveCardIcon = "camera" | "users" | "video";
+
+/** Image badges overlaying the card's top-right corner. */
+const CARD_BADGE_IMAGES: Record<Exclude<PackageCardBadge, "none">, { src: string; alt: string }> = {
+  "best-seller": { src: "/images/best-seller.png", alt: "Best seller" },
+  "top-rated": { src: "/images/top-rated.png", alt: "Top rated" },
+};
 
 export interface LiveCardProps {
   title: string;
@@ -23,8 +30,8 @@ export interface LiveCardProps {
   imageAlt?: string;
   tone?: "light" | "dark";
   featured?: boolean;
-  /** Shows the Best Seller ribbon in the card's top-right corner. */
-  bestSeller?: boolean;
+  /** Image badge shown in the card's top-right corner. */
+  cardBadge?: PackageCardBadge;
   cmsId?: string;
 }
 
@@ -68,7 +75,7 @@ export default function LiveCard({
   imageAlt,
   tone = "light",
   featured = false,
-  bestSeller = false,
+  cardBadge = "none",
   cmsId,
 }: LiveCardProps) {
   const priceParts = price ? price.trim().split(/\s+/) : [];
@@ -79,11 +86,11 @@ export default function LiveCard({
       className={`card card--${tone}${featured ? " card--featured" : ""}`}
       data-cms-id={cmsId}
     >
-      {bestSeller ? (
+      {cardBadge !== "none" ? (
         <img
           className="card-ribbon"
-          src="/images/ribbon-badge.png"
-          alt="Best seller"
+          src={CARD_BADGE_IMAGES[cardBadge].src}
+          alt={CARD_BADGE_IMAGES[cardBadge].alt}
           loading="lazy"
           decoding="async"
         />

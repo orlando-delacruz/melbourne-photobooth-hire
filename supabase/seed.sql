@@ -48,27 +48,27 @@ on conflict (slug) do update set
 
 -- Packages (all highlighted; images empty until uploaded, matching the seed).
 insert into public.packages
-  (slug, name, summary, duration_label, price_label, badge_type, custom_badge, inclusions, highlight, best_seller, sort_order)
+  (slug, name, summary, duration_label, price_label, badge_type, custom_badge, inclusions, highlight, card_badge, sort_order)
 values
   ('starter', 'The Two Hour',
    'A tight, high-impact hire for intimate celebrations, cocktail hours and mid-week events. Full styling included, no corners cut.',
    '2 hours', '$350 total', 'none', '',
    ARRAY['Full photobooth service','Studio-quality lighting and styling','Custom-branded print template','HD printing, unlimited sessions','QR code digital downloads','Red carpet and golden bollard entrance','Free use of props'],
-   true, false, 0),
+   true, 'none', 0),
   ('standard', 'The Three Hour',
    'Our most-booked balance of time and value: room for group shots, guest sessions and prints for everyone, without rushing the room.',
    '3 hours', '$450 total', 'most-popular', '',
    ARRAY['Everything in The Two Hour','Custom-branded print template','HD printing, unlimited sessions','QR code digital downloads','Friendly on-site attendant','Free use of props','Full setup and pack-down'],
-   true, false, 1),
+   true, 'none', 1),
   ('premium', 'The Four Hour',
    'Maximum coverage for big nights: extended hire plus priority setup and pack-down, and the option to add the 360 Video Booth for the full floor-filler.',
    '4 hours', '$600 total', 'best-value', '',
    ARRAY['Everything in The Three Hour','Priority setup and pack-down','Extended guest session coverage','360 Video Booth add-on available','Custom backdrop styling','Digital guestbook option'],
-   true, false, 2)
+   true, 'none', 2)
 on conflict (slug) do update set
   name = excluded.name, summary = excluded.summary, duration_label = excluded.duration_label,
   price_label = excluded.price_label, badge_type = excluded.badge_type, custom_badge = excluded.custom_badge,
-  inclusions = excluded.inclusions, highlight = excluded.highlight, best_seller = excluded.best_seller,
+  inclusions = excluded.inclusions, highlight = excluded.highlight, card_badge = excluded.card_badge,
   sort_order = excluded.sort_order, updated_at = now();
 
 -- Gallery (all highlighted).

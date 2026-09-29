@@ -65,7 +65,8 @@ create table if not exists public.packages (
   custom_badge text not null default '' check (char_length(custom_badge) <= 60),
   inclusions text[] not null default '{}',
   highlight boolean not null default true,
-  best_seller boolean not null default false,
+  card_badge text not null default 'none'
+    check (card_badge in ('none', 'best-seller', 'top-rated')),
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),

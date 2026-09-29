@@ -81,7 +81,7 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
                   size="lg"
                   arrow
                 >
-                  Enquire now
+                  Book Now
                 </LiveButton>
                 <LiveButton href="/packages" variant="secondary" size="lg">
                   View packages

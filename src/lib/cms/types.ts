@@ -279,6 +279,16 @@ export function serviceBadgeText(item: Pick<ServiceItem, "badgeType" | "customBa
   return SERVICE_BADGE_LABELS[item.badgeType];
 }
 
+/** Image badge overlaid on the card's top-right corner (packages). */
+export type PackageCardBadge = "none" | "best-seller" | "top-rated";
+
+/** Canonical display text for the package card badge options. */
+export const PACKAGE_CARD_BADGE_LABELS: Record<PackageCardBadge, string> = {
+  none: "-",
+  "best-seller": "Best Seller",
+  "top-rated": "Top Rated",
+};
+
 export interface PackageItem {
   id: string;
   name: string;
@@ -289,7 +299,7 @@ export interface PackageItem {
   customBadge: string;
   inclusions: string[];
   highlight: boolean;
-  bestSeller: boolean;
+  cardBadge: PackageCardBadge;
 }
 
 export interface GalleryItem {

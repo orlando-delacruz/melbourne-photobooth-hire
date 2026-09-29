@@ -54,7 +54,7 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
               imageSrc={service.image.src || undefined}
               imageAlt={service.image.alt || service.name}
               href={`/contact?service=${encodeURIComponent(service.id)}`}
-              ctaLabel="Enquire Now"
+              ctaLabel="Book Now"
               cmsId={service.id}
             />
           </Reveal>
