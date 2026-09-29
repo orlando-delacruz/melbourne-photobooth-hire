@@ -38,28 +38,12 @@ export default function FaqPageEditor() {
         />
       </Panel>
 
-      <Panel
-        title="Search and aside panels"
-        lede="Search box, aside support card and no-results copy."
-      >
-        <AdField
-          id="faq-search"
-          label="Search placeholder"
-          required
-          hint="Text inside the search box."
-          error={errorAt(errors, "searchPlaceholder")}
-        >
-          <TextInput
-            id="faq-search"
-            type="text"
-            error={errorAt(errors, "searchPlaceholder")}
-            {...register("searchPlaceholder")}
-          />
-        </AdField>
+      <Panel title="Aside and empty list" lede="Aside support card and empty-list copy.">
         <AdField
           id="faq-empty"
-          label="No-results text"
+          label="Empty-list text"
           required
+          hint="Shown when the question list is empty."
           error={errorAt(errors, "emptyCopy")}
         >
           <TextArea

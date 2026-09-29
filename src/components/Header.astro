@@ -20,8 +20,8 @@ const { items, currentPath, initialSettings } = Astro.props;
       <LiveBrandLogo client:visible initialSettings={initialSettings} />
       <span class="brand-mark" aria-hidden="true">
         <svg
-          width="26"
-          height="26"
+          width="36"
+          height="36"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -96,17 +96,20 @@ const { items, currentPath, initialSettings } = Astro.props;
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(17, 12, 7, 0.72);
+    background: rgba(30, 23, 15, 0.84);
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--color-ink-hairline-strong);
+    box-shadow: 0 18px 44px -24px rgba(13, 9, 6, 0);
     transition:
       background-color var(--motion-settled) var(--ease-default),
-      border-color var(--motion-settled) var(--ease-default);
+      border-color var(--motion-settled) var(--ease-default),
+      box-shadow var(--motion-settled) var(--ease-default);
   }
   .site-header.is-scrolled {
-    background: rgba(13, 9, 6, 0.92);
-    border-bottom-color: var(--color-ink-hairline);
+    background: rgba(20, 15, 9, 0.94);
+    border-bottom-color: var(--color-ink-hairline-strong);
+    box-shadow: 0 18px 44px -20px rgba(13, 9, 6, 0.55);
   }
   .header-inner {
     display: flex;
@@ -133,8 +136,8 @@ const { items, currentPath, initialSettings } = Astro.props;
   }
   .brand-name {
     font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+    font-weight: 600;
+    font-size: clamp(1.3rem, 1.7vw, 1.6rem);
     letter-spacing: var(--tracking-tight);
     line-height: 1;
   }
@@ -164,7 +167,8 @@ const { items, currentPath, initialSettings } = Astro.props;
     left: var(--space-xs);
     right: var(--space-xs);
     bottom: 10px;
-    height: 1.5px;
+    height: 2px;
+    border-radius: var(--radius-pill);
     background: var(--color-accent-on-dark);
     transform: scaleX(0);
     transform-origin: left;
@@ -179,6 +183,8 @@ const { items, currentPath, initialSettings } = Astro.props;
   .nav-link--current {
     color: var(--color-on-ink);
     font-weight: 600;
+    background: rgba(230, 206, 138, 0.1);
+    border-radius: var(--radius-sm);
   }
   .nav-link--current::after {
     transform: scaleX(1);
@@ -212,6 +218,12 @@ const { items, currentPath, initialSettings } = Astro.props;
   .header-cta:hover svg {
     transform: translateX(2px);
   }
+  .header-cta:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+  }
+  .site-header :focus-visible {
+    outline-color: var(--color-focus-dark);
+  }
   .mobile-nav {
     display: none;
   }
@@ -227,12 +239,15 @@ const { items, currentPath, initialSettings } = Astro.props;
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .site-header,
     .nav-link::after,
+    .header-cta,
     .header-cta svg,
     .brand-mark {
       transition: none;
     }
-    .header-cta:hover {
+    .header-cta:hover,
+    .header-cta:active:not(:disabled) {
       transform: none;
     }
   }

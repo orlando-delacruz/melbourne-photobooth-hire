@@ -51,12 +51,7 @@ setPublicCache(Astro.response.headers);
   ) : (
     <section class="section faq" aria-label="Frequently asked questions">
       <div class="faq-layout">
-        <LiveFaqSection
-          client:visible
-          initial={liveModules.faqs}
-          searchPlaceholder={faqPage.searchPlaceholder}
-          emptyCopy={faqPage.emptyCopy}
-        />
+        <LiveFaqSection client:visible initial={liveModules.faqs} emptyCopy={faqPage.emptyCopy} />
 
         <aside class="faq-aside">
           <LiveFaqSupport client:visible initialPage={faqPage} />
@@ -78,8 +73,8 @@ setPublicCache(Astro.response.headers);
 </BaseLayout>
 
 <style>
-  /* NOTE: toolbar, search, count and empty-line styles live in
-     styles/live.css — the LiveFaqSection island renders those nodes. */
+  /* NOTE: the numbered card accordion (.faq-list) and the empty-line styles
+     live in styles/live.css — the LiveFaqSection island renders those nodes. */
 
   /* ── Layout ─────────────────────────────────────────────────────────── */
 

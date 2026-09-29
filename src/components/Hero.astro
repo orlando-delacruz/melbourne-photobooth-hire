@@ -50,7 +50,7 @@ function heroIconSvg(name: string, size = 18): string {
 }
 ---
 
-<section class="hero on-dark" aria-labelledby="page-title">
+<section class="hero" aria-labelledby="page-title">
   {backgroundSrc ? (
     <div class="hero-bg" style={`background-image: url('${backgroundSrc}')`} aria-hidden="true" />
   ) : null}
@@ -72,11 +72,11 @@ function heroIconSvg(name: string, size = 18): string {
         </Reveal>
         <Reveal client:load mode="mount" delay={0.33}>
           <p class="hero-ctas">
-            <Button href={primaryHref} variant="primary" tone="dark" size="lg" arrow>
+            <Button href={primaryHref} variant="primary" tone="light" size="lg" arrow>
               {primaryLabel}
             </Button>
             {secondaryHref && secondaryLabel ? (
-              <Button href={secondaryHref} variant="secondary" tone="dark" size="lg">
+              <Button href={secondaryHref} variant="secondary" tone="light" size="lg">
                 {secondaryLabel}
               </Button>
             ) : null}
@@ -115,14 +115,14 @@ function heroIconSvg(name: string, size = 18): string {
     width: auto;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    background-color: var(--color-ink-deep);
-    color: var(--color-on-ink);
+    background-color: var(--color-ivory-deep);
+    color: var(--color-ink);
     display: flex;
     align-items: center;
     min-height: 44rem;
     min-height: min(44rem, 96svh);
     padding-block: clamp(4.5rem, 11vw, 8rem);
-    border-bottom: 1px solid var(--color-ink-hairline);
+    border-bottom: 1px solid var(--color-border);
   }
   .hero-bg {
     position: absolute;
@@ -149,18 +149,18 @@ function heroIconSvg(name: string, size = 18): string {
     background:
       linear-gradient(
         90deg,
-        rgba(13, 9, 6, 0.88) 0%,
-        rgba(13, 9, 6, 0.62) 46%,
-        rgba(13, 9, 6, 0.18) 74%,
-        rgba(13, 9, 6, 0.34) 100%
+        rgba(244, 237, 224, 0.95) 0%,
+        rgba(244, 237, 224, 0.82) 44%,
+        rgba(244, 237, 224, 0.45) 72%,
+        rgba(244, 237, 224, 0.55) 100%
       ),
       linear-gradient(
         180deg,
-        rgba(13, 9, 6, 0.1) 0%,
-        rgba(13, 9, 6, 0.46) 86%,
-        rgba(13, 9, 6, 0.7) 100%
+        rgba(244, 237, 224, 0.45) 0%,
+        rgba(244, 237, 224, 0.3) 55%,
+        rgba(244, 237, 224, 0.6) 100%
       ),
-      radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.18), transparent 55%);
+      radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.3), transparent 55%);
     pointer-events: none;
   }
   .hero-inner {
@@ -172,11 +172,11 @@ function heroIconSvg(name: string, size = 18): string {
     max-width: 46rem;
   }
   .hero-eyebrow {
-    color: var(--color-accent-on-dark);
+    color: var(--color-accent-strong);
   }
   .hero-headline {
     margin: var(--space-md) 0 var(--space-md);
-    color: var(--color-on-ink);
+    color: var(--color-ink);
     font-size: var(--text-display);
     font-weight: 500;
     letter-spacing: var(--tracking-display);
@@ -184,7 +184,7 @@ function heroIconSvg(name: string, size = 18): string {
   }
   .hero-lede {
     margin: 0 0 var(--space-lg);
-    color: var(--color-on-ink-secondary);
+    color: var(--color-ink-soft);
     font-size: var(--text-lead);
     font-weight: 400;
     max-width: 36rem;
@@ -201,12 +201,12 @@ function heroIconSvg(name: string, size = 18): string {
     gap: var(--space-xs) 0;
     margin: 0;
     padding-top: var(--space-md);
-    border-top: 1px solid var(--color-ink-hairline);
+    border-top: 1px solid var(--color-border-strong);
   }
   .hero-stat {
     min-width: 10rem;
     padding: 0 var(--space-md);
-    border-left: 1px solid var(--color-ink-hairline);
+    border-left: 1px solid var(--color-border-strong);
   }
   .hero-stat:first-child {
     padding-left: 0;
@@ -217,18 +217,18 @@ function heroIconSvg(name: string, size = 18): string {
     display: flex;
     align-items: center;
     gap: var(--space-2xs);
-    color: var(--color-on-ink);
+    color: var(--color-ink);
     font-family: var(--font-display);
     font-size: var(--text-h2);
     font-weight: 500;
   }
   .hero-stat-value :global(svg) {
-    color: var(--color-accent-on-dark);
+    color: var(--color-accent-strong);
     flex-shrink: 0;
   }
   .hero-stat-label {
     margin: var(--space-3xs) 0 0;
-    color: var(--color-on-ink-faint);
+    color: var(--color-ink-soft);
     font-size: var(--text-small);
   }
   .hero-scroll {
@@ -247,7 +247,7 @@ function heroIconSvg(name: string, size = 18): string {
     display: block;
     width: 1px;
     height: 42px;
-    background: linear-gradient(180deg, transparent, var(--color-accent-on-dark));
+    background: linear-gradient(180deg, transparent, var(--color-accent-strong));
   }
   .sr-only {
     position: absolute;
@@ -273,12 +273,12 @@ function heroIconSvg(name: string, size = 18): string {
       background:
         linear-gradient(
           180deg,
-          rgba(13, 9, 6, 0.42) 0%,
-          rgba(13, 9, 6, 0.56) 40%,
-          rgba(13, 9, 6, 0.76) 82%,
-          rgba(13, 9, 6, 0.84) 100%
+          rgba(244, 237, 224, 0.9) 0%,
+          rgba(244, 237, 224, 0.75) 42%,
+          rgba(244, 237, 224, 0.85) 80%,
+          rgba(244, 237, 224, 0.93) 100%
         ),
-        radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.16), transparent 60%);
+        radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.3), transparent 60%);
     }
     .hero-headline {
       margin: var(--space-sm) 0 var(--space-sm);
@@ -303,7 +303,7 @@ function heroIconSvg(name: string, size = 18): string {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--space-2xs);
       padding-top: var(--space-sm);
-      border-top: 1px solid var(--color-ink-hairline);
+      border-top: 1px solid var(--color-border-strong);
     }
     .hero-stat {
       min-width: 0;

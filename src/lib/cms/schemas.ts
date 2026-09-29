@@ -275,8 +275,10 @@ export const aboutPageSchema = z.object({
 
 export const faqPageSchema = z.object({
   header: pageHeaderSchema,
-  searchPlaceholder: shortText("the search placeholder", 80),
-  emptyCopy: longText("the no-results text", 400),
+  // Retired from the public page (search removed): kept optional so saved
+  // blobs still validate. New saves omit it via the editor.
+  searchPlaceholder: z.string().trim().max(80).optional().default(""),
+  emptyCopy: longText("the empty-list text", 400),
   support: z.object({
     heading: shortText("the heading"),
     body: longText("the supporting text", 600),

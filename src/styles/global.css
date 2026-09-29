@@ -284,6 +284,12 @@ body.page-home {
 .brand:has(.brand-logo) .brand-name {
   display: none;
 }
+/* Larger navbar lockup: the header brand reads as the site signature.
+   Footer keeps its own size below. */
+.brand .brand-logo {
+  height: clamp(2.5rem, 5vw, 3.25rem);
+  max-width: 15rem;
+}
 .footer-brand:has(.brand-logo) .brand-name {
   display: none;
 }

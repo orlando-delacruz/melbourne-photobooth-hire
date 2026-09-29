@@ -156,10 +156,43 @@
 .button--tertiary.button--tone-dark {
   color: var(--color-accent-on-dark);
 }
+
+/* ── Homepage hero CTAs (scoped: nowhere else inherits this) ─────────── */
+/* Ink keeps ~15:1 contrast on the ivory wash, so prominence comes from
+   depth and polish, not a new color. The shared .button variants above stay
+   untouched; hover lift + sheen still come from the base rules. */
+.hero-ctas .button--primary {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.hero-ctas .button--primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+  box-shadow: var(--elevation-1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+/* Secondary stays subordinate: a solid footing on the wash, quiet hover. */
+.hero-ctas .button--secondary {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: var(--color-border-strong);
+}
+.hero-ctas .button--secondary:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--color-ink);
+}
+.hero-ctas .button--secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+.hero-ctas .button--primary:focus-visible,
+.hero-ctas .button--secondary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
 @media (prefers-reduced-motion: reduce) {
   .button,
   .button__arrow,
-  .button--primary::before {
+  .button--primary::before,
+  .hero-ctas .button--primary,
+  .hero-ctas .button--secondary {
     transition: none;
   }
   .button:hover {
@@ -1174,14 +1207,14 @@
   width: auto;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  background-color: var(--color-ink-deep);
-  color: var(--color-on-ink);
+  background-color: var(--color-ivory-deep);
+  color: var(--color-ink);
   display: flex;
   align-items: center;
   min-height: 44rem;
   min-height: min(44rem, 96svh);
   padding-block: clamp(4.5rem, 11vw, 8rem);
-  border-bottom: 1px solid var(--color-ink-hairline);
+  border-bottom: 1px solid var(--color-border);
 }
 .hero-bg {
   position: absolute;
@@ -1207,18 +1240,18 @@
   background:
     linear-gradient(
       90deg,
-      rgba(13, 9, 6, 0.88) 0%,
-      rgba(13, 9, 6, 0.62) 46%,
-      rgba(13, 9, 6, 0.18) 74%,
-      rgba(13, 9, 6, 0.34) 100%
+      rgba(244, 237, 224, 0.95) 0%,
+      rgba(244, 237, 224, 0.82) 44%,
+      rgba(244, 237, 224, 0.45) 72%,
+      rgba(244, 237, 224, 0.55) 100%
     ),
     linear-gradient(
       180deg,
-      rgba(13, 9, 6, 0.1) 0%,
-      rgba(13, 9, 6, 0.46) 86%,
-      rgba(13, 9, 6, 0.7) 100%
+      rgba(244, 237, 224, 0.45) 0%,
+      rgba(244, 237, 224, 0.3) 55%,
+      rgba(244, 237, 224, 0.6) 100%
     ),
-    radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.18), transparent 55%);
+    radial-gradient(120% 120% at 85% 0%, rgba(230, 206, 138, 0.3), transparent 55%);
   pointer-events: none;
 }
 .hero-inner {
@@ -1230,11 +1263,11 @@
   max-width: 46rem;
 }
 .hero-eyebrow {
-  color: var(--color-accent-on-dark);
+  color: var(--color-accent-strong);
 }
 .hero-headline {
   margin: var(--space-md) 0 var(--space-md);
-  color: var(--color-on-ink);
+  color: var(--color-ink);
   font-size: var(--text-display);
   font-weight: 500;
   letter-spacing: var(--tracking-display);
@@ -1242,7 +1275,7 @@
 }
 .hero-lede {
   margin: 0 0 var(--space-lg);
-  color: var(--color-on-ink-secondary);
+  color: var(--color-ink-soft);
   font-size: var(--text-lead);
   font-weight: 400;
   max-width: 36rem;
@@ -1259,12 +1292,12 @@
   gap: var(--space-xs) 0;
   margin: 0;
   padding-top: var(--space-md);
-  border-top: 1px solid var(--color-ink-hairline);
+  border-top: 1px solid var(--color-border-strong);
 }
 .hero-stat {
   min-width: 10rem;
   padding: 0 var(--space-md);
-  border-left: 1px solid var(--color-ink-hairline);
+  border-left: 1px solid var(--color-border-strong);
 }
 .hero-stat:first-child {
   padding-left: 0;
@@ -1275,18 +1308,18 @@
   display: flex;
   align-items: center;
   gap: var(--space-2xs);
-  color: var(--color-on-ink);
+  color: var(--color-ink);
   font-family: var(--font-display);
   font-size: var(--text-h2);
   font-weight: 500;
 }
 .hero-stat-value svg {
-  color: var(--color-accent-on-dark);
+  color: var(--color-accent-strong);
   flex-shrink: 0;
 }
 .hero-stat-label {
   margin: var(--space-3xs) 0 0;
-  color: var(--color-on-ink-faint);
+  color: var(--color-ink-soft);
   font-size: var(--text-small);
 }
 .hero-scroll {
@@ -1305,7 +1338,7 @@
   display: block;
   width: 1px;
   height: 42px;
-  background: linear-gradient(180deg, transparent, var(--color-accent-on-dark));
+  background: linear-gradient(180deg, transparent, var(--color-accent-strong));
 }
 @media (max-width: 639px) {
   .hero {
@@ -1320,12 +1353,12 @@
     background:
       linear-gradient(
         180deg,
-        rgba(13, 9, 6, 0.42) 0%,
-        rgba(13, 9, 6, 0.56) 40%,
-        rgba(13, 9, 6, 0.76) 82%,
-        rgba(13, 9, 6, 0.84) 100%
+        rgba(244, 237, 224, 0.9) 0%,
+        rgba(244, 237, 224, 0.75) 42%,
+        rgba(244, 237, 224, 0.85) 80%,
+        rgba(244, 237, 224, 0.93) 100%
       ),
-      radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.16), transparent 60%);
+      radial-gradient(140% 80% at 80% 8%, rgba(230, 206, 138, 0.3), transparent 60%);
   }
   .hero-headline {
     margin: var(--space-sm) 0 var(--space-sm);
@@ -1348,7 +1381,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-2xs);
     padding-top: var(--space-sm);
-    border-top: 1px solid var(--color-ink-hairline);
+    border-top: 1px solid var(--color-border-strong);
   }
   .hero-stat {
     min-width: 0;
@@ -1642,77 +1675,86 @@
     display: none;
   }
 }
-.faq-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
+/* ── FAQ page list: numbered question cards (mirror faq.astro) ─────────── */
+/* Scoped under .faq-list so the homepage teaser keeps the shared divider
+   look: only the FAQ page renders this wrapper. Numbers come from a CSS
+   counter, so no markup or JS is involved. */
+.faq-list {
+  counter-reset: faq-item;
 }
-.faq-search-panel {
-  position: relative;
-  flex: 1 1 20rem;
-  max-width: 26rem;
+.faq-list .accordion {
+  display: grid;
+  gap: var(--space-2xs);
+  border-top: 0;
 }
-.faq-search-input {
-  width: 100%;
-  min-height: 3rem;
-  padding: 0.7rem 1rem 0.7rem 2.7rem;
-  border: 1px solid var(--color-input-border);
+.faq-list .accordion__item {
+  counter-increment: faq-item;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  font: inherit;
-  font-size: var(--text-body);
-  color: var(--color-ink);
   background: var(--color-surface);
+  box-shadow: var(--elevation-0);
   transition:
     border-color var(--motion-quick) var(--ease-default),
-    box-shadow var(--motion-quick) var(--ease-default);
+    box-shadow var(--motion-quick) var(--ease-default),
+    background-color var(--motion-quick) var(--ease-default);
 }
-.faq-search-input::placeholder {
-  color: var(--color-ink-faint);
+.faq-list .accordion__item:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--elevation-1);
 }
-.faq-search-input:hover {
-  border-color: var(--color-ink-soft);
+.faq-list .accordion__item[open] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-wash);
+  box-shadow: var(--elevation-1);
 }
-.faq-search-input:focus-visible {
+.faq-list .accordion__summary {
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+.faq-list .accordion__summary:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
-  border-color: var(--color-accent);
+  border-radius: var(--radius-md);
 }
-.faq-search-icon {
-  position: absolute;
-  left: 0.9rem;
-  top: 50%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  color: var(--color-ink-faint);
-  pointer-events: none;
+/* Index numeral ahead of the question; decorative only (aria-hidden comes
+   from the marker pattern — screen readers get the question text itself). */
+.faq-list .accordion__question {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
 }
-.faq-count {
-  margin: 0;
-  color: var(--color-ink-faint);
+.faq-list .accordion__question::before {
+  content: counter(faq-item, decimal-leading-zero);
+  flex-shrink: 0;
+  color: var(--color-accent-strong);
+  font-family: var(--font-body);
   font-size: var(--text-small);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  font-variant-numeric: tabular-nums;
 }
-html:not(.js) .faq-search-panel {
-  display: none;
+.faq-list .accordion__answer-inner {
+  padding: 0 var(--space-md) var(--space-md) calc(var(--space-md) + 2.25rem);
+  max-width: 46rem;
 }
 .faq-empty {
   margin: var(--space-lg) 0 0;
   color: var(--color-ink-soft);
 }
-/* The live island renders the toolbar + main inside .faq-layout: let its
-   children participate in the grid directly (toolbar full-width, aside
-   docked right on desktop, natural stacking on mobile). */
+/* The live island renders the list inside .faq-layout: let its children
+   participate in the grid directly (aside docked right on desktop, natural
+   stacking on mobile). */
 .faq-layout > astro-island {
   display: contents;
 }
 @media (min-width: 900px) {
-  .faq-layout > .faq-toolbar {
-    grid-column: 1 / -1;
-  }
   .faq-layout > .faq-aside {
     grid-column: 2;
-    grid-row: 1 / span 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-list .accordion__item {
+    transition: none;
   }
 }
 

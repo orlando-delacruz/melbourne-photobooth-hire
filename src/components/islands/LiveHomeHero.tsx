@@ -46,7 +46,7 @@ export default function LiveHomeHero({
   const backgroundAlt = hero.background.alt || fallbackBackgroundAlt;
 
   return (
-    <section className="hero on-dark" aria-labelledby="page-title">
+    <section className="hero" aria-labelledby="page-title">
       {backgroundSrc ? (
         <div
           className="hero-bg"
@@ -72,11 +72,11 @@ export default function LiveHomeHero({
             </Reveal>
             <Reveal mode="mount" delay={0.33}>
               <p className="hero-ctas">
-                <LiveButton href="/contact" variant="primary" tone="dark" size="lg" arrow>
+                <LiveButton href="/contact" variant="primary" tone="light" size="lg" arrow>
                   {hero.primaryLabel}
                 </LiveButton>
                 {hero.secondaryLabel ? (
-                  <LiveButton href="/packages" variant="secondary" tone="dark" size="lg">
+                  <LiveButton href="/packages" variant="secondary" tone="light" size="lg">
                     {hero.secondaryLabel}
                   </LiveButton>
                 ) : null}
