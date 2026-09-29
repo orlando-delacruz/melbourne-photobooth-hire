@@ -2,7 +2,7 @@
 // Highlight determines homepage showcase membership; images use real uploads.
 
 import { useState } from "react";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { GalleryItem } from "../../../lib/cms/types";
 import { galleryModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
@@ -108,6 +108,16 @@ export default function GalleryModuleEditor() {
     if (ok) setView({ name: "list" });
   };
 
+  const moveAndSave = async (id: string, direction: -1 | 1) => {
+    const index = items.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    await store.persist(next);
+  };
+
   if ((view.name === "create" || view.name === "edit") && draft) {
     const isEdit = view.name === "edit";
     const err = (field: string) => errors.get(field);
@@ -206,6 +216,10 @@ export default function GalleryModuleEditor() {
           </div>
           <ModuleImage image={selected.image} caption={selected.caption} />
           <dl className="ad-detail-list">
+            <DetailRow
+              label="Gallery position"
+              value={index >= 0 ? `${index + 1} of ${items.length}` : "-"}
+            />
             <DetailRow label="Caption" value={selected.caption ?? ""} />
             <DetailRow label="Image alt text" value={selected.image.alt} />
             <DetailRow
@@ -249,8 +263,8 @@ export default function GalleryModuleEditor() {
           <div>
             <h2>All gallery images</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "image" : "images"}. Select a row to view the
-              full detail, then edit or delete it.
+              {items.length} {items.length === 1 ? "image" : "images"} in display order. Select a
+              row to view the full detail, then edit or delete it, or use the arrows to reorder.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -270,9 +284,11 @@ export default function GalleryModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col">Position</th>
                   <th scope="col">Preview</th>
                   <th scope="col">Caption</th>
                   <th scope="col">Highlight</th>
+                  <th scope="col">Reorder</th>
                 </tr>
               </thead>
               <tbody>
@@ -290,6 +306,7 @@ export default function GalleryModuleEditor() {
                     }}
                     aria-label={`View ${itemTitle(item, index)}`}
                   >
+                    <td>{index + 1}</td>
                     <td>
                       <ModuleThumb image={item.image} />
                     </td>
@@ -304,6 +321,36 @@ export default function GalleryModuleEditor() {
                     </td>
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                    </td>
+                    <td>
+                      <span className="ad-string-actions">
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === 0 || store.busy}
+                          aria-label={`Move ${itemTitle(item, index)} up`}
+                          title="Move up"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, -1);
+                          }}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === items.length - 1 || store.busy}
+                          aria-label={`Move ${itemTitle(item, index)} down`}
+                          title="Move down"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, 1);
+                          }}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

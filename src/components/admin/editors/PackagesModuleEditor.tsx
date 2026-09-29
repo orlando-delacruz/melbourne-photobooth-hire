@@ -3,7 +3,7 @@
 // behave as before; Most Popular keeps the featured homepage treatment.
 
 import { useState } from "react";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { BadgeType, PackageItem } from "../../../lib/cms/types";
 import { BADGE_LABELS } from "../../../lib/cms/types";
 import { packagesModuleSchema } from "../../../lib/cms/schemas";
@@ -126,6 +126,16 @@ export default function PackagesModuleEditor() {
       message: "Add at least one package.",
     });
     if (ok) setView({ name: "list" });
+  };
+
+  const moveAndSave = async (id: string, direction: -1 | 1) => {
+    const index = items.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    await store.persist(next);
   };
 
   if ((view.name === "create" || view.name === "edit") && draft) {
@@ -305,6 +315,7 @@ export default function PackagesModuleEditor() {
   }
 
   if (view.name === "detail" && selected) {
+    const position = items.findIndex((item) => item.id === selected.id) + 1;
     return (
       <div className="ad-stack">
         {store.notice ? (
@@ -335,6 +346,10 @@ export default function PackagesModuleEditor() {
             </span>
           </div>
           <dl className="ad-detail-list">
+            <DetailRow
+              label="List position"
+              value={position > 0 ? `${position} of ${items.length}` : "-"}
+            />
             <DetailRow label="Badge" value={packageBadgeText(selected)} />
             <DetailRow label="Duration" value={selected.durationLabel} />
             <DetailRow label="Price" value={selected.priceLabel} />
@@ -386,8 +401,8 @@ export default function PackagesModuleEditor() {
           <div>
             <h2>All packages</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "package" : "packages"}. Select a row to view the
-              full detail, then edit or delete it.
+              {items.length} {items.length === 1 ? "package" : "packages"} in display order. Select
+              a row to view the full detail, then edit or delete it, or use the arrows to reorder.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -407,16 +422,18 @@ export default function PackagesModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col">Position</th>
                   <th scope="col">Name</th>
                   <th scope="col" className="ad-hide-sm">
                     Price
                   </th>
                   <th scope="col">Badge</th>
                   <th scope="col">Highlight</th>
+                  <th scope="col">Reorder</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <tr
                     key={item.id}
                     className="ad-table-rowlink"
@@ -430,6 +447,7 @@ export default function PackagesModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "package"}`}
                   >
+                    <td>{index + 1}</td>
                     <td>
                       <strong>{item.name || "Untitled package"}</strong>
                     </td>
@@ -437,6 +455,36 @@ export default function PackagesModuleEditor() {
                     <td>{packageBadgeText(item)}</td>
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                    </td>
+                    <td>
+                      <span className="ad-string-actions">
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === 0 || store.busy}
+                          aria-label={`Move ${item.name || "package"} up`}
+                          title="Move up"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, -1);
+                          }}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === items.length - 1 || store.busy}
+                          aria-label={`Move ${item.name || "package"} down`}
+                          title="Move down"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, 1);
+                          }}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

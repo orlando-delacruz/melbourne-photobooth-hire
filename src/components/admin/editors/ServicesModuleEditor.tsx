@@ -3,7 +3,7 @@
 // uploaded imagery behave as before.
 
 import { useState } from "react";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { ServiceBadgeType, ServiceItem } from "../../../lib/cms/types";
 import { serviceBadgeText } from "../../../lib/cms/types";
 import { servicesModuleSchema } from "../../../lib/cms/schemas";
@@ -118,6 +118,16 @@ export default function ServicesModuleEditor() {
       message: "Add at least one service.",
     });
     if (ok) setView({ name: "list" });
+  };
+
+  const moveAndSave = async (id: string, direction: -1 | 1) => {
+    const index = items.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    await store.persist(next);
   };
 
   // ── Form view (create / edit) ──────────────────────────────────────────
@@ -313,6 +323,7 @@ export default function ServicesModuleEditor() {
 
   // ── Detail view ────────────────────────────────────────────────────────
   if (view.name === "detail" && selected) {
+    const position = items.findIndex((item) => item.id === selected.id) + 1;
     return (
       <div className="ad-stack">
         {store.notice ? (
@@ -344,6 +355,10 @@ export default function ServicesModuleEditor() {
           </div>
           <ModuleImage image={selected.image} />
           <dl className="ad-detail-list">
+            <DetailRow
+              label="List position"
+              value={position > 0 ? `${position} of ${items.length}` : "-"}
+            />
             <DetailRow label="Badge" value={serviceBadgeText(selected)} />
             <DetailRow
               label="Featured card"
@@ -405,8 +420,8 @@ export default function ServicesModuleEditor() {
           <div>
             <h2>All services</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "service" : "services"}. Select a row to view the
-              full detail, then edit or delete it.
+              {items.length} {items.length === 1 ? "service" : "services"} in display order. Select
+              a row to view the full detail, then edit or delete it, or use the arrows to reorder.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -426,15 +441,17 @@ export default function ServicesModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col">Position</th>
                   <th scope="col">Name</th>
                   <th scope="col" className="ad-hide-sm">
                     Badge
                   </th>
                   <th scope="col">Highlight</th>
+                  <th scope="col">Reorder</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <tr
                     key={item.id}
                     className="ad-table-rowlink"
@@ -448,6 +465,7 @@ export default function ServicesModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "service"}`}
                   >
+                    <td>{index + 1}</td>
                     <td>
                       <strong>{item.name || "Untitled service"}</strong>
                       {item.tagline ? (
@@ -460,6 +478,36 @@ export default function ServicesModuleEditor() {
                     <td className="ad-hide-sm">{serviceBadgeText(item)}</td>
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                    </td>
+                    <td>
+                      <span className="ad-string-actions">
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === 0 || store.busy}
+                          aria-label={`Move ${item.name || "service"} up`}
+                          title="Move up"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, -1);
+                          }}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === items.length - 1 || store.busy}
+                          aria-label={`Move ${item.name || "service"} down`}
+                          title="Move down"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, 1);
+                          }}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

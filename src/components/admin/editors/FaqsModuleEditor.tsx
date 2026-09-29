@@ -2,7 +2,7 @@
 // Highlighted questions feed the homepage teaser (first four).
 
 import { useState } from "react";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { FaqItem } from "../../../lib/cms/types";
 import { faqsModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
@@ -91,6 +91,16 @@ export default function FaqsModuleEditor() {
     if (ok) setView({ name: "list" });
   };
 
+  const moveAndSave = async (id: string, direction: -1 | 1) => {
+    const index = items.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [moved] = next.splice(index, 1);
+    next.splice(target, 0, moved);
+    await store.persist(next);
+  };
+
   if ((view.name === "create" || view.name === "edit") && draft) {
     const isEdit = view.name === "edit";
     const err = (field: string) => errors.get(field);
@@ -169,6 +179,7 @@ export default function FaqsModuleEditor() {
   }
 
   if (view.name === "detail" && selected) {
+    const position = items.findIndex((item) => item.id === selected.id) + 1;
     return (
       <div className="ad-stack">
         {store.notice ? (
@@ -197,6 +208,10 @@ export default function FaqsModuleEditor() {
             </span>
           </div>
           <dl className="ad-detail-list">
+            <DetailRow
+              label="List position"
+              value={position > 0 ? `${position} of ${items.length}` : "-"}
+            />
             <DetailRow label="Question" value={selected.question} />
             <DetailRow label="Answer" value={selected.answer} />
             <DetailRow
@@ -240,8 +255,9 @@ export default function FaqsModuleEditor() {
           <div>
             <h2>All FAQs</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "question" : "questions"}. Select a row to view
-              the full answer, then edit or delete it.
+              {items.length} {items.length === 1 ? "question" : "questions"} in display order.
+              Select a row to view the full answer, then edit or delete it, or use the arrows to
+              reorder.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -261,12 +277,14 @@ export default function FaqsModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col">Position</th>
                   <th scope="col">Question</th>
                   <th scope="col">Highlight</th>
+                  <th scope="col">Reorder</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <tr
                     key={item.id}
                     className="ad-table-rowlink"
@@ -280,6 +298,7 @@ export default function FaqsModuleEditor() {
                     }}
                     aria-label={`View ${item.question.slice(0, 70) || "FAQ"}`}
                   >
+                    <td>{index + 1}</td>
                     <td>
                       <strong>{(item.question || "Untitled question").slice(0, 90)}</strong>
                       {item.answer ? (
@@ -291,6 +310,36 @@ export default function FaqsModuleEditor() {
                     </td>
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                    </td>
+                    <td>
+                      <span className="ad-string-actions">
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === 0 || store.busy}
+                          aria-label={`Move ${(item.question || "FAQ").slice(0, 50)} up`}
+                          title="Move up"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, -1);
+                          }}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="ad-icon-button"
+                          disabled={index === items.length - 1 || store.busy}
+                          aria-label={`Move ${(item.question || "FAQ").slice(0, 50)} down`}
+                          title="Move down"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void moveAndSave(item.id, 1);
+                          }}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 ))}

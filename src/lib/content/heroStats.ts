@@ -9,7 +9,7 @@
 
 import type { HeroStat, PackageItem, ServiceItem } from "../cms/types";
 
-/** Number of publicly available services (the hero's "booth experiences"). */
+/** Number of publicly available services (hero stats with source "services"). */
 export function countPublicServices(services: ServiceItem[]): string {
   return String(services.filter((service) => service.highlight !== false).length);
 }
