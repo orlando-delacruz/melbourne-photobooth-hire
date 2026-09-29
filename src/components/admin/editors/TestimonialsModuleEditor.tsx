@@ -5,7 +5,7 @@
 // rejected reviews stay hidden, while all three are managed here. An empty
 // approved list hides the homepage reviews section.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import type { ReviewStatus, TestimonialItem } from "../../../lib/cms/types";
 import { testimonialsModuleSchema } from "../../../lib/cms/schemas";
@@ -13,7 +13,16 @@ import { createId } from "../../../lib/cms/ids";
 import { setTestimonialStatus } from "../../../lib/supabase/modules";
 import { AdField, AdSelect, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, RATING_OPTIONS } from "../groups";
-import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";
+import {
+  DetailRow,
+  HighlightPill,
+  ModuleBulkBar,
+  RowSelectCheckbox,
+  SelectAllCheckbox,
+  toFieldErrors,
+  useModuleList,
+  useModuleSelection,
+} from "../ModuleCrud";
 import { confirmDestructive, notifyError, notifySuccess } from "../alerts";
 
 type View =
@@ -79,6 +88,17 @@ export default function TestimonialsModuleEditor() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [draft, setDraft] = useState<TestimonialItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
+  // Multi-select acts on the rows the admin can see: the whole list on "All",
+  // otherwise only the filtered status. Changing the filter re-scopes it.
+  const selectableIds = (store.items ?? [])
+    .filter((item) => statusFilter === "all" || item.status === statusFilter)
+    .map((item) => item.id);
+  const selection = useModuleSelection(selectableIds);
+
+  // Leaving the list (detail or create/edit) drops any pending selection.
+  useEffect(() => {
+    if (view.name !== "list") selection.clear();
+  }, [view.name, selection.clear]);
 
   if (!store.loaded || !store.items) return <Skeleton />;
   const items = store.items;
@@ -175,6 +195,11 @@ export default function TestimonialsModuleEditor() {
       void notifySuccess(approving ? "Review approved." : "Review rejected.");
       setView({ name: "list" });
     }
+  };
+
+  const deleteSelectedMany = async () => {
+    const ok = await store.removeMany([...selection.selectedIds], undefined, "reviews");
+    if (ok) selection.clear();
   };
 
   const moveAndSave = async (id: string, direction: -1 | 1) => {
@@ -431,6 +456,12 @@ export default function TestimonialsModuleEditor() {
             );
           })}
         </div>
+        <ModuleBulkBar
+          count={selection.count}
+          busy={store.busy}
+          onDelete={() => void deleteSelectedMany()}
+          onClear={selection.clear}
+        />
         {visible.length === 0 ? (
           <div className="ad-empty">
             {items.length === 0 ? (
@@ -459,6 +490,15 @@ export default function TestimonialsModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col" className="ad-select-cell">
+                    <SelectAllCheckbox
+                      checked={selection.allSelected}
+                      indeterminate={selection.someSelected}
+                      disabled={store.busy}
+                      onChange={selection.toggleAll}
+                      label="Select all visible reviews"
+                    />
+                  </th>
                   <th scope="col">Position</th>
                   <th scope="col">Review</th>
                   <th scope="col">Status</th>
@@ -476,6 +516,7 @@ export default function TestimonialsModuleEditor() {
                     tabIndex={0}
                     onClick={() => setView({ name: "detail", id: item.id })}
                     onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         setView({ name: "detail", id: item.id });
@@ -483,6 +524,14 @@ export default function TestimonialsModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "testimonial"}`}
                   >
+                    <td className="ad-select-cell">
+                      <RowSelectCheckbox
+                        checked={selection.isSelected(item.id)}
+                        disabled={store.busy}
+                        label={`Select ${item.name || "testimonial"}`}
+                        onChange={() => selection.toggle(item.id)}
+                      />
+                    </td>
                     <td>{positionOf(item.id)}</td>
                     <td>
                       <strong>{(item.name || "Untitled testimonial").slice(0, 90)}</strong>

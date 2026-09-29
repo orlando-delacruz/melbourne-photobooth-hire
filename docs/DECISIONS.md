@@ -293,8 +293,13 @@ Forty decision records exist (DEC-001 through DEC-040). Existing selections, req
 | DEC-036 | Contextual enquiry: Service/Package selection from CMS | Accepted | 2026-09-28 |
 | DEC-037 | Derived homepage hero stat values | Accepted | 2026-09-28 |
 | DEC-038 | 10 MB upload cap and CMS logo & favicon settings | Accepted | 2026-09-28 |
+<<<<<<< HEAD
 | DEC-039 | Package image removal (unrendered CMS field)              | Accepted   | 2026-09-29 |
 | DEC-040 | Warm coral brand palette replaces "event noir"            | Accepted   | 2026-09-29 |
+=======
+| DEC-039 | Package image removal (unrendered CMS field) | Accepted | 2026-09-29 |
+| DEC-040 | Shared multi-delete for the admin item modules | Accepted | 2026-09-29 |
+>>>>>>> release/v1.2
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1009,6 +1014,7 @@ Future records are appended here in ID order with status and date kept current.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator applies the migration once, re-runs `supabase gen types`, and verifies packages admin save + public `/packages` render in the browser.
 
+<<<<<<< HEAD
 ### DEC-040 — Warm coral brand palette replaces "event noir"
 
 - **ID:** DEC-040
@@ -1023,6 +1029,22 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DESIGN-SYSTEM.md` (§5–6, values still Requires Confirmation), `docs/UI-UX.md` (CTA hierarchy), `docs/ARCHITECTURE.md` (§6 rendering), `src/styles/tokens.css`, DEC-006/DEC-007 (the superseded provisional "event noir" visual direction, whose palette this replaces).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Client visual sign-off on the palette; browser QA for contrast, hover/focus states, and responsive behaviour; regenerate the badge/OG assets if any carry the old gold; client confirmation remains outstanding for the "5 star rated" hero claim.
+=======
+### DEC-040 — Shared multi-delete for the admin item modules
+
+- **ID:** DEC-040
+- **Title:** Shared multi-delete for the admin item modules
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** The six item modules (Services, Packages, Gallery, FAQs, Testimonials, Event Types) only allowed deleting one item at a time from its detail view (`useModuleList.removeById`). Cleaning up several items meant opening each detail, confirming, and waiting for a whole-list save. The client asked for multi-delete across those modules. All six share the same list-and-detail shape built on `useModuleList` (`src/components/admin/ModuleCrud.tsx`) and the same persistence path (`saveModuleItems`: upsert remaining by `slug`, delete missing, then garbage-collect orphaned storage images), so the capability can live once in the shared layer rather than six times.
+- **Decision:** Add multi-select to the module list views and one shared bulk-delete path. `ModuleCrud.tsx` gains `useModuleSelection(validIds)` (selection state that auto-drops ids leaving the list, so a save/reload/filter change never leaves a stale selection), a `removeMany(ids, guard?, noun)` action on `useModuleList` (single `confirmBulkDelete` confirmation, optional minimum-length guard, then one `persist` of the filtered list), and presentational primitives `SelectAllCheckbox` (native indeterminate), `RowSelectCheckbox` (stops row-click propagation) and `ModuleBulkBar`. `alerts.ts` gains `confirmBulkDelete(count, noun)` reusing the existing destructive SweetAlert2 dialog. Each editor adds a leading checkbox column plus header select-all and wires `removeMany`. Guards: Services and Packages keep their existing minimum of one item; Gallery, FAQs, Testimonials and Event Types may be emptied. Testimonials selection is scoped to the currently visible (status-filtered) rows, matching its existing reorder-disabled-while-filtered behaviour. No DB, RLS, API, schema or content change; `saveModuleItems` already performs the deletion and image cleanup. `admin.css` gains token-backed `.ad-bulk`, `.ad-select-cell` and `.ad-checkbox` styles; no new dependency.
+- **Alternatives considered:** Per-editor duplicated selection logic — rejected (six copies to keep consistent). A targeted per-row `delete().in("slug", ids)` call — rejected for the default path (the whole-list save already deletes missing rows, re-contigs `sort_order`, and GCs storage images, so one code path serves all six modules). Type-to-confirm above a batch threshold — rejected as inconsistent with the single-item delete flow.
+- **Rationale:** One shared hook, one confirmation helper and three presentational primitives make the behaviour identical and maintainable across all six modules, reuse the verified persistence/GC path, and add no infrastructure.
+- **Consequences:** Bulk delete rewrites the remaining rows on save (the existing behaviour for every module edit) and runs the same storage GC, so bulk-removing gallery or service images reclaims their files. Selection is intentionally ephemeral. Row keyboard handling now ignores events originating in the checkbox so Space toggles selection instead of opening detail.
+- **Related documents:** `docs/UI-UX.md` (admin safety/confirmation, §23–24), `docs/ARCHITECTURE.md` (§11 CMS), `docs/DATA-MODEL.md` (module concepts), `docs/SECURITY.md` (authenticated, authorized CMS writes), DEC-018/DEC-035.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Browser QA (select/subset/select-all/indeterminate, cancel deletes nothing, last-service/package guard, filtered testimonials scope, gallery image actually removed from `cms-media`, keyboard-only flow); no automated test tooling exists for the admin islands (per `docs/TESTING.md`).
+>>>>>>> release/v1.2
 
 ## 22. Related Documentation
 
