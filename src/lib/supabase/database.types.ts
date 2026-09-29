@@ -171,6 +171,7 @@ export type Database = {
       packages: {
         Row: {
           badge_type: Database["public"]["Enums"]["package_badge"];
+          best_seller: boolean;
           created_at: string;
           custom_badge: string;
           duration_label: string;
@@ -186,6 +187,7 @@ export type Database = {
         };
         Insert: {
           badge_type?: Database["public"]["Enums"]["package_badge"];
+          best_seller?: boolean;
           created_at?: string;
           custom_badge?: string;
           duration_label: string;
@@ -201,6 +203,7 @@ export type Database = {
         };
         Update: {
           badge_type?: Database["public"]["Enums"]["package_badge"];
+          best_seller?: boolean;
           created_at?: string;
           custom_badge?: string;
           duration_label?: string;

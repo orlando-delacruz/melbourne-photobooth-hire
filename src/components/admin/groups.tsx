@@ -52,6 +52,7 @@ export const STAT_ICON_OPTIONS = [
   { value: "camera", label: "Camera" },
   { value: "clock", label: "Clock" },
   { value: "qrcode", label: "QR code" },
+  { value: "star", label: "Star" },
 ];
 
 /** Hero stat value sources (DEC-037): blank is a manually typed value. */

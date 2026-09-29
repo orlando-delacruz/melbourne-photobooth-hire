@@ -23,6 +23,8 @@ export interface LiveCardProps {
   imageAlt?: string;
   tone?: "light" | "dark";
   featured?: boolean;
+  /** Shows the Best Seller ribbon in the card's top-right corner. */
+  bestSeller?: boolean;
   cmsId?: string;
 }
 
@@ -66,6 +68,7 @@ export default function LiveCard({
   imageAlt,
   tone = "light",
   featured = false,
+  bestSeller = false,
   cmsId,
 }: LiveCardProps) {
   const priceParts = price ? price.trim().split(/\s+/) : [];
@@ -76,6 +79,15 @@ export default function LiveCard({
       className={`card card--${tone}${featured ? " card--featured" : ""}`}
       data-cms-id={cmsId}
     >
+      {bestSeller ? (
+        <img
+          className="card-ribbon"
+          src="/images/ribbon-badge.png"
+          alt="Best seller"
+          loading="lazy"
+          decoding="async"
+        />
+      ) : null}
       {imageSrc ? (
         <div className="card-media">
           <img

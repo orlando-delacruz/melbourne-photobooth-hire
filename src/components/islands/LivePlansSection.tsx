@@ -49,6 +49,7 @@ export default function LivePlansSection({ initial, initialPage }: LivePlansSect
                 description={pkg.summary}
                 items={pkg.inclusions}
                 featured={pkg.badgeType === "most-popular"}
+                bestSeller={pkg.bestSeller}
                 href={`/contact?package=${encodeURIComponent(pkg.id)}`}
                 ctaLabel="Enquire Now"
                 cmsId={pkg.id}

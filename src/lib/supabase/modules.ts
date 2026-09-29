@@ -74,6 +74,7 @@ export function packageFromRow(row: PackageRow): PackageItem {
     customBadge: row.custom_badge,
     inclusions: row.inclusions,
     highlight: row.highlight,
+    bestSeller: row.best_seller,
   };
 }
 
@@ -88,6 +89,7 @@ function packageToRow(item: PackageItem, sortOrder: number): InsertOf<PackageRow
     custom_badge: item.customBadge,
     inclusions: item.inclusions ?? [],
     highlight: item.highlight,
+    best_seller: item.bestSeller,
     sort_order: sortOrder,
   };
 }

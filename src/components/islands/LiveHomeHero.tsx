@@ -22,7 +22,8 @@ export interface LiveHomeHeroProps {
 }
 
 function statIcon(name: string | undefined): string {
-  if (name === "camera" || name === "clock" || name === "qrcode") return cardIconSvg(name, 18);
+  if (name === "camera" || name === "clock" || name === "qrcode" || name === "star")
+    return cardIconSvg(name, 18);
   return "";
 }
 

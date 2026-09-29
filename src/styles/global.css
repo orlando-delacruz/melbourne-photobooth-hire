@@ -215,7 +215,7 @@ hr {
 .on-dark p {
   color: var(--color-on-ink-secondary);
 }
-.on-dark a {
+.on-dark a:not(.button) {
   color: var(--color-accent-on-dark);
 }
 .on-dark a:hover {

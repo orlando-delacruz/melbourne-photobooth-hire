@@ -164,7 +164,7 @@ export const homeSchema = z.object({
             // the stored value is optional; manual stats still require one.
             value: z.string().trim().max(40, "Each stat value must be 40 characters or fewer."),
             label: shortText("each stat label", 120),
-            icon: z.enum(["camera", "clock", "qrcode"]).optional(),
+            icon: z.enum(["camera", "clock", "qrcode", "star"]).optional(),
             source: z.enum(["services", "longest-hire"]).optional(),
           })
           .refine((stat) => Boolean(stat.source) || stat.value.length > 0, {
@@ -415,6 +415,7 @@ export const packagesModuleSchema = z
         customBadge: z.string().trim().max(60, "Custom badge text must be 60 characters or fewer."),
         inclusions: z.array(shortText("each inclusion", 200)).max(30),
         highlight: z.boolean(),
+        bestSeller: z.boolean(),
       })
       .superRefine((value, ctx) => {
         if (value.badgeType === "custom" && value.customBadge.trim() === "") {

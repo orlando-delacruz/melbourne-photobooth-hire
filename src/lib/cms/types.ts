@@ -132,7 +132,7 @@ export type HeroStatSource = "services" | "longest-hire";
 export interface HeroStat {
   value: string;
   label: string;
-  icon?: "camera" | "clock" | "qrcode";
+  icon?: "camera" | "clock" | "qrcode" | "star";
   /** When set, the value is computed at render from live module data. */
   source?: HeroStatSource;
 }
@@ -289,6 +289,7 @@ export interface PackageItem {
   customBadge: string;
   inclusions: string[];
   highlight: boolean;
+  bestSeller: boolean;
 }
 
 export interface GalleryItem {

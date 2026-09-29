@@ -493,6 +493,7 @@ export const cmsSeed: CmsContent = {
       customBadge: badgeFor(pkg.badge).customBadge,
       inclusions: pkg.inclusions,
       highlight: true,
+      bestSeller: false,
     })),
     gallery: mockContent.gallery.map((item) => ({
       id: item.id,

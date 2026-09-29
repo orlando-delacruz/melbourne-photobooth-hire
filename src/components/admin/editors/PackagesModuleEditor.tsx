@@ -8,7 +8,7 @@ import type { BadgeType, PackageItem } from "../../../lib/cms/types";
 import { BADGE_LABELS } from "../../../lib/cms/types";
 import { packagesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
-import { AdField, Notice, Skeleton, TextArea, TextInput } from "../fields";
+import { AdField, AdSelect, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList } from "../groups";
 import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";
 import { confirmDestructive, notifySuccess } from "../alerts";
@@ -52,6 +52,7 @@ function blankPackage(): PackageItem {
     customBadge: "",
     inclusions: [],
     highlight: false,
+    bestSeller: false,
   };
 }
 
@@ -248,6 +249,23 @@ export default function PackagesModuleEditor() {
               />
             </AdField>
           ) : null}
+          <AdField
+            id="pkg-bestseller"
+            label="Best seller"
+            required
+            hint="Best Seller packages show the ribbon badge on the public package card."
+            error={err("bestSeller")}
+          >
+            <AdSelect
+              id="pkg-bestseller"
+              value={draft.bestSeller ? "best-seller" : "standard"}
+              error={err("bestSeller")}
+              onChange={(e) => setDraft({ ...draft, bestSeller: e.target.value === "best-seller" })}
+            >
+              <option value="standard">Standard</option>
+              <option value="best-seller">Best Seller</option>
+            </AdSelect>
+          </AdField>
           <StringList
             label="Inclusion"
             addLabel="Add inclusion"
@@ -351,6 +369,10 @@ export default function PackagesModuleEditor() {
               value={position > 0 ? `${position} of ${items.length}` : "-"}
             />
             <DetailRow label="Badge" value={packageBadgeText(selected)} />
+            <DetailRow
+              label="Best Seller"
+              value={selected.bestSeller ? "Best Seller" : "Standard"}
+            />
             <DetailRow label="Duration" value={selected.durationLabel} />
             <DetailRow label="Price" value={selected.priceLabel} />
             <DetailRow label="Summary" value={selected.summary} />
@@ -429,6 +451,7 @@ export default function PackagesModuleEditor() {
                   </th>
                   <th scope="col">Badge</th>
                   <th scope="col">Highlight</th>
+                  <th scope="col">Best Seller</th>
                   <th scope="col">Reorder</th>
                 </tr>
               </thead>
@@ -455,6 +478,13 @@ export default function PackagesModuleEditor() {
                     <td>{packageBadgeText(item)}</td>
                     <td>
                       <HighlightPill on={item.highlight} onLabel="On" offLabel="Off" />
+                    </td>
+                    <td>
+                      <HighlightPill
+                        on={item.bestSeller}
+                        onLabel="Best Seller"
+                        offLabel="Standard"
+                      />
                     </td>
                     <td>
                       <span className="ad-string-actions">

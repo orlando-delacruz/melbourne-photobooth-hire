@@ -37,6 +37,16 @@
   --color-accent-wash: rgba(230, 206, 138, 0.1);
   --color-accent-line: rgba(230, 206, 138, 0.28);
 
+  /* Coral CTA (client-confirmed primary button/accent). Client overrode
+     the ink-text pairing with white text: white on coral is ~2.8:1, below
+     the AA bar (REQ-ACC-008 flags this) — kept per explicit direction. */
+  --color-coral: #ff6b5b;
+  --color-coral-strong: #e85746;
+  --color-on-coral: #ffffff;
+
+  /* Pure black for package-card text (client direction). */
+  --color-black: #000000;
+
   /* Text on ink */
   --color-on-ink: #f4eee0;
   --color-on-ink-secondary: #c6baa4;

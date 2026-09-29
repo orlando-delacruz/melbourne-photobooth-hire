@@ -385,7 +385,7 @@ export const mockContent: SiteContent = {
     alt: "An outdoor event set with elegant tables beneath warm string lights at night",
   },
   heroStats: [
-    { value: "5★", label: "star rated" },
+    { value: "5", label: "star rated", icon: "star" },
     { value: "4 hrs", label: "longest hire window", icon: "clock", source: "longest-hire" },
     { value: "HD", label: "prints and QR downloads", icon: "qrcode" },
   ],

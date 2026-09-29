@@ -2,7 +2,7 @@
 // Verbatim copies of the Card.astro icon map (camera/users/video) plus the
 // Hero stat glyphs (clock/qrcode) and the checklist check glyph, so live
 // islands resolve the same artwork as SSR at any size.
-export type CardIconName = "camera" | "users" | "video" | "clock" | "qrcode";
+export type CardIconName = "camera" | "users" | "video" | "clock" | "qrcode" | "star";
 
 const CARD_ICON_PATHS: Record<CardIconName, string> = {
   camera:
@@ -13,6 +13,7 @@ const CARD_ICON_PATHS: Record<CardIconName, string> = {
   clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
   qrcode:
     '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h7v7h-7z"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
 };
 
 export function cardIconSvg(name: CardIconName | string | undefined, size = 20): string {

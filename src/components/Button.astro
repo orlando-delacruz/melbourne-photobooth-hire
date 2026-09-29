@@ -100,11 +100,11 @@ const classes = [
     transform: translateX(3px);
   }
 
-  /* Primary */
+  /* Primary (client-confirmed coral CTA) */
   .button--primary {
-    background: var(--color-ink);
-    color: var(--color-ivory);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: var(--color-coral);
+    color: var(--color-on-coral);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
   .button--primary::before {
     content: "";
@@ -124,7 +124,7 @@ const classes = [
     transform: translateX(110%);
   }
   .button--primary:hover {
-    background: var(--color-ink-deep);
+    background: var(--color-coral-strong);
     box-shadow: var(--elevation-2);
   }
 
@@ -159,30 +159,31 @@ const classes = [
 
   /* On dark bands */
   .button--primary.button--tone-dark {
-    background: var(--color-accent-on-dark);
-    color: var(--color-ink);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    background: var(--color-coral);
+    color: var(--color-on-coral);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
   .button--primary.button--tone-dark::before {
     background: linear-gradient(
       120deg,
       transparent 30%,
-      rgba(255, 255, 255, 0.55) 50%,
+      rgba(255, 255, 255, 0.35) 50%,
       transparent 70%
     );
   }
   .button--primary.button--tone-dark:hover {
-    background: #f0dca6;
+    background: var(--color-coral-strong);
     box-shadow: var(--elevation-1);
   }
   .button--secondary.button--tone-dark {
     border-color: rgba(244, 238, 224, 0.32);
-    color: var(--color-on-ink);
+    /* White label per client direction (dark contexts only). */
+    color: var(--color-on-coral);
     background: rgba(244, 238, 224, 0.02);
   }
   .button--secondary.button--tone-dark:hover {
     border-color: var(--color-accent-on-dark);
-    color: var(--color-accent-on-dark);
+    color: var(--color-on-coral);
     background: rgba(230, 206, 138, 0.08);
   }
   .button--tertiary.button--tone-dark {

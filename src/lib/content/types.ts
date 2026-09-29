@@ -101,7 +101,7 @@ export interface SampleImage {
 export interface HeroStat {
   value: string;
   label: string;
-  icon?: "camera" | "clock" | "qrcode";
+  icon?: "camera" | "clock" | "qrcode" | "star";
   /** When set, the value is computed at render from live module data (DEC-037). */
   source?: "services" | "longest-hire";
 }

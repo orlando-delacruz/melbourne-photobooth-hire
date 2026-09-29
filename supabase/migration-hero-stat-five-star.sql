@@ -1,9 +1,9 @@
 -- Hero stat: replace "booth experiences" with a manual "5 star rated" stat.
 --
 -- Replaces the derived services-count stat (value "3", label
--- "booth experiences", source "services") with a fixed value "5★" and label
--- "star rated". Any icon/source keys on the replaced element are dropped so
--- the stat renders as a manual value.
+-- "booth experiences", source "services", camera icon) with a fixed value
+-- "5" and label "star rated" with the star icon. Any previous icon/source
+-- keys on the replaced element are dropped.
 --
 -- Idempotent: only elements still labelled "booth experiences" are touched,
 -- so a second run is a no-op. Rows with an empty home blob ('{}') fall back
@@ -22,7 +22,7 @@ update public.page_contents
            select jsonb_agg(
                     case
                       when elem->>'label' = 'booth experiences'
-                        then jsonb_build_object('value', '5★', 'label', 'star rated')
+                        then jsonb_build_object('value', '5', 'label', 'star rated', 'icon', 'star')
                       else elem
                     end
                     order by ord
@@ -40,4 +40,4 @@ update public.page_contents
 -- Verify with:
 --   select jsonb_pretty(content->'hero'->'stats')
 --     from public.page_contents where page_key = 'home';
---   (expect {"value": "5★", "label": "star rated"} with no "source"/"icon" keys)
+--   (expect {"value": "5", "label": "star rated", "icon": "star"} with no "source" key)

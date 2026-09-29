@@ -39,7 +39,7 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
         {visible.map((pkg) => (
           <Reveal key={pkg.id}>
             <LiveCard
-              tone="dark"
+              tone="light"
               title={pkg.name}
               badge={packageBadgeText(pkg)}
               meta={pkg.durationLabel}
@@ -47,6 +47,7 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
               description={pkg.summary}
               items={pkg.inclusions}
               featured={pkg.badgeType === "most-popular"}
+              bestSeller={pkg.bestSeller}
               href={`/contact?package=${encodeURIComponent(pkg.id)}`}
               ctaLabel="Enquire Now"
               cmsId={pkg.id}

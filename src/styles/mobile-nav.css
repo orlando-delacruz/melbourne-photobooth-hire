@@ -105,8 +105,8 @@
   justify-content: center;
   min-height: 52px;
   margin-top: var(--space-md);
-  background: var(--color-accent-on-dark);
-  color: var(--color-ink);
+  background: var(--color-coral);
+  color: var(--color-on-coral);
   border-radius: var(--radius-pill);
   font-weight: 600;
   text-decoration: none;
