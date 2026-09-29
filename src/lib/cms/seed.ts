@@ -70,7 +70,7 @@ export const cmsSeed: CmsContent = {
       packagesHeading: {
         eyebrow: "Packages",
         title: "All-inclusive hire, priced up front",
-        lede: "Price Starts $130. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
+        lede: "Price Starts $150. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
       },
       packagesCompareLabel: "Compare all packages",
       processHeading: {
@@ -170,7 +170,7 @@ export const cmsSeed: CmsContent = {
       plansHeading: {
         eyebrow: "Choose your hire",
         title: "Priced up front, nothing hidden",
-        lede: "Price Starts $130. Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
+        lede: "Price Starts $150. Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
       },
       emptyState: {
         title: "Package options will be shown here once confirmed.",

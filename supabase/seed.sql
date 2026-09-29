@@ -91,7 +91,7 @@ insert into public.faqs (slug, question, answer, highlight, sort_order) values
    'We recommend booking four to six weeks ahead, especially through summer wedding season and end-of-year celebrations. Popular Saturdays fill quickly. If your date is close, reach out anyway and we''ll confirm availability straight away.',
    true, 0),
   ('how-much', 'How much does photobooth hire cost?',
-   'Price Starts $130. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.',
+   'Price Starts $150. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.',
    true, 1),
   ('whats-included', 'What''s included in every hire?',
    'Every booking includes the full photobooth service, studio-quality lighting and styling, a custom-branded print template, HD printing with unlimited sessions, QR code digital downloads, free use of props, and setup and pack-down by our team.',

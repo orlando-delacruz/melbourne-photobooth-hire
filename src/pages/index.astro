@@ -7,6 +7,7 @@ import LiveShowcaseSection from "../components/islands/LiveShowcaseSection";
 import LivePackagesSection from "../components/islands/LivePackagesSection";
 import LiveFaqTeaser from "../components/islands/LiveFaqTeaser";
 import LiveHomeHero from "../components/islands/LiveHomeHero";
+import LiveTrustStrip from "../components/islands/LiveTrustStrip";
 import LiveSteps from "../components/islands/LiveSteps";
 import LiveMarquee from "../components/islands/LiveMarquee";
 import ReviewModal from "../components/islands/ReviewModal";
@@ -24,7 +25,7 @@ const { heroBackgroundImage, ctaImage } = await loadPublicContent();
 // section when its table changes, with no page refresh. Testimonials fall
 // back to the legacy home blob until the module holds items (DEC-034).
 const liveModules = await loadPublicModules();
-const { pages: cmsPages } = await loadPublicPages();
+const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
 const home = cmsPages.home;
 // Module rows are the source of truth; the deprecated home-blob fallback
 // predates moderation and was always public, so it reads as approved.
@@ -63,6 +64,12 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     initialPackages={liveModules.packages}
     fallbackBackgroundSrc={heroBackgroundImage?.src}
     fallbackBackgroundAlt={heroBackgroundImage?.alt}
+  />
+
+  <LiveTrustStrip
+    client:visible
+    initialSettings={siteSettings}
+    initialEventTypes={liveModules["event-types"]}
   />
 
   <LivePackagesSection client:visible initial={liveModules.packages} initialHome={home} />
