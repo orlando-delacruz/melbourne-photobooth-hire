@@ -2,14 +2,22 @@
 // -> create. Array order is the contact-form dropdown order, adjusted with
 // the row move buttons. Labels feed the public inquiry form.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { EventTypeItem } from "../../../lib/cms/types";
 import { eventTypesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
 import { AdField, Notice, Skeleton, TextInput } from "../fields";
 import { Panel } from "../groups";
-import { DetailRow, toFieldErrors, useModuleList } from "../ModuleCrud";
+import {
+  DetailRow,
+  ModuleBulkBar,
+  RowSelectCheckbox,
+  SelectAllCheckbox,
+  toFieldErrors,
+  useModuleList,
+  useModuleSelection,
+} from "../ModuleCrud";
 import { notifySuccess } from "../alerts";
 
 type View =
@@ -27,6 +35,12 @@ export default function EventTypesModuleEditor() {
   const [view, setView] = useState<View>({ name: "list" });
   const [draft, setDraft] = useState<EventTypeItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
+  const selection = useModuleSelection(store.items ? store.items.map((item) => item.id) : []);
+
+  // Leaving the list (detail or create/edit) drops any pending selection.
+  useEffect(() => {
+    if (view.name !== "list") selection.clear();
+  }, [view.name, selection.clear]);
 
   if (!store.loaded || !store.items) return <Skeleton />;
   const items = store.items;
@@ -90,6 +104,11 @@ export default function EventTypesModuleEditor() {
     if (!selected) return;
     const ok = await store.removeById(selected.id, selected.label || "this event type");
     if (ok) setView({ name: "list" });
+  };
+
+  const deleteSelectedMany = async () => {
+    const ok = await store.removeMany([...selection.selectedIds], undefined, "event types");
+    if (ok) selection.clear();
   };
 
   const moveAndSave = async (id: string, direction: -1 | 1) => {
@@ -239,6 +258,12 @@ export default function EventTypesModuleEditor() {
             </button>
           </span>
         </div>
+        <ModuleBulkBar
+          count={selection.count}
+          busy={store.busy}
+          onDelete={() => void deleteSelectedMany()}
+          onClear={selection.clear}
+        />
         {items.length === 0 ? (
           <div className="ad-empty">
             <h3>No event types</h3>
@@ -249,6 +274,15 @@ export default function EventTypesModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col" className="ad-select-cell">
+                    <SelectAllCheckbox
+                      checked={selection.allSelected}
+                      indeterminate={selection.someSelected}
+                      disabled={store.busy}
+                      onChange={selection.toggleAll}
+                      label="Select all event types"
+                    />
+                  </th>
                   <th scope="col">Position</th>
                   <th scope="col">Label</th>
                   <th scope="col">Reorder</th>
@@ -262,6 +296,7 @@ export default function EventTypesModuleEditor() {
                     tabIndex={0}
                     onClick={() => setView({ name: "detail", id: item.id })}
                     onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         setView({ name: "detail", id: item.id });
@@ -269,6 +304,14 @@ export default function EventTypesModuleEditor() {
                     }}
                     aria-label={`View ${item.label || "event type"}`}
                   >
+                    <td className="ad-select-cell">
+                      <RowSelectCheckbox
+                        checked={selection.isSelected(item.id)}
+                        disabled={store.busy}
+                        label={`Select ${item.label || "event type"}`}
+                        onChange={() => selection.toggle(item.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
                     <td>
                       <strong>{item.label || "Untitled event type"}</strong>

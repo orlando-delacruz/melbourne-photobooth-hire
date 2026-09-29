@@ -745,6 +745,52 @@
   background: rgba(125, 95, 36, 0.14);
 }
 
+/* ── Bulk selection (multi-delete on module lists) ─────────────────────── */
+
+.ad-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-wash);
+}
+
+.ad-bulk-count {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.ad-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+}
+
+.ad-select-cell {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.ad-checkbox {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--color-accent-strong);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.ad-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* ── Forms ──────────────────────────────────────────────────────────────── */
 
 .ad-field {

@@ -2,7 +2,7 @@
 // Badge radio (None/Basic/Most Popular/Best Value/Custom) and highlight
 // behave as before; Most Popular keeps the featured homepage treatment.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { BadgeType, PackageCardBadge, PackageItem } from "../../../lib/cms/types";
 import { BADGE_LABELS, PACKAGE_CARD_BADGE_LABELS } from "../../../lib/cms/types";
@@ -10,7 +10,16 @@ import { packagesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
 import { AdField, AdSelect, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList } from "../groups";
-import { DetailRow, HighlightPill, toFieldErrors, useModuleList } from "../ModuleCrud";
+import {
+  DetailRow,
+  HighlightPill,
+  ModuleBulkBar,
+  RowSelectCheckbox,
+  SelectAllCheckbox,
+  toFieldErrors,
+  useModuleList,
+  useModuleSelection,
+} from "../ModuleCrud";
 import { confirmDestructive, notifySuccess } from "../alerts";
 
 type View =
@@ -67,6 +76,12 @@ export default function PackagesModuleEditor() {
   const [view, setView] = useState<View>({ name: "list" });
   const [draft, setDraft] = useState<PackageItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
+  const selection = useModuleSelection(store.items ? store.items.map((item) => item.id) : []);
+
+  // Leaving the list (detail or create/edit) drops any pending selection.
+  useEffect(() => {
+    if (view.name !== "list") selection.clear();
+  }, [view.name, selection.clear]);
 
   if (!store.loaded || !store.items) return <Skeleton />;
   const items = store.items;
@@ -133,6 +148,15 @@ export default function PackagesModuleEditor() {
       message: "Add at least one package.",
     });
     if (ok) setView({ name: "list" });
+  };
+
+  const deleteSelectedMany = async () => {
+    const ok = await store.removeMany(
+      [...selection.selectedIds],
+      { minLength: 1, message: "Keep at least one package." },
+      "packages",
+    );
+    if (ok) selection.clear();
   };
 
   const moveAndSave = async (id: string, direction: -1 | 1) => {
@@ -442,6 +466,12 @@ export default function PackagesModuleEditor() {
             </button>
           </span>
         </div>
+        <ModuleBulkBar
+          count={selection.count}
+          busy={store.busy}
+          onDelete={() => void deleteSelectedMany()}
+          onClear={selection.clear}
+        />
         {items.length === 0 ? (
           <div className="ad-empty">
             <h3>No packages</h3>
@@ -452,6 +482,15 @@ export default function PackagesModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col" className="ad-select-cell">
+                    <SelectAllCheckbox
+                      checked={selection.allSelected}
+                      indeterminate={selection.someSelected}
+                      disabled={store.busy}
+                      onChange={selection.toggleAll}
+                      label="Select all packages"
+                    />
+                  </th>
                   <th scope="col">Position</th>
                   <th scope="col">Name</th>
                   <th scope="col" className="ad-hide-sm">
@@ -471,6 +510,7 @@ export default function PackagesModuleEditor() {
                     tabIndex={0}
                     onClick={() => setView({ name: "detail", id: item.id })}
                     onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         setView({ name: "detail", id: item.id });
@@ -478,6 +518,14 @@ export default function PackagesModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "package"}`}
                   >
+                    <td className="ad-select-cell">
+                      <RowSelectCheckbox
+                        checked={selection.isSelected(item.id)}
+                        disabled={store.busy}
+                        label={`Select ${item.name || "package"}`}
+                        onChange={() => selection.toggle(item.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
                     <td>
                       <strong>{item.name || "Untitled package"}</strong>

@@ -90,6 +90,15 @@ export async function confirmDelete(itemLabel: string): Promise<boolean> {
   });
 }
 
+/** Destructive confirmation for a multi-select delete, naming the batch size. */
+export async function confirmBulkDelete(count: number, noun = "items"): Promise<boolean> {
+  return confirmDestructive({
+    title: count === 1 ? `Delete 1 ${noun.replace(/s$/, "")}?` : `Delete ${count} ${noun}?`,
+    text: "This cannot be undone.",
+    confirmText: "Delete",
+  });
+}
+
 /** Confirmation before discarding unsaved form edits. */
 export async function confirmDiscardChanges(): Promise<boolean> {
   const Swal = await swal();

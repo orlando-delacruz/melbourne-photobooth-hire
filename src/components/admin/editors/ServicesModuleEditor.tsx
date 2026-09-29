@@ -2,7 +2,7 @@
 // Single-item saves through the section repository; homepage highlight and
 // uploaded imagery behave as before.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowLeft, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import type { ServiceBadgeType, ServiceItem } from "../../../lib/cms/types";
 import { serviceBadgeText } from "../../../lib/cms/types";
@@ -10,7 +10,17 @@ import { servicesModuleSchema } from "../../../lib/cms/schemas";
 import { createId } from "../../../lib/cms/ids";
 import { AdField, AdSelect, ImageField, Notice, Skeleton, TextArea, TextInput } from "../fields";
 import { Panel, StringList, SERVICE_ICON_OPTIONS } from "../groups";
-import { DetailRow, HighlightPill, ModuleImage, toFieldErrors, useModuleList } from "../ModuleCrud";
+import {
+  DetailRow,
+  HighlightPill,
+  ModuleBulkBar,
+  ModuleImage,
+  RowSelectCheckbox,
+  SelectAllCheckbox,
+  toFieldErrors,
+  useModuleList,
+  useModuleSelection,
+} from "../ModuleCrud";
 import { confirmDestructive, notifySuccess } from "../alerts";
 
 const SERVICE_BADGE_OPTIONS: { value: ServiceBadgeType; label: string }[] = [
@@ -52,6 +62,12 @@ export default function ServicesModuleEditor() {
   const [view, setView] = useState<View>({ name: "list" });
   const [draft, setDraft] = useState<ServiceItem | null>(null);
   const [errors, setErrors] = useState<Map<string, string>>(new Map());
+  const selection = useModuleSelection(store.items ? store.items.map((item) => item.id) : []);
+
+  // Leaving the list (detail or create/edit) drops any pending selection.
+  useEffect(() => {
+    if (view.name !== "list") selection.clear();
+  }, [view.name, selection.clear]);
 
   if (!store.loaded || !store.items) return <Skeleton />;
   const items = store.items;
@@ -118,6 +134,15 @@ export default function ServicesModuleEditor() {
       message: "Add at least one service.",
     });
     if (ok) setView({ name: "list" });
+  };
+
+  const deleteSelectedMany = async () => {
+    const ok = await store.removeMany(
+      [...selection.selectedIds],
+      { minLength: 1, message: "Keep at least one service." },
+      "services",
+    );
+    if (ok) selection.clear();
   };
 
   const moveAndSave = async (id: string, direction: -1 | 1) => {
@@ -431,6 +456,12 @@ export default function ServicesModuleEditor() {
             </button>
           </span>
         </div>
+        <ModuleBulkBar
+          count={selection.count}
+          busy={store.busy}
+          onDelete={() => void deleteSelectedMany()}
+          onClear={selection.clear}
+        />
         {items.length === 0 ? (
           <div className="ad-empty">
             <h3>No services</h3>
@@ -441,6 +472,15 @@ export default function ServicesModuleEditor() {
             <table className="ad-table">
               <thead>
                 <tr>
+                  <th scope="col" className="ad-select-cell">
+                    <SelectAllCheckbox
+                      checked={selection.allSelected}
+                      indeterminate={selection.someSelected}
+                      disabled={store.busy}
+                      onChange={selection.toggleAll}
+                      label="Select all services"
+                    />
+                  </th>
                   <th scope="col">Position</th>
                   <th scope="col">Name</th>
                   <th scope="col" className="ad-hide-sm">
@@ -458,6 +498,7 @@ export default function ServicesModuleEditor() {
                     tabIndex={0}
                     onClick={() => setView({ name: "detail", id: item.id })}
                     onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         setView({ name: "detail", id: item.id });
@@ -465,6 +506,14 @@ export default function ServicesModuleEditor() {
                     }}
                     aria-label={`View ${item.name || "service"}`}
                   >
+                    <td className="ad-select-cell">
+                      <RowSelectCheckbox
+                        checked={selection.isSelected(item.id)}
+                        disabled={store.busy}
+                        label={`Select ${item.name || "service"}`}
+                        onChange={() => selection.toggle(item.id)}
+                      />
+                    </td>
                     <td>{index + 1}</td>
                     <td>
                       <strong>{item.name || "Untitled service"}</strong>
