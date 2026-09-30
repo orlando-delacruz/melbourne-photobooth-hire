@@ -57,8 +57,8 @@ export default function LiveHomeHero({
           className="hero-bg"
           src={backgroundSrc}
           alt=""
-          width={1920}
-          height={1080}
+          width={1600}
+          height={1200}
           loading="eager"
           decoding="async"
           fetchPriority="high"

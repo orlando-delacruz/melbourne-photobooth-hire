@@ -15,9 +15,10 @@ export const IMAGE_TYPES_LABEL = "PNG, JPEG or WebP up to 10 MB";
 /**
  * Longest-edge cap applied to uploads before they reach Storage (free plan has
  * no transform service, so the stored bytes must already be delivery-sized).
- * Hero/CTA images are the largest consumers; 1920 covers full-bleed widths.
+ * 1600 covers full-bleed widths while keeping mobile transfers low; the
+ * existing media was backfilled to the same cap (DEC-047).
  */
-export const IMAGE_MAX_EDGE = 1920;
+export const IMAGE_MAX_EDGE = 1600;
 /** Tighter caps for small chrome assets (logo, favicon) rendered at ~50-250px. */
 export const LOGO_MAX_EDGE = 512;
 export const FAVICON_MAX_EDGE = 256;

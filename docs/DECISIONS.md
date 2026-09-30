@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty-six decision records exist (DEC-001 through DEC-046). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty-seven decision records exist (DEC-001 through DEC-047). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -301,6 +301,7 @@ Forty-six decision records exist (DEC-001 through DEC-046). Existing selections,
 | DEC-044 | Hero stats: mobile two-up layout, label-first editor card, header photo reveal | Accepted | 2026-09-29 |
 | DEC-045 | Shared CMS icon library (hero stats, steps, services) | Accepted   | 2026-09-29 |
 | DEC-046 | Performance pass: LCP discovery, lazy live-sync, upload-time image optimization | Accepted | 2026-09-30 |
+| DEC-047 | Media backfill and 1600px upload cap | Accepted | 2026-09-30 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1118,6 +1119,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/ARCHITECTURE.md` (§6–8, §14, §23), `docs/SECURITY.md` (§5, §8), `docs/TESTING.md`, `docs/DECISIONS.md` DEC-028 (cache window), DEC-031, DEC-033, DEC-028.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator re-uploads the current logo (and any other oversized CMS images) once so the new optimization applies; re-run a production PageSpeed audit to measure LCP/SI/JS/image/cache deltas; a follow-up may migrate the three Motion islands to CSS to remove the last framer-motion chunk from the homepage.
+
+### DEC-047 — Media backfill and 1600px upload cap
+
+- **ID:** DEC-047
+- **Title:** Media backfill and 1600px upload cap
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Context:** PageSpeed (mobile) still reported LCP 5.8 s and 645 KiB of avoidable repeat-visit image transfer. Diagnosis: the DEC-046 upload-time optimization and 1-year cache only apply to *new* uploads; the pre-existing CMS objects (21 JPEGs, up to 6.5 MB) still served full-resolution bytes with `Cache-Control: max-age=3600`. The LCP element is the hero `<img class="hero-bg">`, whose dominant subpart is resource load duration (730 ms) — i.e. image bytes.
+- **Decision:** (1) Add a one-off, committed, idempotent operator script `scripts/optimize-cms-media.mjs` that re-encodes every stored JPEG/PNG to a delivery-sized **mozjpeg JPEG** (`resize` inside 1600 px, quality 78, progressive) and re-uploads it **to the same path** with `cacheControl: 31536000` and `upsert: true`, skipping `.webp` objects, objects already at the long cache, and any re-encode that is not smaller. Same-path uploads keep every public URL/CMS reference valid, so **no database changes** are needed. (2) Lower `IMAGE_MAX_EDGE` from 1920 to **1600** in `src/lib/cms/storage.ts` so future uploads match the backfilled assets.
+- **Alternatives considered:** Same-path WebP (better bytes in some cases, but a `.jpg` URL serving `image/webp` is a content-type/extension mismatch) — rejected for the safer, consistent JPEG encoding. New `.webp` key + rewriting references across module columns and JSONB blobs — rejected (much more code/risk for marginal gain, and the measured JPEG sizes were competitive). Manual re-upload of 21 images through the CMS — rejected (tedious; the script is reproducible and reviewable). Server-side transforms — impossible on the free Supabase plan.
+- **Rationale:** Closes the exact gap PageSpeed reported with a bounded, reversible-by-reupload, no-runtime-change action. Measured on the live assets: 11.64 MB → 3.91 MB (**−7.73 MB**), hero 394 KB → 168 KB, the 6.5 MB outlier → 327 KB, and every touched object gains an immutable 1-year cache.
+- **Consequences:** First-visit LCP transfer drops sharply; repeat visits stop re-downloading the flagged 645 KiB. The three small portraits that did not shrink are left untouched. The CDN may serve the pre-backfill bytes for up to ~1 h after each re-upload. Desktop full-bleed sharpness is capped at 1600 px (client-approved). The script is operator-run and requires the service-role key in a local (git-ignored) `.env`; it never prints or commits secrets.
+- **Related documents:** `docs/DECISIONS.md` DEC-046 (image policy), DEC-028 (cache), DEC-040; `scripts/optimize-cms-media.mjs`, `src/lib/cms/storage.ts`, `src/components/islands/LiveHomeHero.tsx`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator runs the script once (`--apply`) and re-runs a production PageSpeed audit to measure LCP / cache-lifetime / image deltas; a future `srcset` (mobile variant) remains available if mobile LCP needs further work.
 
 ## 22. Related Documentation
 
