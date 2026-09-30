@@ -106,7 +106,7 @@ export default function SettingsEditor() {
 
       <Panel
         title="Contact and business details"
-        lede="Phone numbers, ABN, credentials and the transport note shown in the footer and on the contact page. Blank fields stay hidden."
+        lede="Phone numbers, email, ABN, credentials and the transport note shown in the footer and on the contact page. Blank fields stay hidden."
       >
         <div className="ad-grid-2">
           <AdField
@@ -136,6 +136,20 @@ export default function SettingsEditor() {
             />
           </AdField>
         </div>
+        <AdField
+          id="settings-email"
+          label="Contact email"
+          hint="Shown under the homepage hero stats as a mail link. Blank hides it."
+          error={errMsg(errors.contactEmail)}
+        >
+          <TextInput
+            id="settings-email"
+            type="email"
+            inputMode="email"
+            error={errMsg(errors.contactEmail)}
+            {...register("contactEmail")}
+          />
+        </AdField>
         <AdField id="settings-abn" label="ABN" error={errMsg(errors.abn)}>
           <TextInput id="settings-abn" type="text" error={errMsg(errors.abn)} {...register("abn")} />
         </AdField>

@@ -406,6 +406,7 @@ export const cmsSeed: CmsContent = {
     ],
     phonePrimary: "+61 459918987",
     phoneSecondary: "+61 402332908",
+    contactEmail: "",
     abn: "77363405585",
     trustItems: ["ABN Registered Business", "Public Liability Insured"],
     transportNote: "Transportation Allowance Varies Depending to Location",

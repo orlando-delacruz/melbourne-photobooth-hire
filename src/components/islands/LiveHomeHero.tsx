@@ -4,7 +4,12 @@
 // background and stats from the home blob. Entrance choreography (Reveal
 // mode="mount" beats) matches SSR. Background swaps are pure CSS, so image
 // changes crossfade without cache concerns.
-import type { HeroContent, PackageItem, ServiceItem } from "../../lib/cms/types";
+import type {
+  HeroContent,
+  PackageItem,
+  ServiceItem,
+  SiteSettingsContent,
+} from "../../lib/cms/types";
 import { heroStatValue } from "../../lib/content/heroStats";
 import { fetchPageContent, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
@@ -12,11 +17,13 @@ import CmsIcon from "../live/CmsIcon";
 import LiveButton from "../live/LiveButton";
 import Reveal from "./Reveal";
 import { useLiveDoc, useLiveRows } from "./useLiveSync";
+import { useLiveSettings } from "./useLiveSettings";
 
 export interface LiveHomeHeroProps {
   initial: HeroContent;
   initialServices: ServiceItem[];
   initialPackages: PackageItem[];
+  initialSettings: SiteSettingsContent;
   fallbackBackgroundSrc?: string;
   fallbackBackgroundAlt?: string;
 }
@@ -25,6 +32,7 @@ export default function LiveHomeHero({
   initial,
   initialServices,
   initialPackages,
+  initialSettings,
   fallbackBackgroundSrc,
   fallbackBackgroundAlt,
 }: LiveHomeHeroProps) {
@@ -32,6 +40,8 @@ export default function LiveHomeHero({
     const content = (await fetchPageContent("home")) as { hero?: HeroContent } | null;
     return content?.hero ?? initial;
   });
+  const settings = useLiveSettings(initialSettings);
+  const contactEmail = settings.contactEmail?.trim() || "";
   // Derived stat values stay live with the modules they read (DEC-037).
   const services = useLiveRows("services", initialServices, fetchServices);
   const packages = useLiveRows("packages", initialPackages, fetchPackages);
@@ -77,22 +87,32 @@ export default function LiveHomeHero({
                 ) : null}
               </p>
             </Reveal>
-            {hero.stats.length > 0 ? (
+            {hero.stats.length > 0 || contactEmail ? (
               <Reveal mode="mount" delay={0.42}>
-                <dl className="hero-stats">
-                  {hero.stats.map((stat) => {
-                    const value = heroStatValue(stat, services, packages);
-                    return (
-                      <div className="hero-stat" key={`${value}-${stat.label}`}>
-                        <dt className="hero-stat-value">
-                          {stat.icon ? <CmsIcon name={stat.icon} size={18} /> : null}
-                          {value}
-                        </dt>
-                        <dd className="hero-stat-label">{stat.label}</dd>
-                      </div>
-                    );
-                  })}
-                </dl>
+                {hero.stats.length > 0 ? (
+                  <dl className="hero-stats">
+                    {hero.stats.map((stat) => {
+                      const value = heroStatValue(stat, services, packages);
+                      return (
+                        <div className="hero-stat" key={`${value}-${stat.label}`}>
+                          <dt className="hero-stat-value">
+                            {stat.icon ? <CmsIcon name={stat.icon} size={18} /> : null}
+                            {value}
+                          </dt>
+                          <dd className="hero-stat-label">{stat.label}</dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                ) : null}
+                {contactEmail ? (
+                  <p className="hero-email">
+                    <span className="hero-email__icon" aria-hidden="true">
+                      <CmsIcon name="mail" size={16} />
+                    </span>
+                    <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+                  </p>
+                ) : null}
               </Reveal>
             ) : null}
           </div>

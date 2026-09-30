@@ -45,6 +45,19 @@ function requiredUrl(label: string) {
     );
 }
 
+/** Optional contact email. Blank keeps the matching public element hidden. */
+function optionalEmail(label: string) {
+  return z
+    .string()
+    .trim()
+    .max(254, `${label} must be 254 characters or fewer.`)
+    .refine(
+      (value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      `Enter a valid ${label}, or leave it blank.`,
+    )
+    .optional();
+}
+
 /** Optional URL such as review, Messenger and social links. Blank keeps the matching public element hidden. */
 function optionalUrl(label: string) {
   return z
@@ -325,6 +338,7 @@ export const settingsSchema = z.object({
     .trim()
     .max(40, "Phone number must be 40 characters or fewer.")
     .optional(),
+  contactEmail: optionalEmail("the contact email"),
   abn: z.string().trim().max(40, "ABN must be 40 characters or fewer.").optional(),
   trustItems: z.array(shortText("each business credential", 120)).max(8).optional(),
   transportNote: z

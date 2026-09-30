@@ -12,8 +12,9 @@
   /* ── Colour: "sunlit coral" ───────────────────────────────────────────
    * Client-directed primary #FF6B5B on a warm light canvas. Cream/ivory
    * neutrals carry the page, deep warm charcoal carries text and the few
-   * dark contrast bands (footer, final CTA, overlays), and the coral thread
-   * runs through eyebrows, rules, icons and actions. Provisional until
+   * dark contrast bands (final CTA, overlays), and the coral thread
+   * runs through eyebrows, rules, icons and actions. The footer is a light
+   * surface so the black-text CMS logo stays visible. Provisional until
    * client sign-off (docs/DESIGN-SYSTEM.md Sections 5-6). */
   --color-ink-deep: #17110d;
   --color-ink: #1f1814;

@@ -373,6 +373,8 @@ export interface SiteSettingsContent {
   /** Contact phone numbers shown in the footer and on the contact page. */
   phonePrimary?: string;
   phoneSecondary?: string;
+  /** Business contact email shown under the homepage hero stats. Blank hides the link. */
+  contactEmail?: string;
   /** Australian Business Number shown in the footer and contact aside. */
   abn?: string;
   /** Business credentials (for example registration and insurance statements). */

@@ -72,7 +72,7 @@ export function LiveFooterCta({ initialSettings }: LiveFooterPanelsProps) {
     <>
       <h2>{settings.footerCta.title}</h2>
       <p>{settings.footerCta.lede}</p>
-      <LiveButton href={ENQUIRY_HREF} variant="primary" tone="dark" size="lg" arrow>
+      <LiveButton href={ENQUIRY_HREF} variant="primary" tone="light" size="lg" arrow>
         {settings.footerCta.label}
       </LiveButton>
     </>
