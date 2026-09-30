@@ -29,6 +29,11 @@ export default defineConfig({
   // Server-rendered on Vercel (DEC-028): public pages read live Supabase data
   // per request with edge SWR caching; admin/API routes are also server-side.
   // No page is prerendered; function runs stay minimal via CDN caching.
+  //
+  // Inline the stylesheets (DEC-048): the public CSS is small (~15 KB gzip)
+  // and shipping it as two render-blocking <link> requests delayed FCP/LCP on
+  // mobile. Inlining removes both from the critical path.
+  build: { inlineStylesheets: "always" },
   adapter: vercel(),
   integrations: [
     react(),

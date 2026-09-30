@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty-seven decision records exist (DEC-001 through DEC-047). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty-eight decision records exist (DEC-001 through DEC-048). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -302,6 +302,7 @@ Forty-seven decision records exist (DEC-001 through DEC-047). Existing selection
 | DEC-045 | Shared CMS icon library (hero stats, steps, services) | Accepted   | 2026-09-29 |
 | DEC-046 | Performance pass: LCP discovery, lazy live-sync, upload-time image optimization | Accepted | 2026-09-30 |
 | DEC-047 | Media backfill and 1600px upload cap | Accepted | 2026-09-30 |
+| DEC-048 | Inline public stylesheets (remove render-blocking CSS) | Accepted | 2026-09-30 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1134,6 +1135,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DECISIONS.md` DEC-046 (image policy), DEC-028 (cache), DEC-040; `scripts/optimize-cms-media.mjs`, `src/lib/cms/storage.ts`, `src/components/islands/LiveHomeHero.tsx`.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator runs the script once (`--apply`) and re-runs a production PageSpeed audit to measure LCP / cache-lifetime / image deltas; a future `srcset` (mobile variant) remains available if mobile LCP needs further work.
+
+### DEC-048 — Inline public stylesheets (remove render-blocking CSS)
+
+- **ID:** DEC-048
+- **Title:** Inline public stylesheets (remove render-blocking CSS)
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Context:** PageSpeed (mobile) flagged ~1,810 ms of render-blocking requests: two first-party `<link rel="stylesheet">` files (`tokens.*.css`, 1.9 KiB at 550 ms, and `http-cache.*.css`, 16 KiB at 180 ms). The latency was connection/queue cost, not payload — a tiny separate token file was still a blocking round-trip ahead of first paint.
+- **Decision:** Set `build.inlineStylesheets: "always"` in `astro.config.mjs` so the built CSS (~15 KB gzip across the public pages) is emitted as inline `<style>` in the document head instead of external stylesheet requests. No CSS content, token, or component change; the same styles ship, just inlined.
+- **Alternatives considered:** Raise `assetsInlineLimit` so only the small token file inlines (leaves the 16 KiB bundle as a blocking request) — rejected (the second request is the larger cost). Async-load non-critical CSS via `media="print"` swap — rejected (FOUC risk, worse real UX). Critical-CSS extraction tooling — rejected (new dependency, out of scope).
+- **Rationale:** Removes both blocking CSS requests from the LCP/FCP critical path with a one-line config change, at the cost of ~15 KB gzip added to each HTML response (which is already dynamically served and edge-cached with SWR). The site is not a multi-page SPA whose CSS benefits meaningfully from cross-page caching.
+- **Consequences:** Public (and admin) HTML carries inline CSS; no CSS files are emitted. Page HTML grows but loses two blocking round-trips. Cross-page CSS caching no longer applies. Admin pages inline their larger stylesheet (behind auth; not performance-critical).
+- **Related documents:** `astro.config.mjs`, `docs/ARCHITECTURE.md` (§6, §23), `docs/DECISIONS.md` DEC-028 (SSR + edge cache), DEC-046/DEC-047 (perf pass).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Re-run a production PageSpeed audit to confirm the render-blocking savings and that FCP/LCP improved.
 
 ## 22. Related Documentation
 
