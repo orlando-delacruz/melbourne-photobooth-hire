@@ -4,7 +4,7 @@
 import type { ServiceItem } from "../../lib/cms/types";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
-import { cardIconSvg } from "../live/icons";
+import CmsIcon from "../live/CmsIcon";
 import { useLiveRows } from "./useLiveSync";
 
 export default function LiveServiceJump({ initial }: { initial: ServiceItem[] }) {
@@ -14,11 +14,9 @@ export default function LiveServiceJump({ initial }: { initial: ServiceItem[] })
       {services.map((service) => (
         <li key={service.id}>
           <a href={`#${service.id}`}>
-            <span
-              className="service-jump-icon"
-              aria-hidden="true"
-              dangerouslySetInnerHTML={{ __html: cardIconSvg(service.icon, 16) }}
-            />
+            <span className="service-jump-icon" aria-hidden="true">
+              <CmsIcon name={service.icon} size={16} />
+            </span>
             {service.name}
           </a>
         </li>

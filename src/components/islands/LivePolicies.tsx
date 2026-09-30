@@ -29,8 +29,8 @@ export default function LivePolicies({ initialPage }: { initialPage: PackagesPag
         </Reveal>
         <Reveal delay={0.08} variant="blur">
           <ul className="policy-list">
-            {page.bookingPolicies.map((policy) => (
-              <li key={policy}>
+            {page.bookingPolicies.map((policy, index) => (
+              <li key={`${index}-${policy}`}>
                 <span className="policy-icon" dangerouslySetInnerHTML={{ __html: POLICY_ICON }} />
                 <span>{policy}</span>
               </li>

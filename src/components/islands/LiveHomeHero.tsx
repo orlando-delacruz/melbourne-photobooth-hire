@@ -8,7 +8,7 @@ import type { HeroContent, PackageItem, ServiceItem } from "../../lib/cms/types"
 import { heroStatValue } from "../../lib/content/heroStats";
 import { fetchPageContent, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
-import { cardIconSvg } from "../live/icons";
+import CmsIcon from "../live/CmsIcon";
 import LiveButton from "../live/LiveButton";
 import Reveal from "./Reveal";
 import { useLiveDoc, useLiveRows } from "./useLiveSync";
@@ -19,12 +19,6 @@ export interface LiveHomeHeroProps {
   initialPackages: PackageItem[];
   fallbackBackgroundSrc?: string;
   fallbackBackgroundAlt?: string;
-}
-
-function statIcon(name: string | undefined): string {
-  if (name === "camera" || name === "clock" || name === "qrcode" || name === "star")
-    return cardIconSvg(name, 18);
-  return "";
 }
 
 export default function LiveHomeHero({
@@ -90,12 +84,10 @@ export default function LiveHomeHero({
                     const value = heroStatValue(stat, services, packages);
                     return (
                       <div className="hero-stat" key={`${value}-${stat.label}`}>
-                        <dt
-                          className="hero-stat-value"
-                          dangerouslySetInnerHTML={{
-                            __html: `${stat.icon ? statIcon(stat.icon) : ""}${value}`,
-                          }}
-                        />
+                        <dt className="hero-stat-value">
+                          {stat.icon ? <CmsIcon name={stat.icon} size={18} /> : null}
+                          {value}
+                        </dt>
                         <dd className="hero-stat-label">{stat.label}</dd>
                       </div>
                     );

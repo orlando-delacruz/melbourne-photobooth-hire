@@ -41,6 +41,22 @@ function itemTitle(item: GalleryItem, index: number): string {
   return item.caption || item.image.alt || `Image ${index + 1}`;
 }
 
+/**
+ * Highlight-first ordering for the admin gallery list. Highlighted images
+ * always sit above non-highlighted ones; relative order is preserved inside
+ * each group so untouched rows never jump. When `movedId` is given (the item
+ * whose highlight state just changed, or a new image) it is re-inserted at
+ * the end of its group. The persisted `sort_order` follows this array order,
+ * so the grouping survives a refresh.
+ */
+function orderByHighlight(items: GalleryItem[], movedId?: string): GalleryItem[] {
+  const highlighted = items.filter((item) => item.highlight && item.id !== movedId);
+  const rest = items.filter((item) => !item.highlight && item.id !== movedId);
+  const moved = movedId ? items.find((item) => item.id === movedId) : undefined;
+  if (!moved) return [...highlighted, ...rest];
+  return moved.highlight ? [...highlighted, moved, ...rest] : [...highlighted, ...rest, moved];
+}
+
 export default function GalleryModuleEditor() {
   const store = useModuleList<GalleryItem>("mod-gallery");
   const [view, setView] = useState<View>({ name: "list" });
@@ -100,9 +116,14 @@ export default function GalleryModuleEditor() {
     }
     const isEdit = view.name === "edit";
     const saved = parsed.data as GalleryItem;
-    const next = isEdit
+    const previous = isEdit ? items.find((item) => item.id === draft.id) : undefined;
+    const base = isEdit
       ? items.map((item) => (item.id === draft.id ? saved : item))
       : [...items, saved];
+    // Reposition only when the group membership changed (or on create);
+    // untouched rows keep their relative order inside their group.
+    const regroup = !isEdit || previous?.highlight !== saved.highlight;
+    const next = orderByHighlight(base, regroup ? saved.id : undefined);
     const ok = await store.persist(next);
     if (!ok) return;
     setDraft(null);
@@ -123,10 +144,21 @@ export default function GalleryModuleEditor() {
     if (ok) selection.clear();
   };
 
+  // Reordering is confined to a highlight group: the arrows never cross the
+  // boundary between highlighted and non-highlighted images (that grouping is
+  // controlled by the highlight toggle, not by manual reordering).
+  const canMove = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    return (
+      target >= 0 && target < items.length && items[target].highlight === items[index].highlight
+    );
+  };
+
   const moveAndSave = async (id: string, direction: -1 | 1) => {
     const index = items.findIndex((item) => item.id === id);
     const target = index + direction;
     if (index < 0 || target < 0 || target >= items.length) return;
+    if (items[target].highlight !== items[index].highlight) return;
     const next = [...items];
     const [moved] = next.splice(index, 1);
     next.splice(target, 0, moved);
@@ -169,7 +201,7 @@ export default function GalleryModuleEditor() {
             id="gal-highlight"
             label="Highlighted for homepage"
             required
-            hint="Turned-on images appear in the homepage showcase."
+            hint="Turned-on images appear in the homepage showcase and move to the top of this list."
             error={err("highlight")}
           >
             <label className="ad-toggle">
@@ -278,8 +310,9 @@ export default function GalleryModuleEditor() {
           <div>
             <h2>All gallery images</h2>
             <p className="ad-panel-lede">
-              {items.length} {items.length === 1 ? "image" : "images"} in display order. Select a
-              row to view the full detail, then edit or delete it, or use the arrows to reorder.
+              {items.length} {items.length === 1 ? "image" : "images"} — highlighted images always
+              sit above non-highlighted ones. Changing an image's highlight moves it into its new
+              group automatically; the arrows reorder within a group.
             </p>
           </div>
           <span className="ad-panel-action">
@@ -366,9 +399,13 @@ export default function GalleryModuleEditor() {
                         <button
                           type="button"
                           className="ad-icon-button"
-                          disabled={index === 0 || store.busy}
+                          disabled={!canMove(index, -1) || store.busy}
                           aria-label={`Move ${itemTitle(item, index)} up`}
-                          title="Move up"
+                          title={
+                            items[index - 1] && items[index - 1].highlight !== item.highlight
+                              ? "Move within the highlight group only"
+                              : "Move up"
+                          }
                           onClick={(event) => {
                             event.stopPropagation();
                             void moveAndSave(item.id, -1);
@@ -379,9 +416,13 @@ export default function GalleryModuleEditor() {
                         <button
                           type="button"
                           className="ad-icon-button"
-                          disabled={index === items.length - 1 || store.busy}
+                          disabled={!canMove(index, 1) || store.busy}
                           aria-label={`Move ${itemTitle(item, index)} down`}
-                          title="Move down"
+                          title={
+                            items[index + 1] && items[index + 1].highlight !== item.highlight
+                              ? "Move within the highlight group only"
+                              : "Move down"
+                          }
                           onClick={(event) => {
                             event.stopPropagation();
                             void moveAndSave(item.id, 1);

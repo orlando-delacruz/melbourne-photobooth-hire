@@ -7,6 +7,8 @@
 // ratings, established dates) is never carried over. The Supabase adapter in
 // Phase 3 satisfies the same ContentSource interface at this seam.
 
+import type { CmsIconName } from "../cms/icons";
+
 export interface Service {
   id: string;
   name: string;
@@ -16,7 +18,7 @@ export interface Service {
   featured?: boolean;
   tagline?: string;
   highlights?: string[];
-  icon?: "camera" | "users" | "video";
+  icon?: CmsIconName;
   /** False when an admin highlight toggle removes the item from homepage sections. */
   highlight?: boolean;
 }
@@ -46,7 +48,7 @@ export interface ProcessStep {
   title: string;
   summary: string;
   /** Presentational icon key for the "How it works" steps. */
-  icon?: "message" | "palette" | "sparkles";
+  icon?: CmsIconName;
 }
 
 export interface Testimonial {
@@ -101,7 +103,7 @@ export interface SampleImage {
 export interface HeroStat {
   value: string;
   label: string;
-  icon?: "camera" | "clock" | "qrcode" | "star";
+  icon?: CmsIconName;
   /** When set, the value is computed at render from live module data (DEC-037). */
   source?: "services" | "longest-hire";
 }

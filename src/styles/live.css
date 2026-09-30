@@ -1416,9 +1416,12 @@ body.page-home .card--light .card-title {
   inset: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.16;
+  opacity: 0.5;
   z-index: -2;
 }
+/* Lighter veil so the header photo reads through. A left-to-right ivory wash
+   keeps the copy legible while the right of the image stays visible; a second
+   vertical wash softens the top/bottom edges. */
 .page-header__glow {
   position: absolute;
   inset: 0;
@@ -1426,9 +1429,15 @@ body.page-home .card--light .card-title {
   background:
     radial-gradient(120% 90% at 82% 12%, var(--color-accent-line), transparent 60%),
     linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-ivory) 90%, transparent) 0%,
+      color-mix(in srgb, var(--color-ivory) 62%, transparent) 55%,
+      color-mix(in srgb, var(--color-ivory) 38%, transparent) 100%
+    ),
+    linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-ivory) 55%, transparent) 0%,
-      color-mix(in srgb, var(--color-ivory) 88%, transparent) 100%
+      color-mix(in srgb, var(--color-ivory) 30%, transparent) 0%,
+      color-mix(in srgb, var(--color-ivory) 50%, transparent) 100%
     );
 }
 .page-header__inner {
@@ -1465,6 +1474,14 @@ body.page-home .card--light .card-title {
   min-height: min(44rem, 96svh);
   padding-block: clamp(4.5rem, 11vw, 8rem);
   border-bottom: 1px solid var(--color-border);
+}
+/* The homepage trust strip overlaps the hero's base by one spacer unit
+   (margin-top: calc(-1 * var(--space-xl))). The hero reserves matching bottom
+   padding so its content — the hero stats — is never covered by the strip.
+   Gated on the strip actually rendering, so there is no dead space when it has
+   no items. */
+body:has(.trust-strip) .hero {
+  padding-bottom: calc(clamp(4.5rem, 11vw, 8rem) + var(--space-xl));
 }
 .hero-bg {
   position: absolute;
@@ -1557,6 +1574,7 @@ body.page-home .card--light .card-title {
   margin: 0;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2xs);
   color: var(--color-ink);
   font-family: var(--font-display);
@@ -1596,6 +1614,9 @@ body.page-home .card--light .card-title {
     min-height: min(34rem, 84svh);
     padding-block: clamp(2.75rem, 8vw, 4rem);
   }
+  body:has(.trust-strip) .hero {
+    padding-bottom: calc(clamp(2.75rem, 8vw, 4rem) + var(--space-xl));
+  }
   .hero-bg {
     background-position: center 32%;
   }
@@ -1626,24 +1647,49 @@ body.page-home .card--light .card-title {
     width: 100%;
     justify-content: center;
   }
+  /* Stats stay in a single row on phones: equal columns that share the width.
+     Columns keep a comfortable floor (a touch under a third of a small phone);
+     if enough stats are added to exceed the row, the strip scrolls sideways
+     instead of crushing the labels. */
   .hero-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-2xs);
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
     padding-top: var(--space-sm);
     border-top: 1px solid var(--color-border-strong);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .hero-stats::-webkit-scrollbar {
+    display: none;
   }
   .hero-stat {
-    min-width: 0;
-    padding: 0;
+    flex: 1 1 0;
+    min-width: 5.5rem;
+    padding: 0 var(--space-sm);
+    border-left: 1px solid var(--color-border-strong);
+    scroll-snap-align: start;
+  }
+  .hero-stat:first-child {
+    padding-left: 0;
     border-left: 0;
   }
   .hero-stat-value {
-    font-size: var(--text-h3);
+    font-size: var(--text-h4);
     gap: var(--space-3xs);
+    overflow-wrap: anywhere;
+  }
+  .hero-stat-value svg {
+    width: 14px;
+    height: 14px;
   }
   .hero-stat-label {
-    font-size: var(--text-small);
+    margin-top: 0.15rem;
+    font-size: var(--text-caption);
+    line-height: 1.25;
   }
   .hero-scroll {
     display: none;
@@ -2729,36 +2775,80 @@ html[data-menu-open="true"] .floating-messenger {
   }
 }
 
-/* ── Mobile horizontal gallery (gallery page + homepage showcase) ─────── */
-/* Phones browse image galleries by swiping, so below the tablet breakpoint
-   the grid becomes an edge-to-edge horizontal track. The list alone scrolls;
-   html/body use overflow-x: clip, so the page never moves sideways. The
-   negative inline margin lets the first/last card reach the gutters while the
-   content aligns with the page padding. Tablet and desktop keep the
-   multi-column grid above this breakpoint. */
+/* ── Gallery page progressive loading ─────────────────────────────────── */
+.gallery-status {
+  margin: var(--space-md) 0 0;
+  text-align: center;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+}
+/* Programmatic focus target only, never an interactive control. */
+.gallery-status:focus {
+  outline: none;
+}
+.gallery-more {
+  margin: var(--space-sm) 0 0;
+  text-align: center;
+}
+
+/* ── Mobile galleries: homepage carousel + 3-column gallery grid ───────── */
+/* Below the tablet breakpoint the two galleries diverge. The homepage
+   showcase becomes a button-driven carousel showing two cards per view: the
+   track translates by whole pages inside a clipped wrapper, so no scroll
+   container can leak sideways (html/body keep overflow-x: clip as a
+   backstop). The gallery page renders a compact 3-column grid instead of a
+   horizontal track. Carousel controls render only where the island enables
+   them, and stay hidden on tablet and desktop. */
+.showcase-nav {
+  display: none;
+}
+
 @media (max-width: 639px) {
-  .gallery-grid,
+  .showcase-carousel {
+    overflow: hidden;
+    margin-inline: calc(var(--page-padding) * -1);
+    padding-inline: var(--page-padding);
+    padding-bottom: var(--space-2xs);
+  }
   .showcase-grid {
     display: flex;
     flex-wrap: nowrap;
     gap: var(--space-xs);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scroll-padding-inline: var(--page-padding);
-    margin-inline: calc(var(--page-padding) * -1);
-    padding-inline: var(--page-padding);
-    padding-bottom: var(--space-2xs);
-    scrollbar-width: none;
+    margin: 0;
+    padding: 0;
   }
-  .gallery-grid::-webkit-scrollbar,
-  .showcase-grid::-webkit-scrollbar {
-    display: none;
+  .showcase-track {
+    transition: transform var(--motion-settled) var(--ease-default);
   }
-  .gallery-grid > li,
   .showcase-grid > li {
-    flex: 0 0 min(78vw, 20rem);
-    scroll-snap-align: start;
+    flex: 0 0 calc(50% - var(--space-xs) / 2);
+  }
+  .showcase-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    margin-top: var(--space-md);
+  }
+  .showcase-nav .button {
+    min-height: 44px;
+  }
+  .gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2xs);
+  }
+  .gallery-item figcaption {
+    padding: var(--space-xs) var(--space-2xs) var(--space-2xs);
+    font-size: var(--text-caption);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showcase-track {
+    transition: none;
   }
 }

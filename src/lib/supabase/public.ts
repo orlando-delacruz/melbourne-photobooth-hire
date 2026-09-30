@@ -1,8 +1,9 @@
 // Build-time public content from Supabase (Phase 8, DEC-024).
 //
 // Prerendered pages call loadPublicContent() in frontmatter: module rows are
-// read with the anon key (RLS serves highlighted items only, which is exactly
-// the public set), mapped through the same row mappers as the admin, and
+// read with the anon key (RLS scopes the public set; gallery serves every row
+// and the homepage filters `highlight` in code), mapped through the same row
+// mappers as the admin, and
 // built into SiteContent. Any failure (unconfigured env, offline build,
 // query error) falls back to the seed snapshot so the build never breaks.
 // Server-only: import from .astro frontmatter, never from islands.

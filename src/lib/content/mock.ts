@@ -386,7 +386,7 @@ export const mockContent: SiteContent = {
   },
   heroStats: [
     { value: "5", label: "star rated", icon: "star" },
-    { value: "4 hrs", label: "longest hire window", icon: "clock", source: "longest-hire" },
+    { value: "Public Liability", label: "ensured", icon: "shield-check" },
     { value: "HD", label: "prints and QR downloads", icon: "qrcode" },
   ],
   serviceImages: {

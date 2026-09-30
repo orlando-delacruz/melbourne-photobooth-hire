@@ -45,9 +45,12 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
     inset: 0;
     background-size: cover;
     background-position: center;
-    opacity: 0.16;
+    opacity: 0.5;
     z-index: -2;
   }
+  /* Lighter veil so the header photo reads through. A left-to-right ivory wash
+     keeps the copy legible while the right of the image stays visible; a second
+     vertical wash softens the top/bottom edges. */
   .page-header__glow {
     position: absolute;
     inset: 0;
@@ -55,9 +58,15 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
     background:
       radial-gradient(120% 90% at 82% 12%, var(--color-accent-line), transparent 60%),
       linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--color-ivory) 90%, transparent) 0%,
+        color-mix(in srgb, var(--color-ivory) 62%, transparent) 55%,
+        color-mix(in srgb, var(--color-ivory) 38%, transparent) 100%
+      ),
+      linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-ivory) 55%, transparent) 0%,
-        color-mix(in srgb, var(--color-ivory) 88%, transparent) 100%
+        color-mix(in srgb, var(--color-ivory) 30%, transparent) 0%,
+        color-mix(in srgb, var(--color-ivory) 50%, transparent) 100%
       );
   }
   .page-header__inner {

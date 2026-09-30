@@ -217,6 +217,7 @@ function heroIconSvg(name: string, size = 18): string {
     margin: 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: var(--space-2xs);
     color: var(--color-ink);
     font-family: var(--font-display);
@@ -298,25 +299,48 @@ function heroIconSvg(name: string, size = 18): string {
       width: 100%;
       justify-content: center;
     }
-    /* Stats become a tidy three-up row with a single top rule. */
+    /* Stats stay in a single row on phones: equal columns that share the
+       width, with a comfortable column floor; if enough stats are added to
+       exceed the row the strip scrolls sideways instead of crushing labels. */
     .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--space-2xs);
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0;
       padding-top: var(--space-sm);
       border-top: 1px solid var(--color-border-strong);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+    .hero-stats::-webkit-scrollbar {
+      display: none;
     }
     .hero-stat {
-      min-width: 0;
-      padding: 0;
+      flex: 1 1 0;
+      min-width: 5.5rem;
+      padding: 0 var(--space-sm);
+      border-left: 1px solid var(--color-border-strong);
+      scroll-snap-align: start;
+    }
+    .hero-stat:first-child {
+      padding-left: 0;
       border-left: 0;
     }
     .hero-stat-value {
-      font-size: var(--text-h3);
+      font-size: var(--text-h4);
       gap: var(--space-3xs);
+      overflow-wrap: anywhere;
+    }
+    .hero-stat-value svg {
+      width: 14px;
+      height: 14px;
     }
     .hero-stat-label {
-      font-size: var(--text-small);
+      margin-top: 0.15rem;
+      font-size: var(--text-caption);
+      line-height: 1.25;
     }
     .hero-scroll {
       display: none;

@@ -31,6 +31,7 @@ import {
 } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
 import { confirmDestructive } from "../alerts";
+import CmsIcon from "../../live/CmsIcon";
 import type { CmsImage } from "../../../lib/cms/types";
 
 export default function HomeEditor() {
@@ -181,13 +182,21 @@ export default function HomeEditor() {
         >
           {stats.fields.map((field, index) => {
             const base = `hero.stats.${index}` as const;
-            const title = watch(`${base}.value`) || `Stat ${index + 1}`;
+            // Identify the card by its label (the field the editor reads as the
+            // stat's name), falling back to the value. Heading the card by the
+            // value alone made derived/blank-value stats look like they had
+            // lost their label while editing.
+            const label = watch(`${base}.label`);
+            const value = watch(`${base}.value`);
+            const title = label || value || `Stat ${index + 1}`;
             const source = watch(`${base}.source`);
+            const icon = watch(`${base}.icon`);
             return (
               <ItemCard
                 key={field.id}
                 index={index}
                 title={String(title)}
+                idText={value ? String(value) : undefined}
                 disableUp={index === 0}
                 disableDown={index === stats.fields.length - 1}
                 onMoveUp={() => stats.move(index, index - 1)}
@@ -213,17 +222,22 @@ export default function HomeEditor() {
                     />
                   </AdField>
                   <AdField id={`${base}-icon`} label="Icon" error={errorAt(errors, `${base}.icon`)}>
-                    <AdSelect
-                      id={`${base}-icon`}
-                      error={errorAt(errors, `${base}.icon`)}
-                      {...optionalSelect(register, base + ".icon")}
-                    >
-                      {STAT_ICON_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </AdSelect>
+                    <div className="ad-icon-select">
+                      <AdSelect
+                        id={`${base}-icon`}
+                        error={errorAt(errors, `${base}.icon`)}
+                        {...optionalSelect(register, base + ".icon")}
+                      >
+                        {STAT_ICON_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </AdSelect>
+                      <span className="ad-icon-preview" aria-hidden="true">
+                        {icon ? <CmsIcon name={String(icon)} size={18} /> : null}
+                      </span>
+                    </div>
                   </AdField>
                 </div>
                 <div className="ad-grid-2">
@@ -347,6 +361,7 @@ export default function HomeEditor() {
           {steps.fields.map((field, index) => {
             const base = `steps.${index}` as const;
             const title = watch(`${base}.title`) || `Step ${index + 1}`;
+            const icon = watch(`${base}.icon`);
             return (
               <ItemCard
                 key={field.id}
@@ -398,17 +413,22 @@ export default function HomeEditor() {
                   />
                 </AdField>
                 <AdField id={`${base}-icon`} label="Icon" error={errorAt(errors, `${base}.icon`)}>
-                  <AdSelect
-                    id={`${base}-icon`}
-                    error={errorAt(errors, `${base}.icon`)}
-                    {...optionalSelect(register, base + ".icon")}
-                  >
-                    {STEP_ICON_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </AdSelect>
+                  <div className="ad-icon-select">
+                    <AdSelect
+                      id={`${base}-icon`}
+                      error={errorAt(errors, `${base}.icon`)}
+                      {...optionalSelect(register, base + ".icon")}
+                    >
+                      {STEP_ICON_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </AdSelect>
+                    <span className="ad-icon-preview" aria-hidden="true">
+                      {icon ? <CmsIcon name={String(icon)} size={18} /> : null}
+                    </span>
+                  </div>
                 </AdField>
               </ItemCard>
             );

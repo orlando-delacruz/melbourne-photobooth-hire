@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty decision records exist (DEC-001 through DEC-040). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty-five decision records exist (DEC-001 through DEC-045). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -293,13 +293,13 @@ Forty decision records exist (DEC-001 through DEC-040). Existing selections, req
 | DEC-036 | Contextual enquiry: Service/Package selection from CMS | Accepted | 2026-09-28 |
 | DEC-037 | Derived homepage hero stat values | Accepted | 2026-09-28 |
 | DEC-038 | 10 MB upload cap and CMS logo & favicon settings | Accepted | 2026-09-28 |
-<<<<<<< HEAD
-| DEC-039 | Package image removal (unrendered CMS field)              | Accepted   | 2026-09-29 |
-| DEC-040 | Warm coral brand palette replaces "event noir"            | Accepted   | 2026-09-29 |
-=======
 | DEC-039 | Package image removal (unrendered CMS field) | Accepted | 2026-09-29 |
-| DEC-040 | Shared multi-delete for the admin item modules | Accepted | 2026-09-29 |
->>>>>>> release/v1.2
+| DEC-040 | Warm coral brand palette replaces "event noir" | Accepted | 2026-09-29 |
+| DEC-041 | Shared multi-delete for the admin item modules | Accepted | 2026-09-29 |
+| DEC-042 | Gallery admin listing is highlight-first | Accepted | 2026-09-29 |
+| DEC-043 | Gallery public read returns all items; homepage filters highlight | Accepted | 2026-09-29 |
+| DEC-044 | Hero stats: mobile two-up layout, label-first editor card, header photo reveal | Accepted | 2026-09-29 |
+| DEC-045 | Shared CMS icon library (hero stats, steps, services) | Accepted | 2026-09-29 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1014,7 +1014,6 @@ Future records are appended here in ID order with status and date kept current.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator applies the migration once, re-runs `supabase gen types`, and verifies packages admin save + public `/packages` render in the browser.
 
-<<<<<<< HEAD
 ### DEC-040 — Warm coral brand palette replaces "event noir"
 
 - **ID:** DEC-040
@@ -1029,10 +1028,9 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DESIGN-SYSTEM.md` (§5–6, values still Requires Confirmation), `docs/UI-UX.md` (CTA hierarchy), `docs/ARCHITECTURE.md` (§6 rendering), `src/styles/tokens.css`, DEC-006/DEC-007 (the superseded provisional "event noir" visual direction, whose palette this replaces).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Client visual sign-off on the palette; browser QA for contrast, hover/focus states, and responsive behaviour; regenerate the badge/OG assets if any carry the old gold; client confirmation remains outstanding for the "5 star rated" hero claim.
-=======
-### DEC-040 — Shared multi-delete for the admin item modules
+### DEC-041 — Shared multi-delete for the admin item modules
 
-- **ID:** DEC-040
+- **ID:** DEC-041
 - **Title:** Shared multi-delete for the admin item modules
 - **Status:** Accepted
 - **Date:** 2026-09-29
@@ -1044,7 +1042,66 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/UI-UX.md` (admin safety/confirmation, §23–24), `docs/ARCHITECTURE.md` (§11 CMS), `docs/DATA-MODEL.md` (module concepts), `docs/SECURITY.md` (authenticated, authorized CMS writes), DEC-018/DEC-035.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Browser QA (select/subset/select-all/indeterminate, cancel deletes nothing, last-service/package guard, filtered testimonials scope, gallery image actually removed from `cms-media`, keyboard-only flow); no automated test tooling exists for the admin islands (per `docs/TESTING.md`).
->>>>>>> release/v1.2
+
+### DEC-042 — Gallery admin listing is highlight-first
+
+- **ID:** DEC-042
+- **Title:** Gallery admin listing is highlight-first
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** The Gallery module already had a `highlight` boolean (controls homepage showcase membership) but the admin list ignored it: rows rendered purely in `sort_order`, so a non-highlighted image could sit above highlighted ones, and toggling highlight left the item in place. The client asked that highlighted images always list above non-highlighted ones, and that toggling highlight automatically relocate the item (unhighlighted → bottom of the list; highlighted → into the highlighted group) without manual reordering, persisting across refresh.
+- **Decision:** Two-part, no new schema. (1) The admin/shared loader `loadModuleItems("mod-gallery")` now orders by `highlight` descending then `sort_order`, so the listing is highlight-first at the data level for legacy/unsorted rows too. (2) `GalleryModuleEditor` reorders the array before the existing whole-list save via `orderByHighlight(items, movedId?)`: a stable partition into highlighted then non-highlighted that preserves relative order within each group, with `movedId` re-inserted at the end of its group. On edit the item is repositioned only when its highlight value actually changed; on create it is appended to the end of its group. Because `saveModuleItems` already writes `sort_order` from array order, the grouping is persisted with no extra database write (the save already rewrites the rows). Reorder arrows are confined to a highlight group (`canMove`) so manual moves cannot break the grouping; the toggle is the grouping control.
+- **Alternatives considered:** Query-only ordering (`order(highlight desc, sort_order)`) with no repositioning — rejected (a newly unhighlighted item would sort by its old `sort_order`, not move to the bottom as required). A separate admin-order column — rejected (new schema, more writes, and the request is satisfied by the existing `sort_order`). Normalising on every save regardless of change — rejected (would make untouched rows jump on unrelated edits).
+- **Rationale:** Reuses the existing `sort_order` and save path, so there is no schema change, no extra query, and no additional write. Stable partitioning keeps within-group order intact, and the query ordering makes the grouping correct even before the next save.
+- **Consequences:** Public **homepage** showcase is unchanged (it already filters `highlight` and lists by `sort_order`; the stable partition preserves the relative order of highlighted rows). The public **gallery page** lists all rows by `sort_order`, so after a gallery save its order becomes highlight-grouped as a side effect; called out here for confirmation. No `GalleryItem` fields, caption/image handling, lightbox, fetchers, or public SSR loaders change.
+- **Related documents:** `docs/DATA-MODEL.md` (module concepts, ordering Confirmation Required §8), `docs/ARCHITECTURE.md` (§11 CMS, §7 content/render), `docs/UI-UX.md` (admin list behaviour §23), `src/lib/supabase/modules.ts`, `src/components/admin/editors/GalleryModuleEditor.tsx`, DEC-033 (realtime whole-list refetch), DEC-040/DEC-041.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Confirm whether the public gallery page should adopt the same highlight-first order or keep pure `sort_order` (currently it inherits the grouped order after any gallery save). Browser QA that refresh preserves grouping, arrows disable at the group boundary, and the homepage order is unchanged.
+
+### DEC-043 — Gallery public read returns all items; homepage filters highlight
+
+- **ID:** DEC-043
+- **Title:** Gallery public read returns all items; homepage filters highlight
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** The public Gallery page showed only the highlighted images (9 of 13). The anonymous RLS policy on `gallery_items` was `using (highlight = true)` (`supabase/rls.sql`), so the anon key used by both the SSR loader (`loadPublicModules`) and the browser fetcher (`fetchGallery`) never received non-highlighted rows. The intended split is per-surface: homepage shows highlighted only, the dedicated `/gallery` page shows everything. The frontend already implemented that split (`LiveShowcaseSection` filters `highlight !== false`; `LiveGallerySection` renders every row), so the defect was purely the over-restrictive read policy.
+- **Decision:** Serve every `gallery_items` row to anonymous readers and move the homepage filter entirely into code. `supabase/rls.sql` replaces the `"Public read highlighted gallery"` policy (`using (highlight = true)`) with `"Public read gallery"` (`for select to anon using (true)`), matching `event_types`/`page_contents`. New idempotent migration `supabase/migration-gallery-public-read-all.sql` drops the old policy and creates the new one; run once in the Supabase SQL editor. Services, packages and faqs keep their highlighted-only public read (their pages use the same highlighted set); no code, schema or `GalleryItem` change.
+- **Alternatives considered:** Keep the anon policy and read the gallery via a service-role server call — rejected (adds a privileged path for ordinary public content and diverges from the other public tables). Keep RLS highlighted-only and mark gallery rows "published" separately — rejected (no publishing concept exists; `highlight` is a homepage-curation flag, not a visibility flag). Filter the homepage with a dedicated query — rejected (the existing code filter is correct and cheaper).
+- **Rationale:** One policy change restores the intended per-surface behaviour, keeps the showcase filter in code where it is already tested, and adds no new abstraction.
+- **Consequences:** The 4 non-highlighted images return to `/gallery` after the migration is applied; the homepage count stays at the highlighted subset. Anon can read all gallery rows (all are intentional public content). Realtime on `gallery_items` was already enabled (`migration-realtime.sql`) and now delivers inserts/updates for non-highlighted rows too, which the gallery page renders and the homepage ignores.
+- **Related documents:** `docs/SECURITY.md` (RLS principles §4, §11), `docs/DATA-MODEL.md` (gallery concept §5.4), `docs/ARCHITECTURE.md` (§13 Supabase, §17 media), `supabase/rls.sql`, `supabase/migration-gallery-public-read-all.sql`, `src/components/islands/LiveShowcaseSection.tsx`, `src/components/islands/LiveGallerySection.tsx`, DEC-042.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator runs `migration-gallery-public-read-all.sql` once; verify `/gallery` shows all 13 and the homepage shows the 9 highlighted after refresh.
+
+### DEC-044 — Hero stats: mobile two-up layout, label-first editor card, header photo reveal
+
+- **ID:** DEC-044
+- **Title:** Hero stats: mobile two-up layout, label-first editor card, header photo reveal
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** Three related homepage/header issues. (1) At ≤639px `.hero-stats` was a fixed three-up grid, so long labels ("prints and QR downloads") and wordy values crowded and a fourth stat orphaned; the client asked for a better mobile layout. (2) The client wanted the "longest hire window" hero stat replaced with a "Public Liability ensured" stat; the live `home` blob had been saved as the mangled element `{"value":"Liability","label":"Ensured"}`. (3) `HomeEditor` headed each hero-stat card with `watch(hero.stats.N.value)`, so a derived stat (value hidden) or a blank-value stat showed a generic "Stat N" — reading as if the label had vanished while editing. (4) The non-homepage `PageHeader` photo was barely visible: `.page-header__media { opacity: 0.16 }` under a heavy `ivory 55%→88%` veil.
+- **Decision:** Four targeted fixes. **Mobile hero stats:** ≤639px uses `grid-template-columns: repeat(2, minmax(0, 1fr))` with `gap: var(--space-sm) var(--space-md)` and `overflow-wrap: anywhere`; base `.hero-stat-value` gains `flex-wrap: wrap` (both `live.css` and the `Hero.astro` mirror). **Stat content:** replace the longest-hire stat with `{ value: "Public Liability", label: "ensured" }` in `mock.ts` `heroStats`, and a new idempotent `supabase/migration-hero-stat-liability.sql` rewrites the mangled live element (matched on value `Liability` + label `Ensured`). **Editor:** the stat card is now identified by `label || value || "Stat N"`, with the value shown as the card's `idText`, so the field being edited always names the card. **Header photo:** `.page-header__media` opacity `0.16 → 0.5`, and `.page-header__glow` becomes a left-to-right ivory wash (90% → 62% → 38%) plus a light vertical wash, so the copy stays readable on the left while the photo reads on the right (both `live.css` and `PageHeader.astro`).
+- **Alternatives considered:** Mobile one-up column — rejected (too tall, wastes the wide stat values). Keeping the editor card headed by value — rejected (the reported "label disappeared" symptom). Raising media opacity without changing the veil — rejected (dark text loses contrast over a bright photo). A shield icon for the liability stat — deferred (would touch the icon enum in `types.ts`/`schemas.ts`/`groups.tsx` and the icon maps; not requested).
+- **Rationale:** Small CSS + editor-ID changes fix the mobile density and the "vanishing label" confusion; the default seed and an idempotent migration keep fresh installs and the live site consistent; the header veil change reveals the imagery while preserving AA text contrast on the copy side.
+- **Consequences:** Homepage hero stats now read as a 2×2 (4) or 2+1 (3) grid on phones; long values wrap instead of overflowing. Non-homepage page headers show their photo. `mock.ts` no longer carries the `longest-hire` source example (the DEC-037 feature remains, just unused by seed). The live home row is repaired once the migration runs.
+- **Related documents:** `docs/UI-UX.md` (§7 homepage, §8–12 page headers), `docs/DESIGN-SYSTEM.md` (§7 type scale, §20 media), `docs/ARCHITECTURE.md` (§6 rendering), `src/styles/live.css`, `src/components/Hero.astro`, `src/components/PageHeader.astro`, `src/components/admin/editors/HomeEditor.tsx`, `src/lib/content/mock.ts`, `supabase/migration-hero-stat-liability.sql`, DEC-037.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Confirm the value/label split for the liability stat (currently big "Public Liability", small "ensured"; wording "ensured" kept from the client) and whether to restore the dropped "1 day typical reply time" stat. Operator runs `migration-hero-stat-liability.sql` once. Browser QA of the 2-up mobile stats and the page-header photo contrast.
+
+### DEC-045 — Shared CMS icon library (hero stats, steps, services)
+
+- **ID:** DEC-045
+- **Title:** Shared CMS icon library (hero stats, steps, services)
+- **Status:** Accepted
+- **Date:** 2026-09-29
+- **Context:** The client asked for a proper icon for the "Public Liability ensured" hero stat and, better, for admins to pick any icon from a library. Icons were three separate hardcoded 3–4-name unions (`HeroStat.icon` camera/clock/qrcode/star; `ProcessStep.icon` message/palette/sparkles; `ServiceItem.icon` camera/users/video), three Zod enums, three admin option arrays, and hand-authored inline SVG path maps (`components/live/icons.ts`, `Hero.astro`, `Card.astro`) rendered with `dangerouslySetInnerHTML`. Adding one icon meant touching all of them.
+- **Decision:** One curated Lucide-backed library shared by every CMS icon field. New `src/lib/cms/icons.ts` defines `ICON_NAMES` (32 keys, including all legacy keys) and `ICON_OPTIONS` (value + label); `CmsIconName` replaces the three unions in `cms/types.ts` and `content/types.ts`; the three Zod enums become `z.enum(ICON_NAMES)`. New `src/components/live/CmsIcon.tsx` maps each key to a statically imported Lucide component and renders nothing for blank/unknown keys. `LiveHomeHero`, `LiveSteps`, `LiveCard`, `LiveServiceSections` and `LiveServiceJump` render `<CmsIcon>` instead of `cardIconSvg` + `dangerouslySetInnerHTML` (also removing `innerHTML` for CMS values). The admin `SERVICE_ICON_OPTIONS`/`STEP_ICON_OPTIONS`/`STAT_ICON_OPTIONS` all alias `ICON_OPTIONS`, and each icon select gains a live preview chip (`.ad-icon-select` / `.ad-icon-preview`). The liability stat gets `shield-check` in the seed (`mock.ts`) plus new idempotent `supabase/migration-hero-stat-liability-icon.sql`, which matches the live stat by "liability" in label/value and overrides its icon.
+- **Alternatives considered:** Add a single hand-written ShieldCheck path — rejected (does not deliver the library the client asked for). Full Lucide picker via `DynamicIcon`/`dynamicIconImports` — rejected (per-icon lazy chunks, no tree-shaking, larger surface). Separate libraries per field — rejected (drift; the client wants one library everywhere).
+- **Rationale:** One source of keys/labels/components makes every CMS icon field consistent, removes three hand-maintained SVG maps, and lets the admin choose from a curated set using the already-selected Lucide dependency (no new package). Static imports keep the set tree-shakeable; unknown/legacy keys render nothing rather than breaking.
+- **Consequences:** The homepage/services/steps islands now pull the shared icon chunk (curated 32, tree-shaken). Existing saved icon values stay valid (legacy keys included). `components/live/icons.ts` `cardIconSvg` becomes unused by the refactored islands (kept for now; `CHECK_SVG_INNER` still used). `Hero.astro`/`Card.astro` are unrendered and keep their legacy path maps (known mirror drift). The live liability stat shows the shield only after `migration-hero-stat-liability-icon.sql` runs.
+- **Related documents:** `docs/UI-UX.md` (admin editing §23), `docs/DESIGN-SYSTEM.md` (icons), `docs/ARCHITECTURE.md` (§6 rendering, §8 islands), `docs/DATA-MODEL.md` (module concepts), `src/lib/cms/icons.ts`, `src/components/live/CmsIcon.tsx`, `supabase/migration-hero-stat-liability-icon.sql`, DEC-037/DEC-044.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator runs `migration-hero-stat-liability-icon.sql` once; browser QA that the shield renders on the homepage, the admin dropdown lists all options with previews, and old content still renders. Optional follow-up: swap the dropdown for a visual grid picker and/or retire the now-unused `cardIconSvg` map.
 
 ## 22. Related Documentation
 

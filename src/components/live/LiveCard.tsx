@@ -3,10 +3,11 @@
 // media, head, title, tagline, meta, price split, description, highlights,
 // inclusions with check glyphs, CTA button). Styles from styles/live.css.
 import LiveButton from "./LiveButton";
-import { cardIconSvg } from "./icons";
+import CmsIcon from "./CmsIcon";
 import type { PackageCardBadge } from "../../lib/cms/types";
+import type { CmsIconName } from "../../lib/cms/icons";
 
-export type LiveCardIcon = "camera" | "users" | "video";
+export type LiveCardIcon = CmsIconName;
 
 /** Image badges overlaying the card's top-right corner. */
 const CARD_BADGE_IMAGES: Record<Exclude<PackageCardBadge, "none">, { src: string; alt: string }> = {
@@ -33,10 +34,6 @@ export interface LiveCardProps {
   /** Image badge shown in the card's top-right corner. */
   cardBadge?: PackageCardBadge;
   cmsId?: string;
-}
-
-function iconSvg(name: LiveCardIcon): string {
-  return cardIconSvg(name, 20);
 }
 
 const STAR_SVG =
@@ -110,7 +107,9 @@ export default function LiveCard({
         {icon || badge ? (
           <div className="card-head">
             {icon ? (
-              <span className="card-icon" dangerouslySetInnerHTML={{ __html: iconSvg(icon) }} />
+              <span className="card-icon">
+                <CmsIcon name={icon} size={20} />
+              </span>
             ) : null}
             {badge ? (
               <p className="card-badge">
@@ -137,15 +136,15 @@ export default function LiveCard({
         {description ? <p className="card-description">{description}</p> : null}
         {highlights.length > 0 ? (
           <ul className="card-list card-highlights">
-            {highlights.map((item) => (
-              <li key={item}>{item}</li>
+            {highlights.map((item, index) => (
+              <li key={`${index}-${item}`}>{item}</li>
             ))}
           </ul>
         ) : null}
         {items.length > 0 ? (
           <ul className="card-list card-inclusions">
-            {items.map((item) => (
-              <li key={item}>
+            {items.map((item, index) => (
+              <li key={`${index}-${item}`}>
                 {CHECK_SVG}
                 <span>{item}</span>
               </li>

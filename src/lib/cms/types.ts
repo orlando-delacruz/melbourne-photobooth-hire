@@ -10,6 +10,8 @@
 // The public site reads live module data at build time (see
 // lib/supabase/public.ts) and falls back to this seed when unreachable.
 
+import type { CmsIconName } from "./icons";
+
 export type CmsPageKey = "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact";
 
 export type StoreSectionKey =
@@ -132,7 +134,7 @@ export type HeroStatSource = "services" | "longest-hire";
 export interface HeroStat {
   value: string;
   label: string;
-  icon?: "camera" | "clock" | "qrcode" | "star";
+  icon?: CmsIconName;
   /** When set, the value is computed at render from live module data. */
   source?: HeroStatSource;
 }
@@ -141,7 +143,7 @@ export interface ProcessStep {
   id: string;
   title: string;
   summary: string;
-  icon?: "message" | "palette" | "sparkles";
+  icon?: CmsIconName;
 }
 
 export interface TestimonialContent {
@@ -268,7 +270,7 @@ export interface ServiceItem {
   tagline?: string;
   summary: string;
   highlights: string[];
-  icon?: "camera" | "users" | "video";
+  icon?: CmsIconName;
   image: CmsImage;
   highlight: boolean;
 }

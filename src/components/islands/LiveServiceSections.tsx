@@ -9,7 +9,8 @@ import { serviceBadgeText } from "../../lib/cms/types";
 import type { ServiceItem } from "../../lib/cms/types";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
-import { CHECK_SVG_INNER, cardIconSvg } from "../live/icons";
+import { CHECK_SVG_INNER } from "../live/icons";
+import CmsIcon from "../live/CmsIcon";
 import LiveButton from "../live/LiveButton";
 import Reveal from "./Reveal";
 import { useLiveRows } from "./useLiveSync";
@@ -42,11 +43,9 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
                   decoding="async"
                 />
               ) : null}
-              <span
-                className="service-media-badge"
-                aria-hidden="true"
-                dangerouslySetInnerHTML={{ __html: cardIconSvg(service.icon, 24) }}
-              />
+              <span className="service-media-badge" aria-hidden="true">
+                <CmsIcon name={service.icon} size={24} />
+              </span>
             </div>
           </Reveal>
           <Reveal className="service-cell service-cell--body" delay={0.08}>
@@ -63,8 +62,8 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
               <p className="service-summary">{service.summary}</p>
               {service.highlights && service.highlights.length > 0 ? (
                 <ul className="service-highlights">
-                  {service.highlights.map((item) => (
-                    <li key={item}>
+                  {service.highlights.map((item, index) => (
+                    <li key={`${index}-${item}`}>
                       <span
                         className="service-check"
                         dangerouslySetInnerHTML={{ __html: checkSvg() }}

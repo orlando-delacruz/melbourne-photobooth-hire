@@ -478,8 +478,8 @@ export function Notice({ tone, title, children, list }: NoticeProps) {
         {children}
         {list && list.length > 0 ? (
           <ul>
-            {list.map((item) => (
-              <li key={item}>{item}</li>
+            {list.map((item, index) => (
+              <li key={`${index}-${item}`}>{item}</li>
             ))}
           </ul>
         ) : null}

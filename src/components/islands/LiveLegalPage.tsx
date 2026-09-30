@@ -29,16 +29,16 @@ export default function LiveLegalPage({ pageKey, initial }: LiveLegalPageProps) 
             <p key={`${index}-${paragraph.slice(0, 24)}`}>{paragraph}</p>
           ))}
 
-          {page.sections.map((section) => (
-            <Fragment key={section.heading}>
+          {page.sections.map((section, sectionIndex) => (
+            <Fragment key={`${sectionIndex}-${section.heading}`}>
               <h2>{section.heading}</h2>
               {section.blocks.map((block, index) =>
                 block.kind === "paragraph" ? (
                   <p key={`${index}-${block.text.slice(0, 24)}`}>{block.text}</p>
                 ) : (
                   <ul key={index}>
-                    {block.items.map((item) => (
-                      <li key={item}>{item}</li>
+                    {block.items.map((item, itemIndex) => (
+                      <li key={`${itemIndex}-${item}`}>{item}</li>
                     ))}
                   </ul>
                 ),

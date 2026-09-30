@@ -21,7 +21,9 @@ import {
   useModuleList,
   useModuleSelection,
 } from "../ModuleCrud";
+import CmsIcon from "../../live/CmsIcon";
 import { confirmDestructive, notifySuccess } from "../alerts";
+import type { CmsIconName } from "../../../lib/cms/icons";
 
 const SERVICE_BADGE_OPTIONS: { value: ServiceBadgeType; label: string }[] = [
   { value: "basic", label: "Basic" },
@@ -227,26 +229,28 @@ export default function ServicesModuleEditor() {
           ) : null}
           <div className="ad-grid-2">
             <AdField id="svc-icon" label="Icon" error={err("icon")}>
-              <AdSelect
-                id="svc-icon"
-                value={draft.icon ?? ""}
-                error={err("icon")}
-                onChange={(e) =>
-                  setDraft({
-                    ...draft,
-                    icon:
-                      e.target.value === ""
-                        ? undefined
-                        : (e.target.value as "camera" | "users" | "video"),
-                  })
-                }
-              >
-                {SERVICE_ICON_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </AdSelect>
+              <div className="ad-icon-select">
+                <AdSelect
+                  id="svc-icon"
+                  value={draft.icon ?? ""}
+                  error={err("icon")}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      icon: e.target.value === "" ? undefined : (e.target.value as CmsIconName),
+                    })
+                  }
+                >
+                  {SERVICE_ICON_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </AdSelect>
+                <span className="ad-icon-preview" aria-hidden="true">
+                  {draft.icon ? <CmsIcon name={draft.icon} size={18} /> : null}
+                </span>
+              </div>
             </AdField>
             <AdField
               id="svc-tagline"

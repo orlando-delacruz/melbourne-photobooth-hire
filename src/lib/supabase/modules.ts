@@ -189,7 +189,13 @@ export async function loadModuleItems<T extends { id: string }>(
       return data.map(packageFromRow) as unknown as T[];
     }
     case "mod-gallery": {
-      const { data, error } = await supabase.from("gallery_items").select("*").order("sort_order");
+      // Admin listing is highlight-first, then display order. Public fetchers
+      // (lib/realtime/fetchers, lib/supabase/public) stay sort_order-only.
+      const { data, error } = await supabase
+        .from("gallery_items")
+        .select("*")
+        .order("highlight", { ascending: false })
+        .order("sort_order");
       if (error) throw new Error("Module could not be loaded.");
       return data.map(galleryFromRow) as unknown as T[];
     }

@@ -6,6 +6,7 @@
 
 import * as z from "zod";
 import { IMAGE_MAX_BYTES } from "./storage";
+import { ICON_NAMES } from "./icons";
 
 /** Short required text such as names, titles and labels. */
 function shortText(label: string, max = 200) {
@@ -164,7 +165,7 @@ export const homeSchema = z.object({
             // the stored value is optional; manual stats still require one.
             value: z.string().trim().max(40, "Each stat value must be 40 characters or fewer."),
             label: shortText("each stat label", 120),
-            icon: z.enum(["camera", "clock", "qrcode", "star"]).optional(),
+            icon: z.enum(ICON_NAMES).optional(),
             source: z.enum(["services", "longest-hire"]).optional(),
           })
           .refine((stat) => Boolean(stat.source) || stat.value.length > 0, {
@@ -188,7 +189,7 @@ export const homeSchema = z.object({
         id: z.string(),
         title: shortText("the step title"),
         summary: longText("the step summary", 1000),
-        icon: z.enum(["message", "palette", "sparkles"]).optional(),
+        icon: z.enum(ICON_NAMES).optional(),
       }),
     )
     .min(1, "Add at least one step.")
@@ -383,7 +384,7 @@ export const servicesModuleSchema = z
         tagline: optionalText(200),
         summary: longText("the service summary", 1000),
         highlights: z.array(shortText("each highlight", 200)).max(12),
-        icon: z.enum(["camera", "users", "video"]).optional(),
+        icon: z.enum(ICON_NAMES).optional(),
         image: imageSchema,
         highlight: z.boolean(),
       })

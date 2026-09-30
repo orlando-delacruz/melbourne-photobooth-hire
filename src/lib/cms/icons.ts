@@ -1,0 +1,82 @@
+// Curated icon library for CMS-selectable icons (hero stats, process steps,
+// services). One shared source of keys and labels so the admin dropdown, the
+// Zod schemas and the renderers can never drift. Keys are stable storage
+// values; the renderer maps them to Lucide components in
+// components/live/CmsIcon.tsx.
+//
+// Legacy keys (camera, clock, qrcode, star, users, video, message, palette,
+// sparkles) are preserved so previously saved content keeps rendering.
+
+export const ICON_NAMES = [
+  "camera",
+  "users",
+  "video",
+  "clock",
+  "qrcode",
+  "star",
+  "shield-check",
+  "badge-check",
+  "sparkles",
+  "heart",
+  "calendar-days",
+  "map-pin",
+  "phone",
+  "mail",
+  "circle-check",
+  "music",
+  "party-popper",
+  "gift",
+  "ticket",
+  "printer",
+  "download",
+  "wifi",
+  "utensils-crossed",
+  "wine",
+  "car",
+  "briefcase",
+  "cake",
+  "gem",
+  "message",
+  "palette",
+  "info",
+  "flame",
+] as const;
+
+export type CmsIconName = (typeof ICON_NAMES)[number];
+
+/** Options for the admin icon selects; blank is the "no icon" choice. */
+export const ICON_OPTIONS: { value: CmsIconName | ""; label: string }[] = [
+  { value: "", label: "None" },
+  { value: "camera", label: "Camera" },
+  { value: "users", label: "People" },
+  { value: "video", label: "Video" },
+  { value: "clock", label: "Clock" },
+  { value: "qrcode", label: "QR code" },
+  { value: "star", label: "Star" },
+  { value: "shield-check", label: "Shield check (insurance)" },
+  { value: "badge-check", label: "Badge check" },
+  { value: "sparkles", label: "Sparkles" },
+  { value: "heart", label: "Heart" },
+  { value: "calendar-days", label: "Calendar" },
+  { value: "map-pin", label: "Location pin" },
+  { value: "phone", label: "Phone" },
+  { value: "mail", label: "Email" },
+  { value: "circle-check", label: "Check circle" },
+  { value: "music", label: "Music" },
+  { value: "party-popper", label: "Party popper" },
+  { value: "gift", label: "Gift" },
+  { value: "ticket", label: "Ticket" },
+  { value: "printer", label: "Printer" },
+  { value: "download", label: "Download" },
+  { value: "wifi", label: "Wi-Fi" },
+  { value: "utensils-crossed", label: "Food & drink" },
+  { value: "wine", label: "Wine" },
+  { value: "car", label: "Car" },
+  { value: "briefcase", label: "Briefcase" },
+  { value: "cake", label: "Cake" },
+  { value: "gem", label: "Gem" },
+  { value: "message", label: "Message" },
+  { value: "palette", label: "Palette" },
+  { value: "info", label: "Information" },
+  { value: "flame", label: "Flame" },
+];

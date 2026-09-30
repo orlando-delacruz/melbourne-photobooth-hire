@@ -28,6 +28,7 @@ drop policy if exists "Admin full access services" on public.services;
 drop policy if exists "Public read highlighted packages" on public.packages;
 drop policy if exists "Admin full access packages" on public.packages;
 drop policy if exists "Public read highlighted gallery" on public.gallery_items;
+drop policy if exists "Public read gallery" on public.gallery_items;
 drop policy if exists "Admin full access gallery" on public.gallery_items;
 drop policy if exists "Public read highlighted faqs" on public.faqs;
 drop policy if exists "Admin full access faqs" on public.faqs;
@@ -45,7 +46,10 @@ drop policy if exists "Admin full access inquiries" on public.inquiries;
 drop policy if exists "Users read own admin row" on public.admin_users;
 drop policy if exists "Admins read admin list" on public.admin_users;
 
--- Modules: public sees highlighted items only; admins manage everything.
+-- Modules: services, packages and faqs show highlighted items only to the
+-- public; gallery is the exception — the /gallery page shows every image and
+-- the homepage filters `highlight = true` in code, so the anon policy reads
+-- all gallery rows. Admins manage everything.
 create policy "Public read highlighted services" on public.services
   for select to anon using (highlight = true);
 create policy "Admin full access services" on public.services
@@ -56,8 +60,8 @@ create policy "Public read highlighted packages" on public.packages
 create policy "Admin full access packages" on public.packages
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
-create policy "Public read highlighted gallery" on public.gallery_items
-  for select to anon using (highlight = true);
+create policy "Public read gallery" on public.gallery_items
+  for select to anon using (true);
 create policy "Admin full access gallery" on public.gallery_items
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
@@ -113,6 +117,8 @@ create policy "Admins read admin list" on public.admin_users
 
 -- Manual test matrix (run as anon / authed non-admin / authed admin):
 --   anon: select highlighted services ok; select non-highlighted hidden;
+--   anon: select all gallery rows (highlighted and non-highlighted) ok;
+--     the homepage showcase filters highlight = true in code;
 --   anon: select approved testimonials ok; pending/rejected hidden;
 --   anon: insert/update/delete on testimonials denied (endpoint only);
 --   anon: insert into inquiries ok; select from inquiries denied;

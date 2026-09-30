@@ -262,6 +262,36 @@ body.page-home {
   color: var(--color-ink);
 }
 
+/* Client direction: every secondary "light" button on the homepage adopts the
+   primary (coral) treatment. Scoped to the homepage surface so the same
+   button variant keeps its quiet secondary look elsewhere. */
+body.page-home .button--secondary.button--tone-light {
+  background: var(--color-coral);
+  border-color: transparent;
+  color: var(--color-on-coral);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+body.page-home .button--secondary.button--tone-light:hover {
+  background: var(--color-coral-strong);
+  border-color: transparent;
+  color: var(--color-on-coral);
+  box-shadow: var(--elevation-2);
+}
+/* Exception: the hero's "View packages" keeps its quiet secondary treatment.
+   Higher specificity than the homepage rule above, so order does not matter. */
+body.page-home .hero-ctas .button--secondary.button--tone-light {
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  border-color: var(--color-border-strong);
+  color: var(--color-ink);
+  box-shadow: none;
+}
+body.page-home .hero-ctas .button--secondary.button--tone-light:hover {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+  box-shadow: var(--elevation-1);
+}
+
 /* ── CMS brand logo (Site Wide Settings) ────────────────────────────── */
 
 /* When a logo is uploaded, it replaces the built-in mark + wordmark in the

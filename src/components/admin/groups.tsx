@@ -6,6 +6,7 @@ import type { FieldErrors } from "react-hook-form";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { AdField, ImageField, TextArea, TextInput } from "./fields";
 import type { CmsImage } from "../../lib/cms/types";
+import { ICON_OPTIONS } from "../../lib/cms/icons";
 import { errMsg } from "./useSectionEditor";
 
 export { errMsg };
@@ -33,27 +34,11 @@ export function errorAt(errors: FieldErrors, path: string): string | undefined {
   return errMsg(current);
 }
 
-export const SERVICE_ICON_OPTIONS = [
-  { value: "", label: "None" },
-  { value: "camera", label: "Camera (premium booth)" },
-  { value: "users", label: "People (roaming booth)" },
-  { value: "video", label: "Video (360 booth)" },
-];
-
-export const STEP_ICON_OPTIONS = [
-  { value: "", label: "None" },
-  { value: "message", label: "Message" },
-  { value: "palette", label: "Palette" },
-  { value: "sparkles", label: "Sparkles" },
-];
-
-export const STAT_ICON_OPTIONS = [
-  { value: "", label: "None" },
-  { value: "camera", label: "Camera" },
-  { value: "clock", label: "Clock" },
-  { value: "qrcode", label: "QR code" },
-  { value: "star", label: "Star" },
-];
+/* Every CMS icon field (services, process steps, hero stats) picks from one
+   curated Lucide library so the admin can choose any supported icon. */
+export const SERVICE_ICON_OPTIONS = ICON_OPTIONS;
+export const STEP_ICON_OPTIONS = ICON_OPTIONS;
+export const STAT_ICON_OPTIONS = ICON_OPTIONS;
 
 /** Hero stat value sources (DEC-037): blank is a manually typed value. */
 export const STAT_SOURCE_OPTIONS = [
