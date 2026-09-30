@@ -17,6 +17,15 @@
   place-items: center;
   padding: clamp(1rem, 4vw, 2rem);
   color-scheme: dark;
+  /* Entrance/exit are CSS-driven (no animation library). `.rv--in` is added on
+     the frame after mount and removed on close; the island unmounts after the
+     exit transition (EXIT_MS in ReviewModal.tsx). */
+  opacity: 0;
+  transition: opacity 300ms var(--ease-default);
+}
+
+.rv--in {
+  opacity: 1;
 }
 
 .rv-backdrop {
@@ -39,6 +48,16 @@
   box-shadow: var(--elevation-3);
   padding: clamp(1.25rem, 4vw, 2rem);
   color: var(--color-on-ink);
+  opacity: 0;
+  transform: scale(0.965) translateY(14px);
+  transition:
+    opacity 460ms var(--ease-default),
+    transform 460ms var(--ease-default);
+}
+
+.rv--in .rv-panel {
+  opacity: 1;
+  transform: none;
 }
 
 .rv-head {

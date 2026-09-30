@@ -66,6 +66,10 @@ export interface CmsImage {
   src: string;
   alt: string;
   caption?: string;
+  /** Intrinsic pixel size of the stored file, captured at upload so renderers
+      can set explicit width/height attributes (reserves layout space). */
+  width?: number;
+  height?: number;
 }
 
 /** Editable copy for a SectionHeading block (eyebrow, title, lede). */

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Menu, X } from "lucide-react";
 
 /**
  * Mobile navigation island. Styling lives in styles/mobile-nav.css
  * (token-backed, server-rendered) rather than styled-components, so the
- * trigger and panel are styled before hydration.
+ * trigger and panel are styled before hydration. The panel entrance/exit is
+ * CSS-driven (no animation library).
  */
 
 export interface NavItem {
@@ -20,6 +20,8 @@ interface Props {
 }
 
 const MENU_ID = "mobile-menu";
+/** Must match the exit transition on .mn-panel (styles/mobile-nav.css). */
+const EXIT_MS = 220;
 
 function MenuList({
   items,
@@ -54,11 +56,40 @@ function MenuList({
 
 export default function MobileNav({ items, currentPath, ctaHref }: Props) {
   const [open, setOpen] = useState(false);
+  const [shown, setShown] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const reduceMotion = useReducedMotion();
+  const exitTimerRef = useRef<number | undefined>(undefined);
 
-  const close = useCallback(() => setOpen(false), []);
-  const toggle = useCallback(() => setOpen((prev) => !prev), []);
+  const close = useCallback(() => {
+    setShown(false);
+    window.clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = window.setTimeout(() => setOpen(false), EXIT_MS);
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (!open) {
+      setOpen(true);
+      return;
+    }
+    // During the close transition the panel is still mounted: cancel the
+    // unmount and restore instead of starting another close.
+    if (!shown) {
+      window.clearTimeout(exitTimerRef.current);
+      setShown(true);
+      return;
+    }
+    close();
+  }, [open, shown, close]);
+
+  // Add the entrance class on the frame after the panel mounts so the CSS
+  // transition runs.
+  useEffect(() => {
+    if (!open) return;
+    const frame = window.requestAnimationFrame(() => setShown(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [open]);
+
+  useEffect(() => () => window.clearTimeout(exitTimerRef.current), []);
 
   useEffect(() => {
     if (!open) return;
@@ -97,28 +128,15 @@ export default function MobileNav({ items, currentPath, ctaHref }: Props) {
       >
         <Icon size={20} aria-hidden="true" />
       </button>
-      <AnimatePresence initial={false}>
-        {open ? (
-          reduceMotion ? (
-            <nav id={MENU_ID} aria-label="Mobile" className="mn-panel">
-              {content}
-            </nav>
-          ) : (
-            <motion.nav
-              key="panel"
-              id={MENU_ID}
-              aria-label="Mobile"
-              className="mn-panel"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {content}
-            </motion.nav>
-          )
-        ) : null}
-      </AnimatePresence>
+      {open ? (
+        <nav
+          id={MENU_ID}
+          aria-label="Mobile"
+          className={shown ? "mn-panel mn-panel--in" : "mn-panel"}
+        >
+          {content}
+        </nav>
+      ) : null}
     </>
   );
 }

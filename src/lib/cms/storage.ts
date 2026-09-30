@@ -71,16 +71,28 @@ async function withDecodedImage<T>(
   }
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number,
+): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), type, quality));
 }
 
+/** An optimized upload plus the exact dimensions of the stored bytes. */
+interface OptimizedImage {
+  file: File;
+  width?: number;
+  height?: number;
+}
+
 /**
- * Downscales and re-encodes an image for web delivery. Returns the original
- * file when the browser cannot decode it, when no downscale is needed and it
- * is already efficient, or when re-encoding did not produce a smaller file.
+ * Downscales and re-encodes an image for web delivery. Falls back to the
+ * original file when the browser cannot decode it or when re-encoding did not
+ * produce a smaller file. The returned width/height always describe the bytes
+ * that will actually be stored (used for explicit <img> dimensions).
  */
-async function optimizeImageFile(file: File, maxEdge: number): Promise<File> {
+async function optimizeImageFile(file: File, maxEdge: number): Promise<OptimizedImage> {
   try {
     return await withDecodedImage(file, async (source, width, height) => {
       const longest = Math.max(width, height);
@@ -93,15 +105,18 @@ async function optimizeImageFile(file: File, maxEdge: number): Promise<File> {
       canvas.width = targetW;
       canvas.height = targetH;
       const ctx = canvas.getContext("2d");
-      if (!ctx) return file;
+      if (!ctx) return { file, width, height };
       ctx.drawImage(source, 0, 0, targetW, targetH);
       const blob = await canvasToBlob(canvas, "image/webp", 0.82);
-      if (!blob) return file;
-      if (blob.size >= file.size) return file;
-      return new File([blob], `image.webp`, { type: "image/webp" });
+      if (!blob || blob.size >= file.size) return { file, width, height };
+      return {
+        file: new File([blob], `image.webp`, { type: "image/webp" }),
+        width: targetW,
+        height: targetH,
+      };
     });
   } catch {
-    return file;
+    return { file };
   }
 }
 
@@ -112,31 +127,31 @@ function randomSuffix(): string {
   return String(Math.floor(Math.random() * 1e8));
 }
 
-/** Saves an uploaded image and returns the storage path it is referenced by. */
+/** Saves an uploaded image; returns its storage key and intrinsic dimensions. */
 export async function putImage(
   file: File,
   idFallback = "img",
   options: { maxEdge?: number } = {},
-): Promise<string> {
+): Promise<{ key: string; width?: number; height?: number }> {
   validateImageFile(file);
   if (!isSupabaseConfigured()) {
     throw new Error("Image uploads are not connected yet.");
   }
   const optimized = await optimizeImageFile(file, options.maxEdge ?? IMAGE_MAX_EDGE);
-  const key = `${idFallback}-${randomSuffix()}.${extensionFor(optimized)}`;
+  const key = `${idFallback}-${randomSuffix()}.${extensionFor(optimized.file)}`;
   const { error } = await getSupabaseBrowser()
     .storage.from(BUCKET)
     // Cache-busting is inherent: each upload gets a unique key, so a long-lived
     // immutable cache never serves a stale/replaced image.
-    .upload(key, optimized, {
-      contentType: optimized.type,
+    .upload(key, optimized.file, {
+      contentType: optimized.file.type,
       upsert: false,
       cacheControl: "31536000",
     });
   if (error) {
     throw new Error("The image could not be uploaded. Check your connection and try again.");
   }
-  return key;
+  return { key, width: optimized.width, height: optimized.height };
 }
 
 /** Public URL for a stored image. Anyone can read; only admins can write. */

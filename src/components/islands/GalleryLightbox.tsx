@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface LightboxItem {
@@ -9,7 +8,8 @@ interface LightboxItem {
 }
 
 const SELECTOR = "[data-lightbox]";
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/** Must match the exit transition on .lb (styles/gallery-lightbox.css). */
+const EXIT_MS = 300;
 
 function readItems(): LightboxItem[] {
   return Array.from(document.querySelectorAll<HTMLAnchorElement>(SELECTOR)).map((anchor) => {
@@ -32,14 +32,19 @@ function readItems(): LightboxItem[] {
 export default function GalleryLightbox() {
   const [items, setItems] = useState<LightboxItem[]>([]);
   const [index, setIndex] = useState<number | null>(null);
-  const reduceMotion = useReducedMotion();
+  const [shown, setShown] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  const exitTimerRef = useRef<number | undefined>(undefined);
 
   const isOpen = index !== null;
 
-  const close = useCallback(() => setIndex(null), []);
+  const close = useCallback(() => {
+    setShown(false);
+    window.clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = window.setTimeout(() => setIndex(null), EXIT_MS);
+  }, []);
 
   const step = useCallback(
     (delta: number) => {
@@ -50,6 +55,16 @@ export default function GalleryLightbox() {
     },
     [items.length],
   );
+
+  // Add the entrance class on the frame after the dialog mounts so the CSS
+  // transition runs; removal (close) transitions back out.
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = window.requestAnimationFrame(() => setShown(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
+
+  useEffect(() => () => window.clearTimeout(exitTimerRef.current), []);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -149,83 +164,63 @@ export default function GalleryLightbox() {
   const activeIndex = index ?? 0;
   const hasMultiple = items.length > 1;
 
-  return (
-    <AnimatePresence>
-      {current ? (
-        <motion.div
-          ref={dialogRef}
-          className="lb"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Event photo viewer"
-          initial={reduceMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={reduceMotion ? undefined : { opacity: 0 }}
-          transition={{ duration: 0.3, ease: EASE }}
-        >
-          <div className="lb-backdrop" aria-hidden="true" onClick={close} />
-          <motion.figure
-            className="lb-panel"
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.965, y: 14 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 8 }}
-            transition={{ duration: 0.46, ease: EASE }}
-          >
-            <div className="lb-media">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.img
-                  key={current.src}
-                  className="lb-image"
-                  src={current.src}
-                  alt={current.alt}
-                  decoding="async"
-                  initial={reduceMotion ? false : { opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={reduceMotion ? undefined : { opacity: 0 }}
-                  transition={{ duration: 0.4, ease: EASE }}
-                />
-              </AnimatePresence>
-            </div>
-            <figcaption className="lb-caption">
-              <span className="lb-caption-text">{current.caption || current.alt}</span>
-              {hasMultiple ? (
-                <span className="lb-count" aria-live="polite">
-                  {activeIndex + 1} / {items.length}
-                </span>
-              ) : null}
-            </figcaption>
-          </motion.figure>
-          <button
-            ref={closeRef}
-            type="button"
-            className="lb-close"
-            aria-label="Close photo viewer"
-            onClick={close}
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
+  return current ? (
+    <div
+      ref={dialogRef}
+      className={shown ? "lb lb--in" : "lb"}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Event photo viewer"
+    >
+      <div className="lb-backdrop" aria-hidden="true" onClick={close} />
+      <figure className="lb-panel">
+        <div className="lb-media">
+          <img
+            key={current.src}
+            className="lb-image"
+            src={current.src}
+            alt={current.alt}
+            decoding="async"
+          />
+        </div>
+        <figcaption className="lb-caption">
+          <span className="lb-caption-text">{current.caption || current.alt}</span>
           {hasMultiple ? (
-            <>
-              <button
-                type="button"
-                className="lb-nav lb-nav--prev"
-                aria-label="Previous photo"
-                onClick={() => step(-1)}
-              >
-                <ChevronLeft size={22} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="lb-nav lb-nav--next"
-                aria-label="Next photo"
-                onClick={() => step(1)}
-              >
-                <ChevronRight size={22} aria-hidden="true" />
-              </button>
-            </>
+            <span className="lb-count" aria-live="polite">
+              {activeIndex + 1} / {items.length}
+            </span>
           ) : null}
-        </motion.div>
+        </figcaption>
+      </figure>
+      <button
+        ref={closeRef}
+        type="button"
+        className="lb-close"
+        aria-label="Close photo viewer"
+        onClick={close}
+      >
+        <X size={20} aria-hidden="true" />
+      </button>
+      {hasMultiple ? (
+        <>
+          <button
+            type="button"
+            className="lb-nav lb-nav--prev"
+            aria-label="Previous photo"
+            onClick={() => step(-1)}
+          >
+            <ChevronLeft size={22} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="lb-nav lb-nav--next"
+            aria-label="Next photo"
+            onClick={() => step(1)}
+          >
+            <ChevronRight size={22} aria-hidden="true" />
+          </button>
+        </>
       ) : null}
-    </AnimatePresence>
-  );
+    </div>
+  ) : null;
 }

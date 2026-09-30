@@ -219,12 +219,14 @@ export function ImageField({
     if (!file) return;
     try {
       setLocalError(null);
-      const id = await putImage(file, "img", maxEdge ? { maxEdge } : undefined);
+      const { key, width, height } = await putImage(file, "img", maxEdge ? { maxEdge } : undefined);
       const next: CmsImage = {
-        key: id,
-        src: getPublicImageUrl(id),
+        key,
+        src: getPublicImageUrl(key),
         alt: value.alt,
         caption: value.caption,
+        width,
+        height,
       };
       onChange(next);
     } catch (error) {

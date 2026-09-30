@@ -70,6 +70,12 @@ function optionalUrl(label: string) {
     );
 }
 
+/** Optional intrinsic dimensions captured at upload (layout-shift guard). */
+const imageDimensions = {
+  width: z.number().int().positive().max(20000).optional(),
+  height: z.number().int().positive().max(20000).optional(),
+};
+
 const imageSchema = z.object({
   key: z.string().max(120).nullable(),
   src: z
@@ -82,6 +88,7 @@ const imageSchema = z.object({
     ),
   alt: shortText("the image alt text", 300),
   caption: optionalText(200),
+  ...imageDimensions,
 });
 
 // Packages may ship without an image (the public card does not render one);
@@ -97,6 +104,7 @@ const optionalImageSchema = z.object({
       "Image must start with http:// or https://, or be uploaded.",
     ),
   alt: z.string().trim().max(300).optional(),
+  ...imageDimensions,
 });
 
 export const pageMetaSchema = z.object({

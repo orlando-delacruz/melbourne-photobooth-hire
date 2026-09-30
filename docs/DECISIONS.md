@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty-eight decision records exist (DEC-001 through DEC-048). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty-nine decision records exist (DEC-001 through DEC-049). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -303,6 +303,7 @@ Forty-eight decision records exist (DEC-001 through DEC-048). Existing selection
 | DEC-046 | Performance pass: LCP discovery, lazy live-sync, upload-time image optimization | Accepted | 2026-09-30 |
 | DEC-047 | Media backfill and 1600px upload cap | Accepted | 2026-09-30 |
 | DEC-048 | Inline public stylesheets (remove render-blocking CSS) | Accepted | 2026-09-30 |
+| DEC-049 | Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions | Accepted | 2026-09-30 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1150,6 +1151,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `astro.config.mjs`, `docs/ARCHITECTURE.md` (§6, §23), `docs/DECISIONS.md` DEC-028 (SSR + edge cache), DEC-046/DEC-047 (perf pass).
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Re-run a production PageSpeed audit to confirm the render-blocking savings and that FCP/LCP improved.
+
+### DEC-049 — Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions
+
+- **ID:** DEC-049
+- **Title:** Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Context:** PageSpeed (mobile) reported 145 KiB of unused JavaScript across four first-party chunks — supabase-js (59.1 KiB, loaded by the idle realtime connect), framer-motion (41.6 KiB, used by MobileNav/GalleryLightbox/ReviewModal), react-dom (65.9 KiB, hydration runtime) and zod (36.6 KiB, statically imported by the two form islands). It also flagged the CMS logo image for missing `width`/`height`. The goal is to remove genuinely unnecessary bytes without weakening live-sync, dialog behaviour or form validation.
+- **Decision:** (1) **Gate live-sync on first interaction**: `lib/realtime/channels.ts` connects on the first `pointerdown`/`touchstart`/`keydown`/`scroll` (with a 15 s fallback), so supabase-js stays off the initial critical path while live updates still start on the first real interaction. (2) **Remove Motion from public islands**: `MobileNav`, `GalleryLightbox` and `ReviewModal` now animate with CSS transitions + a mounted-then-`--in`-class pattern (exit handled by a short unmount timer matching the CSS duration). (3) **Lazy zod**: both form islands use an async resolver that dynamically imports `lib/validation/review|inquiry` + `zodResolver` on the first validation attempt. (4) **Logo dimensions**: `CmsImage` gains optional `width`/`height`, captured at upload (the optimizer already decodes the file) and rendered as explicit attributes on the logo `<img>`.
+- **Alternatives considered:** Keep Motion and accept the 41.6 KiB — rejected (the animation system is small enough to reproduce in CSS with the existing tokens). Eagerly loading zod on form mount — rejected (still in the initial graph). Removing React/realtime entirely — rejected (breaks the confirmed live-content feature, DEC-033). Hard-coding logo dimensions — rejected (the logo is CMS-managed and replaceable).
+- **Rationale:** Eliminates the three removable library chunks (supabase, Motion, zod) and the logo CLS flag while preserving every user-facing behaviour: live updates, accessible dialogs, full validation, and the CMS workflow.
+- **Consequences:** framer-motion is no longer bundled at all; supabase-js and zod load on demand; the logo renders sized once its owner re-uploads it (existing stored logo lacks the new fields until replaced). Reduced-motion users get instant dialog transitions (global reduced-motion CSS already zeroes transition durations). Live updates for a visitor who never interacts begin after the 15 s fallback.
+- **Related documents:** `docs/ARCHITECTURE.md` (§8 islands, §23 performance), `docs/DECISIONS.md` DEC-033 (realtime), DEC-035 (reviews), DEC-046/DEC-047/DEC-048 (perf pass), `lib/realtime/channels.ts`, `components/islands/{MobileNav,GalleryLightbox,ReviewModal,InquiryForm}.tsx`, `lib/cms/storage.ts`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator re-uploads the logo once so the explicit dimensions appear; re-run a mobile PageSpeed audit to confirm the unused-JS drop (react-dom remains, by design).
 
 ## 22. Related Documentation
 

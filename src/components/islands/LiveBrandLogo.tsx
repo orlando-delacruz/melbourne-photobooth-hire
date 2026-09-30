@@ -15,5 +15,13 @@ export default function LiveBrandLogo({
   const settings = useLiveSettings(initialSettings);
   const logo = settings.logo;
   if (!logo || !logo.src) return null;
-  return <img className="brand-logo" src={logo.src} alt={logo.alt || settings.brandName} />;
+  return (
+    <img
+      className="brand-logo"
+      src={logo.src}
+      alt={logo.alt || settings.brandName}
+      width={logo.width}
+      height={logo.height}
+    />
+  );
 }

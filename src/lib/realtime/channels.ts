@@ -12,8 +12,9 @@
 // inside useEffect so server rendering never touches the socket.
 //
 // Performance: supabase-js (~230 KB) is imported lazily and the connection is
-// opened after first paint (requestIdleCallback), so live-sync never blocks
-// the initial render or competes with the LCP image.
+// opened on the first real user interaction (scroll, tap, key press), with a
+// generous fallback for passive visitors. Live-sync is an enhancement, so
+// deferring it never blocks the initial render or competes with the LCP image.
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { getLazySupabase, isBrowserSupabaseConfigured } from "../supabase/lazy";
@@ -34,9 +35,20 @@ export type Unsubscribe = () => void;
 interface Entry {
   channel: RealtimeChannel | null;
   handlers: Set<TableHandler>;
+  /** Cancels a pending deferred connect (called when the last handler leaves). */
+  cancelStart?: () => void;
 }
 
 const entries = new Map<LiveTable, Entry>();
+
+/** Fallback for a visitor who never interacts: still connect eventually. */
+const FALLBACK_CONNECT_MS = 15000;
+const INTERACTION_EVENTS: (keyof WindowEventMap)[] = [
+  "pointerdown",
+  "touchstart",
+  "keydown",
+  "scroll",
+];
 
 function notify(table: LiveTable): void {
   const entry = entries.get(table);
@@ -50,14 +62,28 @@ function notify(table: LiveTable): void {
   }
 }
 
-function scheduleIdle(run: () => void): void {
-  const idle = (
-    window as unknown as {
-      requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
-    }
-  ).requestIdleCallback;
-  if (typeof idle === "function") idle(run, { timeout: 3000 });
-  else window.setTimeout(run, 200);
+/**
+ * Runs `start` once, on the first interaction or after the fallback delay.
+ * Returns a cancel function so an unmounted subscriber never opens a channel.
+ */
+function onFirstInteraction(start: () => void): () => void {
+  let started = false;
+  const run = () => {
+    if (started) return;
+    started = true;
+    window.clearTimeout(timer);
+    for (const event of INTERACTION_EVENTS) window.removeEventListener(event, run);
+    start();
+  };
+  const timer = window.setTimeout(run, FALLBACK_CONNECT_MS);
+  for (const event of INTERACTION_EVENTS) {
+    window.addEventListener(event, run, { once: true, passive: true });
+  }
+  return () => {
+    started = true;
+    window.clearTimeout(timer);
+    for (const event of INTERACTION_EVENTS) window.removeEventListener(event, run);
+  };
 }
 
 async function connect(table: LiveTable, entry: Entry): Promise<void> {
@@ -95,10 +121,10 @@ export function subscribeTable(table: LiveTable, handler: TableHandler): Unsubsc
   let entry = entries.get(table);
   if (!entry) {
     entry = { channel: null, handlers: new Set() };
-    entries.set(table, entry);
-    scheduleIdle(() => {
+    entry.cancelStart = onFirstInteraction(() => {
       void connect(table, entry as Entry);
     });
+    entries.set(table, entry);
   }
   entry.handlers.add(handler);
   const current = entry;
@@ -106,6 +132,7 @@ export function subscribeTable(table: LiveTable, handler: TableHandler): Unsubsc
     current.handlers.delete(handler);
     if (current.handlers.size === 0 && entries.get(table) === current) {
       entries.delete(table);
+      current.cancelStart?.();
       if (current.channel) void teardown(current.channel);
     }
   };

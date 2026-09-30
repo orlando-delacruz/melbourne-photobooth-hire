@@ -1,13 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import type { SubmitHandler } from "react-hook-form";
+import type { Resolver, SubmitHandler } from "react-hook-form";
 import { AlertCircle, CheckCircle2, Send, Sparkles } from "lucide-react";
-import { inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
 import type { PackageItem, ServiceItem } from "../../lib/cms/types";
 import { fetchEventTypes, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
 import { ensureTurnstile } from "../../lib/turnstile";
 import { useLiveRows } from "./useLiveSync";
+
+/**
+ * Lazily validates against the shared inquiry schema: zod + the resolver are
+ * dynamically imported on the first validation attempt, keeping them out of
+ * the initial page bundle.
+ */
+const lazyResolver: Resolver<InquiryInput> = async (values, context, options) => {
+  const { inquirySchema, zodResolver } = await import("../../lib/validation/inquiry");
+  return zodResolver(inquirySchema)(values, context, options);
+};
 
 /**
  * Inquiry form island: client validation, then POST /api/inquiries which
@@ -79,7 +88,7 @@ export default function InquiryForm({
     setFocus,
     formState: { errors, isSubmitted },
   } = useForm<InquiryInput>({
-    resolver: zodResolver(inquirySchema),
+    resolver: lazyResolver,
     reValidateMode: "onChange",
     // Preselect from a contextual enquiry link; RHF keeps these values across
     // interaction and validation, and they are never reset unexpectedly.

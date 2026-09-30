@@ -12,6 +12,15 @@
   place-items: center;
   padding: clamp(1rem, 4vw, 3rem);
   color-scheme: dark;
+  /* Entrance/exit are CSS-driven (no animation library). `.lb--in` is added on
+     the frame after mount and removed on close; the island unmounts after the
+     exit transition (EXIT_MS in GalleryLightbox.tsx). */
+  opacity: 0;
+  transition: opacity 300ms var(--ease-default);
+}
+
+.lb--in {
+  opacity: 1;
 }
 
 .lb-backdrop {
@@ -34,6 +43,16 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--elevation-3);
+  opacity: 0;
+  transform: scale(0.965) translateY(14px);
+  transition:
+    opacity 460ms var(--ease-default),
+    transform 460ms var(--ease-default);
+}
+
+.lb--in .lb-panel {
+  opacity: 1;
+  transform: none;
 }
 
 .lb-media {
@@ -51,6 +70,19 @@
   width: auto;
   height: auto;
   object-fit: contain;
+  /* Each new image remounts (keyed by src) and fades/scales in. */
+  animation: lb-image-in 400ms var(--ease-default) both;
+}
+
+@keyframes lb-image-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .lb-caption {
