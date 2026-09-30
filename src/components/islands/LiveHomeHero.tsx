@@ -53,9 +53,15 @@ export default function LiveHomeHero({
   return (
     <section className="hero" aria-labelledby="page-title">
       {backgroundSrc ? (
-        <div
+        <img
           className="hero-bg"
-          style={{ backgroundImage: `url('${backgroundSrc}')` }}
+          src={backgroundSrc}
+          alt=""
+          width={1920}
+          height={1080}
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
           aria-hidden="true"
         />
       ) : null}

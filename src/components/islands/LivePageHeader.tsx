@@ -37,9 +37,15 @@ export default function LivePageHeader({
     <header className="page-header bleed">
       {imageSrc ? (
         <>
-          <div
+          <img
             className="page-header__media"
-            style={{ backgroundImage: `url('${imageSrc}')` }}
+            src={imageSrc}
+            alt=""
+            width={1600}
+            height={900}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             aria-hidden="true"
           />
           {imageAlt ? <span className="sr-only">{imageAlt}</span> : null}

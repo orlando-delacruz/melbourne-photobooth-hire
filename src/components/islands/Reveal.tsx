@@ -1,9 +1,16 @@
-import { motion, useReducedMotion } from "motion/react";
-import type { ComponentProps, ReactNode } from "react";
+// Entrance wrapper (compositor-only CSS).
+//
+// Content is server-rendered and readable without JS: the hidden state only
+// applies under `html.js`, so no-JS visitors and reduced-motion users see the
+// content immediately (see global.css). The entrance itself is transform +
+// opacity only, driven by an IntersectionObserver for view-mode reveals and a
+// single rAF for mount-mode (hero) reveals. This replaces the former
+// framer-motion implementation, whose `filter: blur()` and `clip-path`
+// variants were flagged as non-composited animations.
+import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 type RevealVariant = "rise" | "blur" | "mask" | "scale";
-type MotionTarget = NonNullable<ComponentProps<typeof motion.div>["initial"]>;
-type MotionVisible = Exclude<MotionTarget, boolean | undefined>;
 
 interface Props {
   children: ReactNode;
@@ -15,39 +22,13 @@ interface Props {
    */
   mode?: "mount" | "view";
   /**
-   * Material of the entrance. Variety is deliberate: media blurs into focus,
-   * print panels unclip, compact groups scale, prose rises.
+   * Material of the entrance. Variety is deliberate: media eases in, print
+   * panels rise, compact groups scale.
    */
   variant?: RevealVariant;
   className?: string;
 }
 
-const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
-
-const MATERIALS: Record<RevealVariant, { initial: MotionTarget; visible: MotionVisible }> = {
-  rise: {
-    initial: { opacity: 0, y: 22 },
-    visible: { opacity: 1, y: 0 },
-  },
-  blur: {
-    initial: { opacity: 0, y: 16, filter: "blur(14px)" },
-    visible: { opacity: 1, y: 0, filter: "blur(0px)" },
-  },
-  mask: {
-    initial: { opacity: 0, y: 26, clipPath: "inset(0% 0% 18% 0%)" },
-    visible: { opacity: 1, y: 0, clipPath: "inset(0% 0% 0% 0%)" },
-  },
-  scale: {
-    initial: { opacity: 0, scale: 0.94 },
-    visible: { opacity: 1, scale: 1 },
-  },
-};
-
-/**
- * Entrance wrapper. Content is server-rendered and readable without JS:
- * the default `reveal` class lets global.css keep it visible when `html.js`
- * is absent; reduced-motion users receive plain content with no animation.
- */
 export default function Reveal({
   children,
   delay = 0,
@@ -55,29 +36,36 @@ export default function Reveal({
   variant = "rise",
   className,
 }: Props) {
-  const reduceMotion = useReducedMotion();
-  const classes = className ? `reveal ${className}` : "reveal";
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
 
-  if (reduceMotion) {
-    return <div className={classes}>{children}</div>;
-  }
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    if (mode === "mount") {
+      const frame = window.requestAnimationFrame(() => setShown(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShown(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "-64px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [mode]);
 
-  const { initial, visible } = MATERIALS[variant];
-  const transition = { duration: 0.68, ease: EASE, delay };
+  const classes = ["reveal", `reveal--${variant}`, shown ? "reveal--in" : "", className]
+    .filter(Boolean)
+    .join(" ");
 
-  return mode === "mount" ? (
-    <motion.div className={classes} initial={initial} animate={visible} transition={transition}>
+  return (
+    <div ref={ref} className={classes} style={delay ? { transitionDelay: `${delay}s` } : undefined}>
       {children}
-    </motion.div>
-  ) : (
-    <motion.div
-      className={classes}
-      initial={initial}
-      whileInView={visible}
-      viewport={{ once: true, margin: "-64px" }}
-      transition={transition}
-    >
-      {children}
-    </motion.div>
+    </div>
   );
 }

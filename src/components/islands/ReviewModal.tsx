@@ -22,6 +22,7 @@ import { reviewSchema } from "../../lib/validation/review";
 import type { ReviewInput } from "../../lib/validation/review";
 import { zodResolver } from "../../lib/validation/inquiry";
 import { fetchEventTypes } from "../../lib/realtime/fetchers";
+import { ensureTurnstile } from "../../lib/turnstile";
 import { useLiveRows } from "./useLiveSync";
 // Field, button and dialog styling comes from the global stylesheets:
 // BaseLayout loads the inquiry-form and review-modal systems (like the
@@ -176,17 +177,16 @@ export default function ReviewModal({
   const selectedRating = watch("rating");
   const displayRating = hovered ?? selectedRating ?? 0;
 
-  // Turnstile widget (InquiryForm pattern): mounts only while the modal is
-  // open; a consumed or expired token is never reused.
+  // Turnstile widget (InquiryForm pattern): the script is fetched on demand
+  // and the widget mounts only while the modal is open; a consumed or expired
+  // token is never reused.
   useEffect(() => {
     if (!open || !turnstileSiteKey) return;
     let cancelled = false;
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-      attempts += 1;
-      const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
-      if (api && turnstileRef.current && !cancelled) {
-        window.clearInterval(timer);
+    void ensureTurnstile()
+      .then(() => {
+        const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+        if (cancelled || !api || !turnstileRef.current) return;
         try {
           widgetId.current = api.render(turnstileRef.current, {
             sitekey: turnstileSiteKey,
@@ -214,13 +214,12 @@ export default function ReviewModal({
         } catch {
           // Widget unavailable: the submission goes without a token.
         }
-      } else if (attempts >= 20 || cancelled) {
-        window.clearInterval(timer);
-      }
-    }, 500);
+      })
+      .catch(() => {
+        // Script unavailable: the submission goes without a token.
+      });
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
       try {
         const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
         if (api?.remove && widgetId.current) api.remove(widgetId.current);

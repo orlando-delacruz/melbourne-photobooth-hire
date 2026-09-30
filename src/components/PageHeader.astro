@@ -14,9 +14,15 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
 <header class="page-header bleed">
   {imageSrc ? (
     <>
-      <div
+      <img
         class="page-header__media"
-        style={`background-image: url('${imageSrc}')`}
+        src={imageSrc}
+        alt=""
+        width="1600"
+        height="900"
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
         aria-hidden="true"
       />
       {imageAlt ? <span class="sr-only">{imageAlt}</span> : null}
@@ -43,8 +49,10 @@ const { title, eyebrow, lede, imageSrc, imageAlt, rule = true } = Astro.props;
   .page-header__media {
     position: absolute;
     inset: 0;
-    background-size: cover;
-    background-position: center;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
     opacity: 0.5;
     z-index: -2;
   }

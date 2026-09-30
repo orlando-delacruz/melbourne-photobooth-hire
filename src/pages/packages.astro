@@ -14,13 +14,16 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { ctaImage, serviceImages } = await loadPublicContent();
-const { pages: cmsPages } = await loadPublicPages();
-const packagesPage = cmsPages.packages;
+// Independent loads run in parallel to keep server response time low (LCP).
 // The plans grid, included band, add-ons and policies patch themselves
 // when the Packages module or page copy changes (DEC-033).
-const liveModules = await loadPublicModules();
-const seo = await loadPublicSeo("packages");
+const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicPages(),
+  loadPublicModules(),
+  loadPublicSeo("packages"),
+]);
+const packagesPage = cmsPages.packages;
 setPublicCache(Astro.response.headers);
 
 const headerImage = serviceImages?.["premium-photobooth"]?.src;
@@ -66,6 +69,7 @@ const jumpItems = [
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImage}
 >
   <LivePageHeader
     client:visible

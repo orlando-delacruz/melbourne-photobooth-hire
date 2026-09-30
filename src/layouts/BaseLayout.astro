@@ -13,7 +13,6 @@ import "@fontsource/fraunces/latin-400-italic.css";
 import "@fontsource/fraunces/latin-500.css";
 import "@fontsource/fraunces/latin-600.css";
 import "@fontsource/fraunces/latin-600-italic.css";
-import "@fontsource/fraunces/latin-700.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -103,6 +102,15 @@ const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href 
 const socialImageAlt =
   ogImage && ogImageAlt ? ogImageAlt : ogImage ? brandName : heroBackgroundImage?.alt;
 
+// CMS images are served from Supabase Storage; opening the connection early
+// shortens the LCP image fetch. The Pexels mock origin is only used when a
+// mock (dev/seed) image is actually referenced.
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
+const supabaseOrigin = supabaseUrl ? new URL(supabaseUrl).origin : undefined;
+const usesMockImage = [preloadImage, socialImageSrc].some((src) =>
+  src?.includes("images.pexels.com"),
+);
+
 // Google Search Console URL-prefix verification. The token is public and must
 // appear in the served HTML; the env value can override it per environment.
 const googleVerification =
@@ -189,9 +197,11 @@ const siteSchema = {
     {socialImage && socialImageAlt ? (
       <meta name="twitter:image:alt" content={socialImageAlt} />
     ) : null}
-    <link rel="preconnect" href="https://images.pexels.com" crossorigin />
-    <link rel="dns-prefetch" href="https://images.pexels.com" />
-    {preloadImage ? <link rel="preload" as="image" href={preloadImage} /> : null}
+    {supabaseOrigin ? <link rel="preconnect" href={supabaseOrigin} /> : null}
+    {usesMockImage ? <link rel="preconnect" href="https://images.pexels.com" crossorigin /> : null}
+    {preloadImage ? (
+      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
+    ) : null}
     <link rel="icon" type={faviconType} href={faviconHref} />
     <StructuredData schema={siteSchema} />
     {structuredData.map((node) => (

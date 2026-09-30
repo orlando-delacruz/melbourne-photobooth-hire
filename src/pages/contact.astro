@@ -14,23 +14,29 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { serviceImages } = await loadPublicContent();
-const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
+// Independent loads run in parallel to keep server response time low (LCP).
+const [{ serviceImages }, { pages: cmsPages, settings: siteSettings }, eventTypeOptions, seo, modules] =
+  await Promise.all([
+    loadPublicContent(),
+    loadPublicPages(),
+    loadPublicEventTypes(),
+    loadPublicSeo("contact"),
+    loadPublicModules(),
+  ]);
 const contactPage = cmsPages.contact;
-const eventTypeOptions = await loadPublicEventTypes();
-const seo = await loadPublicSeo("contact");
 setPublicCache(Astro.response.headers);
 // Contextual enquiry (DEC-036): a Service/Package card links to
 // /contact?service=<slug> or ?package=<slug>. Resolve each slug against the
 // public (highlighted) module rows independently; an unknown or absent slug
 // simply leaves that dropdown on its placeholder.
-const modules = await loadPublicModules();
 const publicServices = modules.services.filter((service) => service.highlight !== false);
 const publicPackages = modules.packages.filter((pkg) => pkg.highlight !== false);
 const serviceSlug = Astro.url.searchParams.get("service");
 const packageSlug = Astro.url.searchParams.get("package");
 const initialService = publicServices.find((service) => service.id === serviceSlug)?.name ?? "";
 const initialPackage = publicPackages.find((pkg) => pkg.id === packageSlug)?.name ?? "";
+// Page-header image is the likely LCP on this route; preload it (see head).
+const headerImageSrc = serviceImages?.["roaming-photobooth"]?.src;
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
@@ -50,12 +56,13 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
 >
   <LivePageHeader
     client:visible
     pageKey="contact"
     initial={contactPage.header}
-    imageSrc={serviceImages?.["roaming-photobooth"]?.src}
+    imageSrc={headerImageSrc}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
 
@@ -93,14 +100,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
 
       <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
     </div>
-    {turnstileSiteKey ? (
-      <script
-        is:inline
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-        async
-        defer
-      ></script>
-    ) : null}
   </section>
 </BaseLayout>
 

@@ -13,13 +13,19 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { services, serviceImages, ctaImage } = await loadPublicContent();
+// Independent loads run in parallel to keep server response time low (LCP).
 // Raw CMS modules seed the live islands (DEC-033): the jump nav and the
 // service sections patch themselves when the Services table changes.
-const liveModules = await loadPublicModules();
-const { pages: cmsPages } = await loadPublicPages();
+const [{ services, serviceImages, ctaImage }, liveModules, { pages: cmsPages }, seo] =
+  await Promise.all([
+    loadPublicContent(),
+    loadPublicModules(),
+    loadPublicPages(),
+    loadPublicSeo("services"),
+  ]);
 const servicesPage = cmsPages.services;
-const seo = await loadPublicSeo("services");
+// Page-header image is the likely LCP on this route; preload it (see head).
+const headerImageSrc = services[0] ? serviceImages?.[services[0].id]?.src : undefined;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -37,13 +43,14 @@ setPublicCache(Astro.response.headers);
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
 >
   <LivePageHeader
     client:visible
     pageKey="services"
     initial={servicesPage.header}
-    imageSrc={services[0] && serviceImages?.[services[0].id]?.src}
-    imageAlt={serviceImages?.[services[0].id]?.alt}
+    imageSrc={headerImageSrc}
+    imageAlt={serviceImages?.[services[0]?.id]?.alt}
   >
     <LiveServiceJump client:visible initial={liveModules.services} />
   </LivePageHeader>

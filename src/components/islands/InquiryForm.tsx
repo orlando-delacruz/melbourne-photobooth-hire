@@ -6,6 +6,7 @@ import { inquirySchema, zodResolver } from "../../lib/validation/inquiry";
 import type { InquiryInput } from "../../lib/validation/inquiry";
 import type { PackageItem, ServiceItem } from "../../lib/cms/types";
 import { fetchEventTypes, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
+import { ensureTurnstile } from "../../lib/turnstile";
 import { useLiveRows } from "./useLiveSync";
 
 /**
@@ -94,17 +95,16 @@ export default function InquiryForm({
     }
   }, [phase]);
 
-  // Turnstile widget (no extra dependency): renders only when a site key is
-  // provided; the token travels with the submission for server verification.
+  // Turnstile widget (no extra dependency): the script is fetched on demand
+  // and the widget renders only when a site key is provided; the token travels
+  // with the submission for server verification.
   useEffect(() => {
     if (!turnstileSiteKey || !turnstileRef.current) return;
     let cancelled = false;
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-      attempts += 1;
-      const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
-      if (api && turnstileRef.current && !cancelled) {
-        window.clearInterval(timer);
+    void ensureTurnstile()
+      .then(() => {
+        const api = (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+        if (cancelled || !api || !turnstileRef.current) return;
         try {
           widgetId.current = api.render(turnstileRef.current, {
             sitekey: turnstileSiteKey,
@@ -130,13 +130,12 @@ export default function InquiryForm({
         } catch {
           // Widget unavailable: the submission goes without a token.
         }
-      } else if (attempts >= 20 || cancelled) {
-        window.clearInterval(timer);
-      }
-    }, 500);
+      })
+      .catch(() => {
+        // Script unavailable: the submission goes without a token.
+      });
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
     };
   }, [turnstileSiteKey]);
 

@@ -13,13 +13,17 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { ctaImage, serviceImages } = await loadPublicContent();
-const { pages: cmsPages } = await loadPublicPages();
-const galleryPage = cmsPages.gallery;
+// Independent loads run in parallel to keep server response time low (LCP).
 // The grid patches itself when the Gallery module changes (DEC-033).
-const liveModules = await loadPublicModules();
-const seo = await loadPublicSeo("gallery");
+const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicPages(),
+  loadPublicModules(),
+  loadPublicSeo("gallery"),
+]);
+const galleryPage = cmsPages.gallery;
 setPublicCache(Astro.response.headers);
+// Page-header image is the likely LCP on this route; preload it (see head).
 const headerImage = serviceImages?.["360-video-booth"]?.src;
 ---
 
@@ -37,6 +41,7 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImage}
 >
   <LivePageHeader
     client:visible

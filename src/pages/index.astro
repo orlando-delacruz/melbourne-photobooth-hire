@@ -20,12 +20,21 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { heroBackgroundImage, ctaImage } = await loadPublicContent();
+// Independent loads run in parallel to keep server response time low (LCP).
 // Raw CMS modules seed the live islands (DEC-033); each island patches its
 // section when its table changes, with no page refresh. Testimonials fall
 // back to the legacy home blob until the module holds items (DEC-034).
-const liveModules = await loadPublicModules();
-const { pages: cmsPages, settings: siteSettings } = await loadPublicPages();
+const [
+  { heroBackgroundImage, ctaImage },
+  liveModules,
+  { pages: cmsPages, settings: siteSettings },
+  seo,
+] = await Promise.all([
+  loadPublicContent(),
+  loadPublicModules(),
+  loadPublicPages(),
+  loadPublicSeo("home"),
+]);
 const home = cmsPages.home;
 // Module rows are the source of truth; the deprecated home-blob fallback
 // predates moderation and was always public, so it reads as approved.
@@ -33,7 +42,10 @@ const liveTestimonials =
   liveModules.testimonials.length > 0
     ? liveModules.testimonials
     : home.testimonials.map((item) => ({ ...item, status: "approved" as const }));
-const seo = await loadPublicSeo("home");
+// Preload the actual hero render target: the CMS hero image when set, else the
+// mock fallback. Preloading the fallback while the CMS image renders (the
+// previous behaviour) wasted the request and left the real LCP undiscovered.
+const heroPreloadSrc = home.hero.background?.src || heroBackgroundImage?.src;
 setPublicCache(Astro.response.headers);
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/reviews.ts).
@@ -55,7 +67,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
-  preloadImage={heroBackgroundImage?.src}
+  preloadImage={heroPreloadSrc}
 >
   <LiveHomeHero
     client:visible
@@ -86,14 +98,6 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     eventTypes={liveModules["event-types"].map((item) => item.label)}
     turnstileSiteKey={turnstileSiteKey}
   />
-  {turnstileSiteKey ? (
-    <script
-      is:inline
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-      async
-      defer
-    ></script>
-  ) : null}
 
   <LiveFaqTeaser client:visible initial={liveModules.faqs} initialHome={home} />
 

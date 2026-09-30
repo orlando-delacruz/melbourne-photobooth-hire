@@ -16,7 +16,7 @@ const { items, initialSettings } = Astro.props;
   <div class="footer-glow" aria-hidden="true"></div>
   <div class="container footer-top">
     <div class="footer-brand">
-      <LiveBrandLogo client:visible initialSettings={initialSettings} />
+      <LiveBrandLogo client:idle initialSettings={initialSettings} />
       <p class="brand-name">
         <span class="brand-mark" aria-hidden="true">
           <svg
@@ -34,9 +34,9 @@ const { items, initialSettings } = Astro.props;
             <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
           </svg>
         </span>
-        <LiveBrandName client:visible initialSettings={initialSettings} />
+        <LiveBrandName client:idle initialSettings={initialSettings} />
       </p>
-      <LiveFooterBrand client:visible initialSettings={initialSettings} />
+      <LiveFooterBrand client:idle initialSettings={initialSettings} />
     </div>
     <nav class="footer-nav" aria-label="Explore">
       <h2>Explore</h2>
@@ -60,11 +60,11 @@ const { items, initialSettings } = Astro.props;
       </ul>
     </nav>
     <div class="footer-cta">
-      <LiveFooterCta client:visible initialSettings={initialSettings} />
+      <LiveFooterCta client:idle initialSettings={initialSettings} />
     </div>
   </div>
   <div class="container footer-base">
-    <LiveFooterBase client:visible initialSettings={initialSettings} />
+    <LiveFooterBase client:idle initialSettings={initialSettings} />
   </div>
 </footer>
 <style>

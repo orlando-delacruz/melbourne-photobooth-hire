@@ -17,7 +17,7 @@ const { items, currentPath, initialSettings } = Astro.props;
 <header class="site-header" data-site-header>
   <div class="container header-inner">
     <a class="brand" href="/">
-      <LiveBrandLogo client:visible initialSettings={initialSettings} />
+      <LiveBrandLogo client:idle initialSettings={initialSettings} />
       <span class="brand-mark" aria-hidden="true">
         <svg
           width="36"
@@ -35,7 +35,7 @@ const { items, currentPath, initialSettings } = Astro.props;
         </svg>
       </span>
       <span class="brand-name">
-        <LiveBrandName client:visible initialSettings={initialSettings} />
+        <LiveBrandName client:idle initialSettings={initialSettings} />
       </span>
     </a>
     <nav class="desktop-nav" aria-label="Primary">

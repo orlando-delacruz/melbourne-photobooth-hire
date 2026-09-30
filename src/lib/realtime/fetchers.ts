@@ -5,7 +5,10 @@
 // dataset in display order. RLS scopes every read exactly like the server
 // render. All helpers throw on failure — the hooks catch and keep the last
 // good state, retrying on the next realtime event.
-import { getSupabaseBrowser } from "../supabase/client";
+//
+// The client is fetched through getLazySupabase() so supabase-js stays off
+// the critical path (see lib/supabase/lazy.ts).
+import { getLazySupabase } from "../supabase/lazy";
 import {
   eventTypeFromRow,
   faqFromRow,
@@ -13,7 +16,7 @@ import {
   packageFromRow,
   serviceFromRow,
   testimonialFromRow,
-} from "../supabase/modules";
+} from "../supabase/rowMappers";
 import type {
   CtaBandContent,
   EventTypeItem,
@@ -27,59 +30,51 @@ import type {
 } from "../cms/types";
 
 export async function fetchServices(): Promise<ServiceItem[]> {
-  const { data, error } = await getSupabaseBrowser()
-    .from("services")
-    .select("*")
-    .order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("services").select("*").order("sort_order");
   if (error || !data) throw new Error("Live services could not be loaded.");
   return data.map(serviceFromRow);
 }
 
 export async function fetchPackages(): Promise<PackageItem[]> {
-  const { data, error } = await getSupabaseBrowser()
-    .from("packages")
-    .select("*")
-    .order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("packages").select("*").order("sort_order");
   if (error || !data) throw new Error("Live packages could not be loaded.");
   return data.map(packageFromRow);
 }
 
 export async function fetchGallery(): Promise<GalleryItem[]> {
-  const { data, error } = await getSupabaseBrowser()
-    .from("gallery_items")
-    .select("*")
-    .order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("gallery_items").select("*").order("sort_order");
   if (error || !data) throw new Error("Live gallery could not be loaded.");
   return data.map(galleryFromRow);
 }
 
 export async function fetchFaqs(): Promise<FaqItem[]> {
-  const { data, error } = await getSupabaseBrowser().from("faqs").select("*").order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("faqs").select("*").order("sort_order");
   if (error || !data) throw new Error("Live FAQs could not be loaded.");
   return data.map(faqFromRow);
 }
 
 export async function fetchTestimonials(): Promise<TestimonialItem[]> {
-  const { data, error } = await getSupabaseBrowser()
-    .from("testimonials")
-    .select("*")
-    .order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("testimonials").select("*").order("sort_order");
   if (error || !data) throw new Error("Live testimonials could not be loaded.");
   return data.map(testimonialFromRow);
 }
 
 export async function fetchEventTypes(): Promise<EventTypeItem[]> {
-  const { data, error } = await getSupabaseBrowser()
-    .from("event_types")
-    .select("*")
-    .order("sort_order");
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase.from("event_types").select("*").order("sort_order");
   if (error || !data) throw new Error("Live event types could not be loaded.");
   return data.map(eventTypeFromRow);
 }
 
 /** Single page_contents blob by key; null when absent so callers keep state. */
 export async function fetchPageContent(key: string): Promise<unknown | null> {
-  const { data, error } = await getSupabaseBrowser()
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase
     .from("page_contents")
     .select("content")
     .eq("page_key", key)
@@ -104,7 +99,8 @@ export async function fetchCtaBand(key: string): Promise<CtaBandContent | null> 
 
 /** SEO row for a page key; null when absent so callers keep state. */
 export async function fetchPageSeoRow(key: string): Promise<PageMeta | null> {
-  const { data, error } = await getSupabaseBrowser()
+  const supabase = await getLazySupabase();
+  const { data, error } = await supabase
     .from("page_seo")
     .select("*")
     .eq("page_key", key)

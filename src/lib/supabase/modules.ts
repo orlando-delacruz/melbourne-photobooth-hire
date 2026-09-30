@@ -8,6 +8,14 @@
 import { getSupabaseBrowser, isSupabaseConfigured } from "./client";
 import type { Database } from "./database.types";
 import { collectImageKeys, deleteImage } from "../cms/storage";
+import {
+  eventTypeFromRow,
+  faqFromRow,
+  galleryFromRow,
+  packageFromRow,
+  serviceFromRow,
+  testimonialFromRow,
+} from "./rowMappers";
 import type {
   EventTypeItem,
   FaqItem,
@@ -17,6 +25,17 @@ import type {
   TestimonialItem,
 } from "../cms/types";
 import type { ModuleSectionKey } from "../../components/admin/ModuleCrud";
+
+// Row → item mappers live in a client-free module so public islands can use
+// them without loading supabase-js; re-exported here for existing callers.
+export {
+  eventTypeFromRow,
+  faqFromRow,
+  galleryFromRow,
+  packageFromRow,
+  serviceFromRow,
+  testimonialFromRow,
+};
 
 type ServiceRow = Database["public"]["Tables"]["services"]["Row"];
 type PackageRow = Database["public"]["Tables"]["packages"]["Row"];
@@ -29,21 +48,6 @@ type EventTypeRow = Database["public"]["Tables"]["event_types"]["Row"];
 type InsertOf<T> = Omit<T, "id" | "created_at" | "updated_at">;
 
 // ── Row mapping ─────────────────────────────────────────────────────────────
-
-export function serviceFromRow(row: ServiceRow): ServiceItem {
-  return {
-    id: row.slug,
-    name: row.name,
-    badgeType: row.badge_type,
-    customBadge: row.custom_badge,
-    tagline: row.tagline ?? undefined,
-    summary: row.summary,
-    highlights: row.highlights,
-    icon: (row.icon as ServiceItem["icon"]) ?? undefined,
-    image: { key: row.image_key, src: row.image_src, alt: row.image_alt },
-    highlight: row.highlight,
-  };
-}
 
 function serviceToRow(item: ServiceItem, sortOrder: number): InsertOf<ServiceRow> {
   return {
@@ -63,22 +67,6 @@ function serviceToRow(item: ServiceItem, sortOrder: number): InsertOf<ServiceRow
   };
 }
 
-export function packageFromRow(row: PackageRow): PackageItem {
-  return {
-    id: row.slug,
-    name: row.name,
-    summary: row.summary,
-    durationLabel: row.duration_label,
-    priceLabel: row.price_label,
-    badgeType: row.badge_type,
-    customBadge: row.custom_badge,
-    inclusions: row.inclusions,
-    highlight: row.highlight,
-    // Defensive default so a not-yet-migrated database still renders.
-    cardBadge: (row.card_badge ?? "none") as PackageItem["cardBadge"],
-  };
-}
-
 function packageToRow(item: PackageItem, sortOrder: number): InsertOf<PackageRow> {
   return {
     slug: item.id,
@@ -95,15 +83,6 @@ function packageToRow(item: PackageItem, sortOrder: number): InsertOf<PackageRow
   };
 }
 
-export function galleryFromRow(row: GalleryRow): GalleryItem {
-  return {
-    id: row.slug,
-    image: { key: row.image_key, src: row.image_src, alt: row.image_alt },
-    caption: row.caption,
-    highlight: row.highlight,
-  };
-}
-
 function galleryToRow(item: GalleryItem, sortOrder: number): InsertOf<GalleryRow> {
   return {
     slug: item.id,
@@ -113,15 +92,6 @@ function galleryToRow(item: GalleryItem, sortOrder: number): InsertOf<GalleryRow
     caption: item.caption,
     highlight: item.highlight,
     sort_order: sortOrder,
-  };
-}
-
-export function faqFromRow(row: FaqRow): FaqItem {
-  return {
-    id: row.slug,
-    question: row.question,
-    answer: row.answer,
-    highlight: row.highlight,
   };
 }
 
@@ -135,24 +105,8 @@ function faqToRow(item: FaqItem, sortOrder: number): InsertOf<FaqRow> {
   };
 }
 
-export function eventTypeFromRow(row: EventTypeRow): EventTypeItem {
-  return { id: row.slug, label: row.label };
-}
-
 function eventTypeToRow(item: EventTypeItem, sortOrder: number): InsertOf<EventTypeRow> {
   return { slug: item.id, label: item.label, sort_order: sortOrder };
-}
-
-export function testimonialFromRow(row: TestimonialRow): TestimonialItem {
-  return {
-    id: row.slug,
-    quote: row.quote,
-    name: row.name,
-    eventType: row.event_type,
-    rating: row.rating ?? undefined,
-    status: row.status,
-    createdAt: row.created_at,
-  };
 }
 
 function testimonialToRow(item: TestimonialItem, sortOrder: number): InsertOf<TestimonialRow> {

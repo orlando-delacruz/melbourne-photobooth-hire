@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty-five decision records exist (DEC-001 through DEC-045). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Forty-six decision records exist (DEC-001 through DEC-046). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -299,7 +299,8 @@ Forty-five decision records exist (DEC-001 through DEC-045). Existing selections
 | DEC-042 | Gallery admin listing is highlight-first | Accepted | 2026-09-29 |
 | DEC-043 | Gallery public read returns all items; homepage filters highlight | Accepted | 2026-09-29 |
 | DEC-044 | Hero stats: mobile two-up layout, label-first editor card, header photo reveal | Accepted | 2026-09-29 |
-| DEC-045 | Shared CMS icon library (hero stats, steps, services) | Accepted | 2026-09-29 |
+| DEC-045 | Shared CMS icon library (hero stats, steps, services) | Accepted   | 2026-09-29 |
+| DEC-046 | Performance pass: LCP discovery, lazy live-sync, upload-time image optimization | Accepted | 2026-09-30 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1102,6 +1103,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/UI-UX.md` (admin editing §23), `docs/DESIGN-SYSTEM.md` (icons), `docs/ARCHITECTURE.md` (§6 rendering, §8 islands), `docs/DATA-MODEL.md` (module concepts), `src/lib/cms/icons.ts`, `src/components/live/CmsIcon.tsx`, `supabase/migration-hero-stat-liability-icon.sql`, DEC-037/DEC-044.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator runs `migration-hero-stat-liability-icon.sql` once; browser QA that the shield renders on the homepage, the admin dropdown lists all options with previews, and old content still renders. Optional follow-up: swap the dropdown for a visual grid picker and/or retire the now-unused `cardIconSvg` map.
+
+### DEC-046 — Performance pass: LCP discovery, lazy live-sync, upload-time image optimization
+
+- **ID:** DEC-046
+- **Title:** Performance pass: LCP discovery, lazy live-sync, upload-time image optimization
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Context:** PageSpeed Insights reported LCP 7.8 s, Speed Index 6.1 s, ~158 KiB unused JS, ~407 KiB image savings (369 KB logo at 152×52), ~942 KiB cache savings, ~450 ms render-blocking and non-composited animations. Investigation confirmed: the hero LCP image was a CSS `background-image` on a `<div>` (no `fetchpriority`), the preload pointed at the mock Pexels fallback instead of the live CMS hero, page-header images were background divs with no preload, page frontmatter awaited four Supabase loads sequentially, supabase-js (~230 KB) was statically bundled into every live island, Turnstile (~27 KB) was injected globally, reveal animations animated `filter`/`clip-path`, and CMS uploads stored full-resolution originals (Supabase free plan has no image transform service).
+- **Decision:** (1) Render the hero and page-header images as real `<img>` elements (eager, `decoding="async"`, `fetchpriority="high"`, explicit dimensions, `object-fit: cover`) and preload the actual rendered source; preconnect to the Supabase storage origin. (2) Run each page's independent Supabase loads with `Promise.all`. (3) Defer supabase-js to a lazy dynamic import opened via `requestIdleCallback` (`lib/supabase/lazy.ts`, `lib/realtime/channels.ts`), extract client-free row mappers to `lib/supabase/rowMappers.ts` so public islands never statically import the client, and load Turnstile on demand from the form/modal (`lib/turnstile.ts`); chrome islands move to `client:idle`. (4) Replace the framer-motion `Reveal` with compositor-only CSS (transform/opacity) driven by IntersectionObserver/rAF. (5) Optimize images at upload: downscale to a max edge and re-encode to WebP before storing (`lib/cms/storage.ts`; `IMAGE_MAX_EDGE` 1920, `LOGO_MAX_EDGE` 512, `FAVICON_MAX_EDGE` 256) and set an immutable one-year `cacheControl` (keys are unique per upload). (6) Widen the public edge cache to `s-maxage=300, stale-while-revalidate=3600`. (7) Drop the unused Fraunces 700 weight.
+- **Alternatives considered:** Supabase Storage image transforms — rejected (requires a paid plan). Vercel image service + `<Picture>` — rejected for now (Hobby optimization quotas; most CMS images render inside React islands where Astro `<Image>` cannot run). Upload-time resize is first-party and quota-free. Removing framer-motion entirely from the dialogs/mobile-nav — deferred (exit animations and focus management carry real regression risk; kept on Motion for now).
+- **Rationale:** Fixes the confirmed causes (broken LCP discovery, oversized originals, blocking JS, non-composited motion, weak caching) with the existing architecture and no new dependencies or vendors, keeping SSR/inquiry/CMS/realtime behavior intact.
+- **Consequences:** Supabase-js and Turnstile leave the initial JS graph (loaded post-idle / on demand). Existing oversized Storage objects keep their old bytes until re-uploaded through the CMS. Public pages may serve up to ~5 minutes stale at the edge to brand-new visitors (already-open pages still patch live via realtime). Motion remains on the homepage/gallery dialogs and mobile nav. Admin image uploads are re-encoded to WebP.
+- **Related documents:** `docs/ARCHITECTURE.md` (§6–8, §14, §23), `docs/SECURITY.md` (§5, §8), `docs/TESTING.md`, `docs/DECISIONS.md` DEC-028 (cache window), DEC-031, DEC-033, DEC-028.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Operator re-uploads the current logo (and any other oversized CMS images) once so the new optimization applies; re-run a production PageSpeed audit to measure LCP/SI/JS/image/cache deltas; a follow-up may migrate the three Motion islands to CSS to remove the last framer-motion chunk from the homepage.
 
 ## 22. Related Documentation
 

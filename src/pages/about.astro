@@ -12,12 +12,16 @@ import {
 } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const { serviceImages, ctaImage } = await loadPublicContent();
-const { pages: cmsPages } = await loadPublicPages();
-const aboutPage = cmsPages.about;
+// Independent loads run in parallel to keep server response time low (LCP).
 // Raw CMS modules seed the story-image derivation in the live island.
-const liveModules = await loadPublicModules();
-const seo = await loadPublicSeo("about");
+const [{ serviceImages, ctaImage }, { pages: cmsPages }, liveModules, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicPages(),
+  loadPublicModules(),
+  loadPublicSeo("about"),
+]);
+const aboutPage = cmsPages.about;
+const headerImageSrc = serviceImages?.["roaming-photobooth"]?.src;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -35,12 +39,13 @@ setPublicCache(Astro.response.headers);
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
 >
   <LivePageHeader
     client:visible
     pageKey="about"
     initial={aboutPage.header}
-    imageSrc={serviceImages?.["roaming-photobooth"]?.src}
+    imageSrc={headerImageSrc}
     imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
   />
 

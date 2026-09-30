@@ -18,6 +18,7 @@ import {
 import { Panel, errMsg, errorAt } from "../groups";
 import { useSectionEditor } from "../useSectionEditor";
 import { confirmDestructive } from "../alerts";
+import { FAVICON_MAX_EDGE, LOGO_MAX_EDGE } from "../../../lib/cms/storage";
 import type { CmsImage } from "../../../lib/cms/types";
 
 const EMPTY_IMAGE: CmsImage = { key: null, src: "", alt: "" };
@@ -90,6 +91,7 @@ export default function SettingsEditor() {
           legend="Website logo."
           hint="A transparent PNG or WebP works best."
           value={logo}
+          maxEdge={LOGO_MAX_EDGE}
           onChange={(next) => setValue("logo", next, { shouldDirty: true })}
           error={errorAt(errors, "logo")}
           altError={errorAt(errors, "logo.alt")}
@@ -98,6 +100,7 @@ export default function SettingsEditor() {
           legend="Favicon."
           hint="A square PNG works best."
           value={favicon}
+          maxEdge={FAVICON_MAX_EDGE}
           onChange={(next) => setValue("favicon", next, { shouldDirty: true })}
           error={errorAt(errors, "favicon")}
           showAlt={false}

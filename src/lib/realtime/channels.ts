@@ -10,9 +10,13 @@
 // supabase/migration-realtime.sql). RLS filters every event before delivery,
 // and admin-only tables are never subscribed. Browser-only: subscribe from
 // inside useEffect so server rendering never touches the socket.
+//
+// Performance: supabase-js (~230 KB) is imported lazily and the connection is
+// opened after first paint (requestIdleCallback), so live-sync never blocks
+// the initial render or competes with the LCP image.
 
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { getSupabaseBrowser, isSupabaseConfigured } from "../supabase/client";
+import { getLazySupabase, isBrowserSupabaseConfigured } from "../supabase/lazy";
 
 export type LiveTable =
   | "services"
@@ -28,7 +32,7 @@ export type TableHandler = () => void;
 export type Unsubscribe = () => void;
 
 interface Entry {
-  channel: RealtimeChannel;
+  channel: RealtimeChannel | null;
   handlers: Set<TableHandler>;
 }
 
@@ -46,28 +50,55 @@ function notify(table: LiveTable): void {
   }
 }
 
+function scheduleIdle(run: () => void): void {
+  const idle = (
+    window as unknown as {
+      requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
+    }
+  ).requestIdleCallback;
+  if (typeof idle === "function") idle(run, { timeout: 3000 });
+  else window.setTimeout(run, 200);
+}
+
+async function connect(table: LiveTable, entry: Entry): Promise<void> {
+  try {
+    const supabase = await getLazySupabase();
+    // The entry may have been torn down while supabase-js was loading.
+    if (entries.get(table) !== entry) return;
+    entry.channel = supabase
+      .channel(`live:${table}`)
+      .on("postgres_changes", { event: "*", schema: "public", table }, () => notify(table))
+      .subscribe();
+  } catch {
+    // No client (or subscribe failure): content stays as server-rendered.
+  }
+}
+
+async function teardown(channel: RealtimeChannel): Promise<void> {
+  try {
+    const supabase = await getLazySupabase();
+    await supabase.removeChannel(channel);
+  } catch {
+    // Tearing down must never throw into unmount.
+  }
+}
+
 /**
  * Subscribe to any change on a public table. Returns an unsubscribe function.
  * Without Supabase env (or on the server) this is a silent no-op and the
  * caller keeps its SSR initial data.
  */
 export function subscribeTable(table: LiveTable, handler: TableHandler): Unsubscribe {
-  if (typeof window === "undefined" || !isSupabaseConfigured()) {
+  if (typeof window === "undefined" || !isBrowserSupabaseConfigured()) {
     return () => undefined;
   }
   let entry = entries.get(table);
   if (!entry) {
-    let created: RealtimeChannel;
-    try {
-      created = getSupabaseBrowser()
-        .channel(`live:${table}`)
-        .on("postgres_changes", { event: "*", schema: "public", table }, () => notify(table))
-        .subscribe();
-    } catch {
-      return () => undefined;
-    }
-    entry = { channel: created, handlers: new Set() };
+    entry = { channel: null, handlers: new Set() };
     entries.set(table, entry);
+    scheduleIdle(() => {
+      void connect(table, entry as Entry);
+    });
   }
   entry.handlers.add(handler);
   const current = entry;
@@ -75,11 +106,7 @@ export function subscribeTable(table: LiveTable, handler: TableHandler): Unsubsc
     current.handlers.delete(handler);
     if (current.handlers.size === 0 && entries.get(table) === current) {
       entries.delete(table);
-      try {
-        void getSupabaseBrowser().removeChannel(current.channel);
-      } catch {
-        // Tearing down must never throw into unmount.
-      }
+      if (current.channel) void teardown(current.channel);
     }
   };
 }

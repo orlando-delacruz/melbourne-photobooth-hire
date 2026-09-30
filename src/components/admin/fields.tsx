@@ -170,6 +170,8 @@ interface ImageFieldProps {
   /** Hide the alt-text input (e.g. a favicon, which has no meaningful alt). */
   showAlt?: boolean;
   hint?: string;
+  /** Longest-edge cap for the stored upload (defaults to the CMS-wide cap). */
+  maxEdge?: number;
 }
 
 export function ImageField({
@@ -181,6 +183,7 @@ export function ImageField({
   includeCaption,
   showAlt = true,
   hint,
+  maxEdge,
 }: ImageFieldProps) {
   const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -216,7 +219,7 @@ export function ImageField({
     if (!file) return;
     try {
       setLocalError(null);
-      const id = await putImage(file, "img");
+      const id = await putImage(file, "img", maxEdge ? { maxEdge } : undefined);
       const next: CmsImage = {
         key: id,
         src: getPublicImageUrl(id),
