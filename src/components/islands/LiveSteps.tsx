@@ -24,8 +24,8 @@ export default function LiveSteps({ initialHome }: { initialHome: HomePageConten
       />
       <ol className="steps">
         {home.steps.map((step, index) => (
-          <Reveal key={`${step.title}-${index}`} delay={index * 0.08} variant="scale">
-            <li className="step">
+          <li key={`${step.title}-${index}`} className="step">
+            <Reveal delay={index * 0.08} variant="scale">
               <div className="step-head">
                 <span className="step-icon">
                   <CmsIcon name={step.icon ?? "sparkles"} size={22} />
@@ -36,8 +36,8 @@ export default function LiveSteps({ initialHome }: { initialHome: HomePageConten
               </div>
               <h3>{step.title}</h3>
               <p>{step.summary}</p>
-            </li>
-          </Reveal>
+            </Reveal>
+          </li>
         ))}
       </ol>
     </section>

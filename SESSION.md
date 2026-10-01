@@ -2,92 +2,104 @@
 
 > How this works: when the user says **"hand-off context SESSION.md"**, update this file with a fresh summary of the current chat session (what was asked, what changed, decisions, state, open items). Keep it concise but include the small key details another agent needs to continue safely.
 
-- **Last updated:** 2026-09-30
+- **Last updated:** 2026-10-01
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `develop` at `5a776fa` "feature: icon seletion in admin panel" — **working tree CLEAN, in sync with `origin/develop`**. (Prior hand-off was `release/v1.2` at `70a01ac`; the operator has since moved to `develop`.)
-- **Mode:** build. This session the operator committed 5 times between turns: `99cf633` light version (theme) → `c303060` multiple delete → `ca5cfbb` merge-conflict resolve → `3963ff5` primary-button-white + larger navbar logo → `5a776fa` icon selection. **Everything is committed.** Note: the theme work was reverted once mid-session and then restored/re-committed — always re-check `git log`/`git status` before assuming state.
+- **Branch:** `performance` at `9502277` "performance v5" — **working tree CLEAN, in sync with `origin/performance`**. (Prior hand-off was `develop` at `5a776fa`; the operator moved to a `performance` branch this session.)
+- **Mode:** build. The operator committed 6 times between turns: `9187aa7` footer + hero stats UI → `65a5a04` performance → `98bd343` performance v2 → `f8d9ebc` performance v3 → `6672cd3` performance v4 → `9502277` performance v5. **Everything is committed.** Always re-check `git log`/`git status` first — the operator has shifted state mid-turn before.
 
 ---
 
-## 1. Project snapshot (unchanged basics)
+## 1. Project snapshot
 
 - **What:** SEO-focused marketing site + custom CMS/admin for a Melbourne photobooth business. Fixed **₱15,000** scope. Inquiry-only (not a booking engine).
-- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide (`lucide-react@1.45`), Motion, RHF + Zod, `@fontsource` Fraunces/Inter, `sweetalert2`, `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11`.
+- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide (`lucide-react@1.45`), Motion (now **public pages are Motion-free**), RHF + Zod (lazy-loaded in forms), `@fontsource` Fraunces/Inter, `sweetalert2`, `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11`, `sharp` (build/one-off only).
 - **Backend:** Supabase (PostgreSQL + Auth + Storage `cms-media`), RLS everywhere, cookie sessions, Astro server routes (`POST /api/inquiries`, `POST /api/reviews`, public `GET /api/health`).
-- **Rendering model:** ALL pages SSR (`prerender = false`); edge SWR 60s/300s; admin/API `no-store` (DEC-028).
-- **Decisions on record:** DEC-001 through **DEC-045** (`docs/DECISIONS.md`).
+- **Rendering model:** ALL pages SSR (`prerender = false`); public edge cache now `s-maxage=300, stale-while-revalidate=3600` (DEC-028 extended by DEC-046); admin/API `no-store`. Public CSS is **inlined** (DEC-048, `astro.config.mjs` `build.inlineStylesheets: "always"`).
+- **Homepage is React-free on initial load** (DEC-050): header/footer/messenger/hero/trust-strip are static Astro; mobile nav is vanilla; the review modal + gallery lightbox load on first click; the 7 remaining content sections are `client:visible` with `rootMargin: "0px 0px -20% 0px"`.
+- **Decisions on record:** DEC-001 through **DEC-050** (`docs/DECISIONS.md`).
 
 ---
 
 ## 2. This session, in order
 
-1. **Sunlit-coral theme build.** Token-first light theme around client `#FF6B5B`: cream page `#fbf6ef`, white surfaces, warm-charcoal ink, deep-coral accessible accent `#c43d2e`/`#a93122`, light-coral-on-dark `#ff9e90`. Public surfaces light; **footer + final CTA band stay dark**; overlays (mobile nav, lightbox, review modal) stay dark. ~114 gold/brown literals → tokens/`color-mix()` across 19 files (`live.css` mirrored with every component). DEC-040.
-2. **Multi-delete for 6 admin modules** (services/packages/gallery/faqs/testimonials/event-types). Shared `useModuleSelection` (auto-prunes on save/reload/filter), `removeMany(ids, guard?, noun)` on `useModuleList` (one `confirmBulkDelete`, then one `persist`), `SelectAllCheckbox` (indeterminate) / `RowSelectCheckbox` / `ModuleBulkBar`, per-editor checkbox columns, selection clears on success + leaving the list. Guards: services/packages min 1; testimonials scoped to visible (filtered) rows. Reuses `saveModuleItems` (delete-missing + storage GC). DEC-040→**renumbered DEC-041** after the merge below.
-3. **Merge-conflict cleanup in `docs/DECISIONS.md`.** The operator merge left `<<<<<<<` markers + duplicate DEC-040 (theme) and DEC-040 (multi-delete). Resolved: theme keeps DEC-040, multi-delete → DEC-041; register rows deduplicated; count fixed. No markers remain (verified by grep).
-4. **Gallery admin highlight ordering** (DEC-042). `loadModuleItems("mod-gallery")` now orders `highlight desc, sort_order`; `GalleryModuleEditor.saveDraft` reorders via `orderByHighlight` — changed item moves to the **end of its new group** (demote→bottom, matching the required example), untouched rows keep relative order; manual arrows confined to a group (`canMove` + disabled states). No extra DB writes (the save already rewrites `sort_order`). Side effect flagged: the public `/gallery` (sort_order-driven) inherits the grouped order after a save — awaiting client confirmation that this is acceptable.
-5. **Gallery filtering bug fix** (DEC-043). `/gallery` showed 9 of 13 — root cause was the anon RLS policy `using (highlight = true)`. New **`supabase/migration-gallery-public-read-all.sql`** replaces it with `"Public read gallery"` `using (true)`; `rls.sql` updated for fresh installs; homepage still filters `highlight !== false` in code. **Migration NOT applied by agent — operator must run it once.**
-6. **Hero stats investigation + fixes** (DEC-044). Read-only anon probe found the live blob mangled to `{value:"Liability",label:"Ensured"}`. Mobile ≤639px stats are now 2-up with wrap; `HomeEditor` stat cards are titled `label || value` (was value-only — the "disappearing label"); non-homepage `PageHeader` veil lightened (media 0.16→0.5, left→right ivory wash). `mock.ts` heroStats → `{Public Liability / ensured}`. New **`supabase/migration-hero-stat-liability.sql`** repairs the live element — **operator must run it**.
-7. **Gallery UX upgrades.** Homepage mobile carousel: 2-per-view page-stepping Prev/Next (`LiveShowcaseSection`, `body.page-home` unaffected, no swipe, no deps). `/gallery` mobile: 3-column grid + compact 2-line captions (shared ≤639px track rule removed). View More: `LiveGallerySection` slices the already-fetched array — **8 desktop / 9 mobile** initial + steps via `matchMedia`, count persists across realtime refetches, focus moves to status on exhaustion. Backend `.range()` pagination deliberately rejected (realtime replaces whole arrays; rows are KBs, images stay lazy). Later: `showcase-status` readout removed per user.
-8. **Gallery responsive count + duplicate keys.** Fixed all raw-string React keys (`LiveCard` highlights/inclusions, `LiveServiceSections`, `LivePolicies`, `LiveLegalPage`, admin `Notice`) to `index`-composite — kills the `Luxury backdrops & fun props` duplicate-key warning.
-9. **Homepage secondary→primary restyle.** `body.page-home .button--secondary.button--tone-light` gets the coral treatment (`global.css`); hero "View packages" explicitly exempted via higher-specificity `.hero-ctas` restore (quiet secondary). Carousel Prev/Next intentionally left secondary.
-10. **Hero overlap fix** (Option A). `.trust-strip` pulls up 4rem (`--space-xl`), which covered mobile hero stats. Added `body:has(.trust-strip) .hero { padding-bottom: calc(base + var(--space-xl)) }` (base + ≤639px) — no dead space when the strip is empty; `:has()` already used in this codebase.
-11. **Primary button label → white.** `--color-on-coral: #1f1814` → `#ffffff` (covers Button/header-CTA/mobile-CTA/`.iq-submit` via `--color-primary-contrast`). **Explicit client direction; ≈2.8:1, below AA** (documented in the token comment). Admin savebar primary intentionally left ink-on-light-coral for contrast.
-12. **Navbar logo larger** (desktop + mobile). CMS logo `clamp(3.25rem,5.5vw,4rem)`/18rem (3.25rem/12rem ≤639px, 9.5rem cap ≤479px); built-in mark 36px→2.75rem; wordmark up to 1.9rem. Footer logo untouched.
-13. **Shared CMS icon library** (DEC-045). New `src/lib/cms/icons.ts` (32 keys incl. all legacy) + `src/components/live/CmsIcon.tsx` (static Lucide imports, null-safe). Applied to hero stats, process steps, and services: `cms/types.ts`, `content/types.ts`, `schemas.ts` (`z.enum(ICON_NAMES)`), `groups.tsx` (all three option arrays alias `ICON_OPTIONS`), islands now render `<CmsIcon>` instead of `cardIconSvg` + `dangerouslySetInnerHTML`, admin icon selects gained live previews (`.ad-icon-select`/`.ad-icon-preview`). Seed liability stat → `shield-check`; new **`supabase/migration-hero-stat-liability-icon.sql`** matches live stat by "liability" and overrides its icon — **operator must run it**. Note: the operator edited the live stat mid-task; live now reads `{value:"Public", label:"liability ensured", icon:"clock"}`.
+1. **Read-only familiarization** of the whole codebase (no edits) — architecture, flows, conventions, caution areas. Delivered a report.
+2. **Footer redesign (light).** Replaced the dark footer with a light white surface + coral accents so the black CMS logo is visible: white bg, coral gradient top rule, ink/soft-ink text, coral section-heading underlines, ivory CTA card. Files: `Footer.astro`, `LiveFooterPanels` (live.css mirror), `tokens.css` comment. No DEC (UI only).
+3. **Hero stats cards.** Individual frosted-glass stat cards (translucent surface + `backdrop-filter`, coral top edge → later removed), forced into **one non-scrolling row** (grid `auto-flow: column`), content centered, fluid type/padding; mobile keeps a 3-card row. `hero-email` pill (mailto) added under the stats, centered on mobile.
+4. **Hero email setting.** New optional `contactEmail` on `SiteContent`/settings (type + `optionalEmail` zod + seed + `SettingsEditor` field + `LiveHomeHero` render). Live value already set to `melbournephotoboothhire.au@gmail.com`.
+5. **Performance pass (DEC-046 → DEC-050)** — see §3/§5. LCP discovery/image delivery, lazy live-sync, on-demand Turnstile, inlined CSS, Motion removal, lazy zod, upload-time image optimization + media backfill, and finally **react-dom removed from the homepage initial load**.
 
-## 3. New files (this session)
+---
 
-- `src/lib/cms/icons.ts`, `src/components/live/CmsIcon.tsx`
-- `supabase/migration-gallery-public-read-all.sql`, `supabase/migration-hero-stat-liability.sql`, `supabase/migration-hero-stat-liability-icon.sql` (all **NOT applied**)
+## 3. Performance work (DEC-046 → DEC-050), condensed
 
-## 4. Key files modified (this session)
+- **DEC-046** — Real `<img>` hero/page-header (eager, `fetchpriority=high`, explicit dims, `object-fit`); preload the actual CMS hero (was preloading the mock Pexels fallback); `Promise.all` page loads; Supabase preconnect; supabase-js loaded lazily + realtime gated; Turnstile loaded on demand from the form/modal (`lib/turnstile.ts`); upload-time WebP + max edge + 1-year cache; edge cache widened; unused Fraunces 700 dropped.
+- **DEC-047** — `scripts/optimize-cms-media.mjs` (one-off, **already run with `--apply`**): re-encoded 21 stored JPEGs to mozjpeg ≤1600px, same path + `cacheControl: 31536000`. 12.44 MB → 4.13 MB (−8.31 MB); hero 394 KB → 172 KB; `img-a16c7f48` 6.5 MB → 327 KB. `IMAGE_MAX_EDGE` 1920 → **1600**. Script is idempotent; safe to re-run.
+- **DEC-048** — `build.inlineStylesheets: "always"` (CSS inlined; 0 `.css` files emitted) to kill the render-blocking `<link>`s.
+- **DEC-049** — Removed framer-motion from all public islands (MobileNav/GalleryLightbox/ReviewModal → CSS transitions); forms use a lazy async zod resolver; realtime connects on first interaction (+15 s fallback); `CmsImage` gained optional `width`/`height` captured at upload.
+- **DEC-050** — Removed **react-dom** from the homepage initial graph: static header/footer/messenger/hero/trust-strip (+ `data-live-section`), vanilla `lib/live/liveChrome.ts` (debounced cache-busted SSR re-fetch + node swap; SEO meta patch), vanilla `MobileNav.astro`, load-on-click dialogs (`islands/reviewMount.tsx`, `islands/lightboxMount.tsx`), deferred content islands with negative `rootMargin`. Verified: react-dom's only static importers are the lazy mount modules.
 
-- Tokens/theme: `src/styles/tokens.css`, `live.css`, `global.css`, `admin.css`, `inquiry-form.css`, `mobile-nav.css`, `review-modal.css`, `gallery-lightbox.css`
-- Components: `Button/Header/Card/Hero/CtaBand/PageHeader/Accordion/GalleryTrigger/ReviewsMarquee/Footer.astro`, `pages/{404,packages}.astro`, `live/{LiveCard,CmsIcon}.tsx`
-- Islands: `Live{HomeHero,ServicesSection,PackagesSection,ShowcaseSection,Steps,FaqTeaser,Marquee,TrustStrip,AboutSections,ContactAside,FaqSupport,PageHeader,ServiceSections,ServiceJump,PlansSection,GallerySection,Policies,LegalPage,Marquee,Addons}`
-- CMS/model: `lib/cms/{types,schemas,seed,icons}.ts`, `lib/content/{mock,types}.ts`, `lib/supabase/{modules,public}.ts`, `lib/cms/storage.ts` untouched (GC reused), admin `ModuleCrud.tsx`, `alerts.ts`, 6 module editors + `HomeEditor.tsx`, `fields.tsx`, `groups.tsx`, `public/favicon.svg`, layouts `theme-color`
-- `docs/DECISIONS.md` (register now **45**)
+---
 
-## 5. Conventions to preserve (carried over + new)
+## 4. New files (this session)
 
-- **Realtime pattern:** SSR initial props → `useLiveRows`/`useLiveDoc`/`useLiveSettings` → debounced table-scoped refetch; one shared channel per table; never trust payload visibility under RLS.
-- **CSS loading (load-bearing):** island-only and page-level CSS **imports** are dropped from the prod bundle; island CSS that must ship goes through `BaseLayout.astro` static imports (`inquiry-form.css`, `review-modal.css`, `mobile-nav.css`, `gallery-lightbox.css`). Always grep `dist/` after build. Admin CSS ships via `AdminShell.astro`.
-- **Island styling:** scoped `.astro` styles do **not** reach island-rendered DOM. Use global stylesheet or `:global()`. `live.css` mirrors Astro sources; `Hero.astro`/`Card.astro`/`PageHeader.astro` are **unrendered** (keep mirrors anyway; known drift noted in DEC-045).
-- **Tokens:** `--color-coral #ff6b5b` / `--color-on-coral #fff` (client-directed, below AA); `--color-black` for package text; never hardcode palette. New tokens: `--color-accent-line-strong`, `--color-accent-glow`, `--color-header-*`.
-- **Homepage button rule + exception:** `body.page-home .button--secondary.button--tone-light` = coral; `body.page-home .hero-ctas .button--secondary...` (0,4,1) restores quiet secondary.
-- **Gallery:** View More 8/9 slicing (no backend pagination); carousel 2-per-view + buttons only; highlight grouping via `orderByHighlight` + query `highlight desc`; RLS gallery = public-read-all; realtime replaces whole arrays.
-- **Icons:** one `CmsIconName` library (`lib/cms/icons.ts`); render via `<CmsIcon>`; legacy keys preserved; unknown = render nothing.
-- **Line endings (load-bearing):** edit tool flips LF→CRLF. After every edit check uniformity and normalise back. **CRLF:** `live.css`, `global.css`, `admin.css`, `inquiry-form.css`, `mobile-nav.css`, `seed.ts`, `Header.astro`, module editors, `database.types.ts`, `schema.sql`, `seed.sql`, most `.tsx`. **LF:** `fields.tsx`, `review-modal.css`, `Card.astro`, `404.astro`, `PageHeader.astro`, `mock.ts`? (verify per file), new `.sql` migrations, `tokens.css`.
-- **Prettier drift is pre-existing** (`live.css` box-shadow lines, `TestimonialsModuleEditor` prose). Fix only lines you add; prove via HEAD-blob `prettier --check`.
-- **DECISIONS.md:** register + body must stay consistent, IDs unique (history: duplicate DEC-040 from a merge, fixed by renumbering multi-delete→041). Count is at **45**.
+- `scripts/optimize-cms-media.mjs`
+- `src/lib/turnstile.ts`, `src/lib/supabase/lazy.ts`, `src/lib/supabase/rowMappers.ts`
+- `src/lib/live/liveChrome.ts`, `src/lib/ssrIcon.ts`
+- `src/components/MobileNav.astro`, `src/components/TrustStrip.astro`
+- `src/components/islands/reviewMount.tsx`, `src/components/islands/lightboxMount.tsx`
+
+**Deleted (now dead, DEC-050):** `islands/{LiveHomeHero,LiveTrustStrip,LiveBrandLogo,LiveBrandName,LiveFooterPanels,LiveMessengerLink,SeoLive,MobileNav}.tsx`, `islands/useLiveSettings.ts`.
+
+---
+
+## 5. Key files modified / conventions to preserve
+
+- **Public chrome is static Astro + vanilla live-refresh.** `Header.astro`, `Footer.astro`, `FloatingMessenger.astro`, `Hero.astro`, `TrustStrip.astro` render SSR markup; `data-live-section="header-brand|footer-brand|footer-cta|footer-base|home-hero|trust-strip|messenger"` marks swappable nodes. `lib/live/liveChrome.ts` (init from `BaseLayout.astro`) subscribes via the shared registry and, on a debounced event, re-fetches `location.href + "?live=<ts>"` and swaps those nodes. SeoLive was replaced by this runtime (`<html data-seo-page>`).
+- **Live-sync pattern (unchanged for remaining islands):** SSR props → `useLiveRows`/`useLiveDoc` → debounced table-scoped refetch; one refcounted channel per table (`lib/realtime/channels.ts`); now **gated on first interaction** (+ 15 s fallback). `lib/realtime/fetchers.ts` uses `getLazySupabase()`; row mappers live client-free in `lib/supabase/rowMappers.ts` (do not add a supabase import there — it would pull supabase into the initial graph).
+- **Dialogs are load-on-click.** Removing `<ReviewModal client:idle>` / `<GalleryLightbox client:idle>`; `BaseLayout.astro` has a delegated click loader that dynamically imports the mount modules; review config comes from `<script type="application/json" id="review-config">` on `index.astro`. Dialogs accept `initialTrigger` / `initialAnchor` and use CSS transitions (no Motion). Do not re-add a static import of react-dom or the mount modules into a page.
+- **CSS loading (load-bearing):** `live.css` is now imported **statically by `BaseLayout.astro`** (the static chrome depends on it) alongside tokens/global/mobile-nav/gallery-lightbox/inquiry-form/review-modal. Admin CSS ships via `AdminShell.astro`. Always grep `dist/` after build.
+- **Reveal/animations:** `Reveal.tsx` is now CSS transform/opacity + IntersectionObserver. Reduced-motion is honored globally (`global.css`). The static hero has **no entrance animation on purpose** (hydration-delayed paint was hurting LCP).
+- **Tokens:** `--color-coral #ff6b5b` / `--color-on-coral #fff` (client-directed, below AA); never hardcode palette. Homepage button rule + `.hero-ctas` exception in `global.css`.
+- **Images:** uploads downscale (max edge 1600; logo 512, favicon 256) + WebP + `cacheControl: 31536000` (`lib/cms/storage.ts`). `CmsImage.width/height` captured at upload and rendered as `<img>` attributes. Existing oversized objects only shrink on re-upload — the backfill already handled the ones present at the time.
+- **Line endings (load-bearing):** the edit/write tools flip LF→CRLF. After every edit, check uniformity and normalise. This session touched mostly CRLF files (`live.css`, `global.css`, `mobile-nav.css`, `Hero.astro`, `Header/Footer/FloatingMessenger.astro`, islands, `DECISIONS.md`); `astro.config.mjs` is **LF**; new `.sql` migrations LF.
+- **DECISIONS.md:** register + body must stay consistent, IDs unique; count now **50**.
 - **Terminology:** inquiry/request; CTAs "Book Now"; "Send Us a Review".
-- Dev server at `:4321` is operator-run — SSR curls against it reflect live source. Local `.env` has test Turnstile keys; `.env` gitignored, never committed; anon key used read-only, never printed.
+- Dev server at `:4321` is operator-run — SSR curls reflect live source. `.env` gitignored; anon key read-only, never printed; service-role used only by the backfill script (never printed/committed).
+
+---
 
 ## 6. Validation status
 
-- `npm run check` → 0/0/0 (150 files incl. 2 new); `npm run build` → complete after every step; prettier clean on added lines only; `dist` greps per change (tokens, carousel/grid rules, bulk UI, icons, favicon); dev SSR curls (`/` hero stats/classes, `/gallery` item counts + View More label, all pages' headers, admin login reachability).
-- Live-DB read-backs (anon, read-only): hero blob `{Public/liability ensured/clock, 5/star rated, HD/prints}`; gallery RLS still returns highlighted-only until the migration runs.
-- **Not verified (no browser tooling — operator's job):** all visual sign-off (theme, coral/white contrast, 2-up stats, carousel, 3-col grid + captions, header photo contrast, navbar logo fit at 320–390px, admin previews/bulk UI, icon rendering); realtime add/remove mid-carousel and past View More; network panel for lazy images.
+- `npm run check` → **0/0/0** (151 files) and `npm run build` → complete after every step this session.
+- `dist` greps: framer-motion absent; zod dynamically imported by `InquiryForm`/`ReviewModal` and statically only by admin chunks; supabase statically imported only by admin chunks; **react-dom static importers = `client.BNceNWhw.js` (react-dom sub-chunk), `lightboxMount`, `reviewMount` only (all lazy)**; 0 `.css` files emitted (inlined).
+- Dev SSR curls: all routes 200, unknown → 404; homepage has 7 `client:visible` islands (no `client:idle`/`client:media`), correct hero stats/icons/labels, correct hero preload + eager `<img>`, `data-live-section` markers, `review-config` JSON, nav trigger + panel, messenger.
+- Backfill verified live: hero `img-db9c0843.jpg` now 172 KB + `max-age=31536000`; `img-a16c7f48` 327 KB.
+- **Not verified (no browser/PSI tooling — operator's job):** all visual sign-off (footer, hero cards, hero-email pill), mobile menu open/close, review modal, gallery lightbox, live chrome refresh after a CMS edit, realtime start after interaction, and **the measured mobile PSI deltas**.
+
+---
 
 ## 7. Open items / operator actions
 
-1. **Pending Supabase SQL (run ONCE each, in order where noted):** **`migration-gallery-public-read-all.sql`** (unblocks all 13 on `/gallery`), **`migration-hero-stat-liability.sql`** (value/label repair — note live was hand-edited since, so verify), **`migration-hero-stat-liability-icon.sql`** (shield icon), **`migration-packages-drop-image.sql`** (storage cleanup first, then drop cols; still present). Verify `migration-inquiry-service-package.sql` and `migration-reviews.sql` are applied. Confirm whether the public `/gallery` should stay highlight-grouped after saves (DEC-042 open question).
-2. **Re-run `supabase gen types`** and diff `database.types.ts`.
-3. **EmailJS** (`melbournephotoboothhire.au@gmail.com` service + `EMAILJS_*` in Vercel; template `{{service}}`/`{{package}}`), **Turnstile prod keys** in Vercel.
-4. **Client confirmations:** Google review URL, real imagery, Messenger username, legal content, "5 star rated" claim (REQ-REV-007), liability wording/split (`Public` / `liability ensured` vs `Public Liability` / `ensured`).
-5. **Browser QA list** (§6) + deploy smoke test (domain/HTTPS/canonical, forms → Gmail, admin auth, favicon, sitemap/robots, JSON-LD, no placeholders).
-6. **Carried over:** SEO phase (deferred); revoke the Supabase PAT (`sbp_fc49…`).
+1. **Re-run a mobile PageSpeed audit** to confirm the improvements and that `client.BcauovTw.js` (react-dom) is absent from the homepage's initial JS.
+2. **Browser QA** (no tooling here): footer/hero/hero-email visuals; mobile nav; review modal + lightbox (open/close/Escape/focus); a CMS edit updating chrome without refresh; live-sync starting after scroll/tap.
+3. **Re-upload the logo once** (Admin → Site Settings → Logo) so the explicit `width`/`height` attributes populate (existing stored logo predates the field).
+4. **Pending Supabase SQL (run ONCE each, verify which are already applied):** `migration-gallery-public-read-all.sql`, `migration-hero-stat-liability.sql`, `migration-hero-stat-liability-icon.sql`, `migration-packages-drop-image.sql`; verify `migration-inquiry-service-package.sql` and `migration-reviews.sql`. Confirm the DEC-042 open question (public `/gallery` highlight-grouped after saves).
+5. **Re-run `supabase gen types`** and diff `database.types.ts`.
+6. **EmailJS** (`melbournephotoboothhire.au@gmail.com` service + `EMAILJS_*` in Vercel; template `{{service}}`/`{{package}}`) and **Turnstile prod keys** in Vercel.
+7. **Client confirmations:** Google review URL, real imagery, Messenger username, legal content, "5 star rated" claim (REQ-REV-007), liability wording/split.
+8. **Carried over:** SEO phase (deferred); revoke the Supabase PAT (`sbp_fc49…`).
+9. **Optional follow-up:** the live-refresh module does a full cache-busted SSR fetch per realtime burst (fine at current edit frequency). Dialogs briefly show the page before the chunk loads on first open.
 
 ---
 
 ## 8. How to continue
 
 1. Read `AGENTS.md`, `CONTEXT.md`, relevant `docs/` before changing anything.
-2. Inspect implementation before edits; follow §5 (island CSS via `BaseLayout`/`AdminShell` + dist grep; `:global()`/global styles for island DOM; line-ending check after every edit; never hand-edit generated types except the regen-diff; prefer tokens).
-3. Verify with `npm run check`, `npm run build`, prettier on touched lines only; dev-server curls + `dist` grep; demand browser evidence for UI claims.
+2. Inspect before editing; preserve §5 (static chrome + `data-live-section`; do not re-import react-dom/supabase/Motion into public initial graphs; islands via `client:visible` with the negative rootMargin; line-ending normalise after every edit; prefer tokens; grep `dist/` after build).
+3. Verify with `npm run check`, `npm run build`, prettier on touched lines only, dev-server curls + `dist` grep; demand browser evidence for UI claims.
 4. Do not invent business facts, URLs, prices, policies, or imagery.
-5. Update `docs/DECISIONS.md` for material decisions (register is at **45**).
-6. Harmful/irreversible ops (DB writes/migrations beyond probes, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.
-7. The operator commits periodically between turns — check `git log`/`git status` before assuming uncommitted state (state has shifted mid-session before).
+5. Update `docs/DECISIONS.md` for material decisions (register at **50**).
+6. Harmful/irreversible ops (DB writes/migrations, storage re-uploads, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.
+7. Check `git log`/`git status` before assuming state — the operator commits periodically between turns.
 
 (End of file)

@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Fifty decision records exist (DEC-001 through DEC-050). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Fifty-one decision records exist (DEC-001 through DEC-051). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -305,6 +305,7 @@ Fifty decision records exist (DEC-001 through DEC-050). Existing selections, req
 | DEC-048 | Inline public stylesheets (remove render-blocking CSS) | Accepted | 2026-09-30 |
 | DEC-049 | Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions | Accepted | 2026-09-30 |
 | DEC-050 | Remove react-dom from the homepage initial load | Accepted | 2026-09-30 |
+| DEC-051 | Deep-ink CTA label on coral (AA contrast) and list semantics fix | Accepted | 2026-10-01 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1182,6 +1183,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/DECISIONS.md` DEC-033 (realtime), DEC-046/047/048/049 (perf pass), DEC-035 (reviews), `lib/live/liveChrome.ts`, `components/{Hero,TrustStrip,MobileNav,Header,Footer,FloatingMessenger}.astro`, `components/islands/{reviewMount,lightboxMount}.tsx`, `layouts/BaseLayout.astro`.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Re-run a mobile PageSpeed audit to confirm react-dom is absent from the homepage's initial JS; browser-QA the live chrome refresh, mobile nav, review modal and lightbox; optionally delete the now-unused `islands/*.tsx` chrome components (kept for now, tree-shaken from the bundle).
+
+### DEC-051 — Deep-ink CTA label on coral (AA contrast) and list semantics fix
+
+- **ID:** DEC-051
+- **Title:** Deep-ink CTA label on coral (AA contrast) and list semantics fix
+- **Status:** Accepted
+- **Date:** 2026-10-01
+- **Context:** A mobile accessibility audit (Lighthouse) flagged two failures. (1) **Contrast:** the coral CTAs (header "Book Now", and the homepage's "Compare all packages", "Send Us a Review", "Read all FAQs" buttons, which `global.css` renders in the primary coral treatment) use a white label on `#FF6B5B` — ~2.8:1, below the WCAG AA 4.5:1 bar for normal text. The white label had been introduced per an explicit client direction (`3963ff5`), which diverged from DEC-040's documented AA-compliant deep-ink label. (2) **List semantics:** `LiveSteps.tsx` rendered `<Reveal>` (a `<div>`) as the direct child of `<ol class="steps">`, wrapping each `<li class="step">`; screen readers require `<li>` to be a direct child of `<ul>`/`<ol>`/`<menu>`, so both the non-`<li>` children and the orphaned `<li>`s were flagged.
+- **Decision:** (1) Restore the deep-ink label by setting `--color-on-coral` back to `#1f1814` (DEC-040's value) — 6.26:1 on `#ff6b5b` and 4.96:1 on the hover `--color-coral-strong #ee5342`, both AA-compliant. The exact brand coral `#FF6B5B` is unchanged; only the label colour changes. This fixes every coral CTA at once because they all consume the token (`Button.astro`, `Header.astro`, `mobile-nav.css`, `inquiry-form.css`, `global.css` homepage override, `live.css`). (2) In `LiveSteps.tsx`, make `<li className="step">` the direct child of the `<ol>` and place `<Reveal>` inside it, matching the existing list pattern in `LiveGallerySection`/`LiveShowcaseSection`; no change to the shared `Reveal` component.
+- **Alternatives considered:** Darken `--color-coral`/`--color-coral-strong` until white passes 4.5:1 — rejected (changes the exact client brand colour and has a wide blast radius across fills, gradients, rules and icons). Keep white and enlarge the label to "large text" (3:1) — rejected (the buttons are 14px/600, below the large-text threshold, and even 3:1 is not met at 2.8:1). Add `as`/`asChild` to `Reveal` to render the `<li>` itself — rejected (the existing gallery/showcase convention already nests `Reveal` inside the `<li>`, so restructuring `LiveSteps` is the smaller, consistent change).
+- **Rationale:** A single token value (`--color-on-coral`) restores AA contrast while preserving the client-directed brand coral exactly, and it is the value already recorded in DEC-040. The list fix restores valid semantics with a two-line restructure and no shared-component change.
+- **Consequences:** All coral CTAs (header, homepage secondary-as-primary buttons, mobile-nav CTA, inquiry submit) now render a deep-ink label; the rollover/hover coral also passes at 4.96:1. Visual change is confined to label colour. The white-label client direction is explicitly superseded by this record. No JS, data, API, or layout change.
+- **Related documents:** DEC-040 (original deep-ink palette decision), `src/styles/tokens.css`, `src/components/islands/LiveSteps.tsx`, `src/styles/global.css` (homepage secondary-as-primary rule), `docs/REQUIREMENTS.md` (REQ-ACC-008), `docs/DESIGN-SYSTEM.md` (§heading "Accessible contrast and states").
+- **Supersedes / Superseded by:** Supersedes the white-label portion of the `3963ff5` UI pass.
+- **Open questions or follow-up:** Re-run the mobile accessibility audit to confirm both failures clear; browser QA of the coral CTA label on header/homepage/mobile-nav/inquiry submit; confirm the client accepts the deep-ink label over the previously requested white.
 
 ## 22. Related Documentation
 
