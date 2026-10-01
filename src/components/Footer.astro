@@ -1,22 +1,40 @@
 ---
-import type { NavItem } from "./islands/MobileNav";
-import LiveBrandLogo from "./islands/LiveBrandLogo";
-import LiveBrandName from "./islands/LiveBrandName";
-import { LiveFooterBase, LiveFooterBrand, LiveFooterCta } from "./islands/LiveFooterPanels";
+import type { NavItem } from "../lib/navigation";
 import type { SiteSettingsContent } from "../lib/cms/types";
+import SocialIcon from "./SocialIcon.astro";
+import Button from "./Button.astro";
+import { ENQUIRY_HREF } from "../lib/navigation";
 
 interface Props {
   items: NavItem[];
   initialSettings: SiteSettingsContent;
 }
 const { items, initialSettings } = Astro.props;
+const logo = initialSettings.logo;
+const socials = initialSettings.socials ?? [];
+const phones = [initialSettings.phonePrimary, initialSettings.phoneSecondary].filter(
+  (phone): phone is string => Boolean(phone && phone.trim()),
+);
+const credentials = [
+  initialSettings.abn ? `ABN ${initialSettings.abn}` : null,
+  ...(initialSettings.trustItems ?? []).filter((item) => item && item.trim()),
+].filter((item): item is string => Boolean(item));
+const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <div class="footer-glow" aria-hidden="true"></div>
   <div class="container footer-top">
-    <div class="footer-brand">
-      <LiveBrandLogo client:idle initialSettings={initialSettings} />
+    <div class="footer-brand" data-live-section="footer-brand">
+      {logo?.src ? (
+        <img
+          class="brand-logo"
+          src={logo.src}
+          alt={logo.alt || initialSettings.brandName}
+          width={logo.width}
+          height={logo.height}
+        />
+      ) : null}
       <p class="brand-name">
         <span class="brand-mark" aria-hidden="true">
           <svg
@@ -34,9 +52,47 @@ const { items, initialSettings } = Astro.props;
             <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
           </svg>
         </span>
-        <LiveBrandName client:idle initialSettings={initialSettings} />
+        {initialSettings.brandName}
       </p>
-      <LiveFooterBrand client:idle initialSettings={initialSettings} />
+      <p class="brand-statement">{initialSettings.serviceAreaStatement}</p>
+      {phones.length > 0 ? (
+        <p class="footer-contact">
+          {phones.map((phone, index) => (
+            <span>
+              {index > 0 ? " · " : null}
+              <a href={`tel:${phone.replace(/[\s()]/g, "")}`}>{phone}</a>
+            </span>
+          ))}
+        </p>
+      ) : null}
+      {initialSettings.transportNote ? (
+        <p class="footer-contact">{initialSettings.transportNote}</p>
+      ) : null}
+      {initialSettings.reviewUrl ? (
+        <p class="footer-review">
+          <a href={initialSettings.reviewUrl}>Leave a Google review</a>
+        </p>
+      ) : null}
+      {socials.length > 0 ? (
+        <div class="footer-social">
+          <h2>Follow</h2>
+          <ul>
+            {socials.map((social) => (
+              <li>
+                <a
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${initialSettings.brandName} on ${social.label} (opens in a new tab)`}
+                >
+                  <SocialIcon label={social.label} />
+                  <span>{social.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
     <nav class="footer-nav" aria-label="Explore">
       <h2>Explore</h2>
@@ -59,12 +115,22 @@ const { items, initialSettings } = Astro.props;
         </li>
       </ul>
     </nav>
-    <div class="footer-cta">
-      <LiveFooterCta client:idle initialSettings={initialSettings} />
+    <div class="footer-cta" data-live-section="footer-cta">
+      <h2>{initialSettings.footerCta.title}</h2>
+      <p>{initialSettings.footerCta.lede}</p>
+      <Button href={ENQUIRY_HREF} variant="primary" tone="light" size="lg" arrow>
+        {initialSettings.footerCta.label}
+      </Button>
     </div>
   </div>
-  <div class="container footer-base">
-    <LiveFooterBase client:idle initialSettings={initialSettings} />
+  <div class="container footer-base" data-live-section="footer-base">
+    <p class="footer-copy">
+      &copy; {year} {initialSettings.brandName}. All rights reserved.
+    </p>
+    <p class="footer-area">
+      {initialSettings.serviceAreaStatement}
+      {credentials.length > 0 ? ` · ${credentials.join(" · ")}` : null}
+    </p>
   </div>
 </footer>
 <style>

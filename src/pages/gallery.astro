@@ -3,7 +3,6 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
-import GalleryLightbox from "../components/islands/GalleryLightbox";
 import LiveGallerySection from "../components/islands/LiveGallerySection";
 import {
   loadPublicContent,
@@ -67,6 +66,4 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
     fallbackImageSrc={ctaImage?.src}
     fallbackImageAlt={ctaImage?.alt}
   />
-
-  <GalleryLightbox client:idle />
 </BaseLayout>

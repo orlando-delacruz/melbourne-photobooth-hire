@@ -1,0 +1,112 @@
+---
+/**
+ * Mobile navigation (DEC-050).
+ *
+ * Static, server-rendered markup + a small vanilla controller — no React, so
+ * the mobile menu costs no framework JavaScript. The panel is hidden in the
+ * SSR HTML (`hidden`) and animated in with the CSS class `mn-panel--in`;
+ * Escape closes it and returns focus to the trigger. Styling: styles/mobile-nav.css.
+ */
+import type { NavItem } from "../lib/navigation";
+
+interface Props {
+  items: NavItem[];
+  currentPath: string;
+  ctaHref: string;
+}
+const { items, currentPath, ctaHref } = Astro.props;
+---
+
+<button
+  type="button"
+  class="mn-trigger"
+  aria-label="Open menu"
+  aria-expanded="false"
+  aria-controls="mobile-menu"
+  data-mn-trigger
+>
+  <svg
+    class="mn-icon mn-icon--menu"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M3 6h18"></path>
+    <path d="M3 12h18"></path>
+    <path d="M3 18h18"></path>
+  </svg>
+  <svg
+    class="mn-icon mn-icon--close"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M18 6 6 18"></path>
+    <path d="m6 6 12 12"></path>
+  </svg>
+</button>
+<nav id="mobile-menu" class="mn-panel" aria-label="Mobile" hidden data-mn-panel>
+  <ul class="mn-list">
+    {items.map((item) => (
+      <li>
+        <a
+          class:list={["mn-link", { "mn-link--current": currentPath === item.href }]}
+          href={item.href}
+          aria-current={currentPath === item.href ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+  <a class="mn-cta" href={ctaHref}>
+    Book Now
+  </a>
+</nav>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-mn-trigger]").forEach((trigger) => {
+    const panel = document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+    if (!panel) return;
+    let timer: number | undefined;
+    const isOpen = () => trigger.getAttribute("aria-expanded") === "true";
+
+    const open = () => {
+      window.clearTimeout(timer);
+      panel.hidden = false;
+      window.requestAnimationFrame(() => panel.classList.add("mn-panel--in"));
+      trigger.setAttribute("aria-expanded", "true");
+      trigger.setAttribute("aria-label", "Close menu");
+      document.documentElement.dataset.menuOpen = "true";
+    };
+    const close = () => {
+      panel.classList.remove("mn-panel--in");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.setAttribute("aria-label", "Open menu");
+      delete document.documentElement.dataset.menuOpen;
+      timer = window.setTimeout(() => {
+        if (!panel.classList.contains("mn-panel--in")) panel.hidden = true;
+      }, 220);
+    };
+
+    trigger.addEventListener("click", () => (isOpen() ? close() : open()));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen()) {
+        close();
+        trigger.focus();
+      }
+    });
+  });
+</script>

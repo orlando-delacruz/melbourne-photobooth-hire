@@ -1,8 +1,6 @@
 ---
-import type { NavItem } from "./islands/MobileNav";
-import MobileNav from "./islands/MobileNav";
-import LiveBrandLogo from "./islands/LiveBrandLogo";
-import LiveBrandName from "./islands/LiveBrandName";
+import MobileNav from "./MobileNav.astro";
+import type { NavItem } from "../lib/navigation";
 import type { SiteSettingsContent } from "../lib/cms/types";
 import { ENQUIRY_HREF } from "../lib/navigation";
 
@@ -12,12 +10,21 @@ interface Props {
   initialSettings: SiteSettingsContent;
 }
 const { items, currentPath, initialSettings } = Astro.props;
+const logo = initialSettings.logo;
 ---
 
 <header class="site-header" data-site-header>
   <div class="container header-inner">
-    <a class="brand" href="/">
-      <LiveBrandLogo client:idle initialSettings={initialSettings} />
+    <a class="brand" href="/" data-live-section="header-brand">
+      {logo?.src ? (
+        <img
+          class="brand-logo"
+          src={logo.src}
+          alt={logo.alt || initialSettings.brandName}
+          width={logo.width}
+          height={logo.height}
+        />
+      ) : null}
       <span class="brand-mark" aria-hidden="true">
         <svg
           width="36"
@@ -34,9 +41,7 @@ const { items, currentPath, initialSettings } = Astro.props;
           <path d="M7.5 5.5 9 3.2h6l1.5 2.3" />
         </svg>
       </span>
-      <span class="brand-name">
-        <LiveBrandName client:idle initialSettings={initialSettings} />
-      </span>
+      <span class="brand-name">{initialSettings.brandName}</span>
     </a>
     <nav class="desktop-nav" aria-label="Primary">
       <ul>

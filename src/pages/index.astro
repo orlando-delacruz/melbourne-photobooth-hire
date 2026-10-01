@@ -1,16 +1,14 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import GalleryLightbox from "../components/islands/GalleryLightbox";
+import Hero from "../components/Hero.astro";
+import TrustStrip from "../components/TrustStrip.astro";
 import LiveServicesSection from "../components/islands/LiveServicesSection";
 import LiveShowcaseSection from "../components/islands/LiveShowcaseSection";
 import LivePackagesSection from "../components/islands/LivePackagesSection";
 import LiveFaqTeaser from "../components/islands/LiveFaqTeaser";
-import LiveHomeHero from "../components/islands/LiveHomeHero";
-import LiveTrustStrip from "../components/islands/LiveTrustStrip";
 import LiveSteps from "../components/islands/LiveSteps";
 import LiveMarquee from "../components/islands/LiveMarquee";
-import ReviewModal from "../components/islands/ReviewModal";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import {
   loadPublicContent,
@@ -18,6 +16,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { heroStatValue } from "../lib/content/heroStats";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -46,10 +45,22 @@ const liveTestimonials =
 // mock fallback. Preloading the fallback while the CMS image renders (the
 // previous behaviour) wasted the request and left the real LCP undiscovered.
 const heroPreloadSrc = home.hero.background?.src || heroBackgroundImage?.src;
-setPublicCache(Astro.response.headers);
+// Derived hero stat values resolved at render (the hero is static markup).
+const heroStats = home.hero.stats.map((stat) => ({
+  ...stat,
+  value: heroStatValue(stat, liveModules.services, liveModules.packages),
+}));
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/reviews.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+const reviewConfig = {
+  eventTypes: liveModules["event-types"].map((item) => item.label),
+  ...(turnstileSiteKey ? { turnstileSiteKey } : {}),
+};
+setPublicCache(Astro.response.headers);
+// Content islands hydrate only once scrolled into the upper part of the
+// viewport, so react-dom stays off the initial mobile load (DEC-050).
+const DEFERRED = { rootMargin: "0px 0px -20% 0px" };
 ---
 
 <BaseLayout
@@ -69,42 +80,45 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   ogDescription={seo.ogDescription || undefined}
   preloadImage={heroPreloadSrc}
 >
-  <LiveHomeHero
-    client:visible
-    initial={home.hero}
-    initialServices={liveModules.services}
-    initialPackages={liveModules.packages}
-    initialSettings={siteSettings}
-    fallbackBackgroundSrc={heroBackgroundImage?.src}
-    fallbackBackgroundAlt={heroBackgroundImage?.alt}
+  <Hero
+    eyebrow={home.hero.eyebrow}
+    headline={home.hero.headline}
+    supporting={home.hero.supporting}
+    primaryHref="/contact"
+    primaryLabel={home.hero.primaryLabel}
+    secondaryHref="/packages"
+    secondaryLabel={home.hero.secondaryLabel}
+    backgroundSrc={home.hero.background?.src || heroBackgroundImage?.src}
+    backgroundAlt={home.hero.background?.alt || heroBackgroundImage?.alt}
+    stats={heroStats}
+    scrollHref="#packages-heading"
+    scrollLabel="Scroll to our packages"
   />
 
-  <LiveTrustStrip
-    client:visible
-    initialSettings={siteSettings}
-    initialEventTypes={liveModules["event-types"]}
+  <TrustStrip initialSettings={siteSettings} initialEventTypes={liveModules["event-types"]} />
+
+  <LivePackagesSection
+    client:visible={DEFERRED}
+    initial={liveModules.packages}
+    initialHome={home}
   />
 
-  <LivePackagesSection client:visible initial={liveModules.packages} initialHome={home} />
-
-  <LiveServicesSection client:visible initial={liveModules.services} initialHome={home} />
-
-  <LiveShowcaseSection client:visible initial={liveModules.gallery} initialHome={home} />
-
-  <LiveMarquee client:visible initial={liveTestimonials} initialHome={home} />
-
-  <ReviewModal
-    client:idle
-    eventTypes={liveModules["event-types"].map((item) => item.label)}
-    turnstileSiteKey={turnstileSiteKey}
+  <LiveServicesSection
+    client:visible={DEFERRED}
+    initial={liveModules.services}
+    initialHome={home}
   />
 
-  <LiveFaqTeaser client:visible initial={liveModules.faqs} initialHome={home} />
+  <LiveShowcaseSection client:visible={DEFERRED} initial={liveModules.gallery} initialHome={home} />
 
-  <LiveSteps client:visible initialHome={home} />
+  <LiveMarquee client:visible={DEFERRED} initial={liveTestimonials} initialHome={home} />
+
+  <LiveFaqTeaser client:visible={DEFERRED} initial={liveModules.faqs} initialHome={home} />
+
+  <LiveSteps client:visible={DEFERRED} initialHome={home} />
 
   <LiveCtaBand
-    client:visible
+    client:visible={DEFERRED}
     pageKey="home"
     initial={home.ctaBand}
     id="enquire-heading"
@@ -114,5 +128,10 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     fallbackImageAlt={ctaImage?.alt}
   />
 
-  <GalleryLightbox client:idle />
+  <script
+    type="application/json"
+    id="review-config"
+    is:inline
+    set:html={JSON.stringify(reviewConfig)}
+  ></script>
 </BaseLayout>

@@ -29,7 +29,12 @@ function readItems(): LightboxItem[] {
  * arrow-key navigation, focus trap). Hydrated only on pages that ship
  * gallery links.
  */
-export default function GalleryLightbox() {
+interface GalleryLightboxProps {
+  /** When mounted on demand by a trigger click, open that image immediately. */
+  initialAnchor?: HTMLAnchorElement;
+}
+
+export default function GalleryLightbox({ initialAnchor }: GalleryLightboxProps) {
   const [items, setItems] = useState<LightboxItem[]>([]);
   const [index, setIndex] = useState<number | null>(null);
   const [shown, setShown] = useState(false);
@@ -65,6 +70,17 @@ export default function GalleryLightbox() {
   }, [isOpen]);
 
   useEffect(() => () => window.clearTimeout(exitTimerRef.current), []);
+
+  // Opened on demand from a trigger click (load-on-demand mount).
+  useEffect(() => {
+    if (!initialAnchor) return;
+    const all = Array.from(document.querySelectorAll<HTMLAnchorElement>(SELECTOR));
+    const position = all.indexOf(initialAnchor);
+    if (position < 0) return;
+    setItems(readItems());
+    returnFocusRef.current = initialAnchor;
+    setIndex(position);
+  }, [initialAnchor]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {

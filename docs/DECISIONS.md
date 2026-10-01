@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Forty-nine decision records exist (DEC-001 through DEC-049). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Fifty decision records exist (DEC-001 through DEC-050). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -304,6 +304,7 @@ Forty-nine decision records exist (DEC-001 through DEC-049). Existing selections
 | DEC-047 | Media backfill and 1600px upload cap | Accepted | 2026-09-30 |
 | DEC-048 | Inline public stylesheets (remove render-blocking CSS) | Accepted | 2026-09-30 |
 | DEC-049 | Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions | Accepted | 2026-09-30 |
+| DEC-050 | Remove react-dom from the homepage initial load | Accepted | 2026-09-30 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1166,6 +1167,21 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/ARCHITECTURE.md` (§8 islands, §23 performance), `docs/DECISIONS.md` DEC-033 (realtime), DEC-035 (reviews), DEC-046/DEC-047/DEC-048 (perf pass), `lib/realtime/channels.ts`, `components/islands/{MobileNav,GalleryLightbox,ReviewModal,InquiryForm}.tsx`, `lib/cms/storage.ts`.
 - **Supersedes / Superseded by:** —
 - **Open questions or follow-up:** Operator re-uploads the logo once so the explicit dimensions appear; re-run a mobile PageSpeed audit to confirm the unused-JS drop (react-dom remains, by design).
+
+### DEC-050 — Remove react-dom from the homepage initial load
+
+- **ID:** DEC-050
+- **Title:** Remove react-dom from the homepage initial load
+- **Status:** Accepted
+- **Date:** 2026-09-30
+- **Context:** After DEC-049 the only remaining "unused JavaScript" flag was `client.BcauovTw.js` — react-dom (65.9 KiB) — pulled in by the first React island to hydrate. The homepage started 19 islands: `client:idle` chrome (header/footer brand + panels, floating Messenger, SEO), `client:media` mobile nav, and above-the-fold `client:visible` (hero, trust strip). Astro's `client:visible`/`client:idle` lazily import the component and its dependencies, so removing React from the always/early-hydrating islands keeps react-dom out of the initial graph entirely.
+- **Decision:** Move the public chrome off React and delay the interactive dialogs. (1) **Static chrome**: header brand, footer panels, floating Messenger are server-rendered Astro (no hydration). (2) **Vanilla live updates**: a small runtime (`lib/live/liveChrome.ts`) subscribes via the existing interaction-gated channel registry and, on a debounced event, re-fetches the current URL with a cache-busting query (`?live=<ts>`) and swaps `[data-live-section]` nodes with the fresh SSR markup; the seo row patches the current tab's metadata. (3) **Static homepage hero + trust ticker**: `Hero.astro`/`TrustStrip.astro` render server-side (the hero previously delayed LCP until hydration — removing that also protects LCP); CMS icons are rendered to static SVG on the server (`lib/ssrIcon.ts`). (4) **Vanilla mobile nav**: `MobileNav.astro` + a small script replace the React island. (5) **Load-on-click dialogs**: the review modal and gallery lightbox are mounted on first trigger click via dynamic `import()` (`islands/reviewMount.tsx`, `islands/lightboxMount.tsx`), so react-dom + the dialog code load only when opened. (6) **Deferred content islands**: the remaining homepage sections stay React but hydrate with `client:visible={{ rootMargin: "0px 0px -20% 0px" }}` so they only import React once scrolled into the upper viewport.
+- **Alternatives considered:** Keep react-dom and accept the flag — rejected (the user prioritised mobile metrics and the fix was bounded). Full de-React of every island (dialogs, carousel, accordion) — rejected as a larger rewrite for marginal gain; interaction-loaded dialogs keep that code on React without shipping it initially. Targeted per-field DOM patching for live chrome — rejected in favour of the generic section swap (reuses exact SSR markup, no per-field code).
+- **Rationale:** Removes the only remaining flagged chunk from the homepage's initial JavaScript without changing what visitors see or loosening live updates, dialogs, forms or SEO.
+- **Consequences:** The homepage initial graph no longer includes react-dom (verified: its only static importers are the lazy mount modules). Live chrome updates now re-render server-side (cache-busted) — a low-frequency full SSR fetch per realtime burst. Interaction-loaded dialogs fetch their chunk on first open. React remains for the below-the-fold sections and all other pages' interactive islands (contact form, gallery page, etc.), so react-dom still loads when those are reached. `live.css` is now imported statically by `BaseLayout.astro` (the static chrome depends on it).
+- **Related documents:** `docs/DECISIONS.md` DEC-033 (realtime), DEC-046/047/048/049 (perf pass), DEC-035 (reviews), `lib/live/liveChrome.ts`, `components/{Hero,TrustStrip,MobileNav,Header,Footer,FloatingMessenger}.astro`, `components/islands/{reviewMount,lightboxMount}.tsx`, `layouts/BaseLayout.astro`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Re-run a mobile PageSpeed audit to confirm react-dom is absent from the homepage's initial JS; browser-QA the live chrome refresh, mobile nav, review modal and lightbox; optionally delete the now-unused `islands/*.tsx` chrome components (kept for now, tree-shaken from the bundle).
 
 ## 22. Related Documentation
 

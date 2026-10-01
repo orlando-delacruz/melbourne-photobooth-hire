@@ -1,8 +1,19 @@
-/* Mobile navigation island styles.
+/* Mobile navigation styles.
  *
  * Plain, token-backed CSS (not styled-components) so the menu trigger and
- * panel are styled in the server-rendered HTML before hydration.
+ * panel are styled in the server-rendered HTML before any script runs.
  */
+
+/* Menu/close glyphs: the trigger swaps them via aria-expanded (no JS icon swap). */
+.mn-icon--close {
+  display: none;
+}
+.mn-trigger[aria-expanded="true"] .mn-icon--menu {
+  display: none;
+}
+.mn-trigger[aria-expanded="true"] .mn-icon--close {
+  display: block;
+}
 
 .mn-trigger {
   display: inline-flex;
@@ -52,8 +63,8 @@
   box-shadow: var(--elevation-3);
   padding: var(--space-md) var(--page-padding) var(--space-lg);
   /* CSS-driven entrance (no animation library). `.mn-panel--in` is added on
-     the frame after the panel mounts; the island unmounts after the exit
-     transition (EXIT_MS in MobileNav.tsx). */
+     the frame after the panel is shown; the vanilla controller hides the panel
+     again after the exit transition (see components/MobileNav.astro). */
   opacity: 0;
   transform: translateY(-12px);
   transition:

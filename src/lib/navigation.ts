@@ -1,4 +1,8 @@
-import type { NavItem } from "../components/islands/MobileNav";
+/** A primary navigation destination. */
+export interface NavItem {
+  href: string;
+  label: string;
+}
 
 /** Principal destinations in information-architecture order (REQ-NAV-002). */
 export const NAV_ITEMS: NavItem[] = [

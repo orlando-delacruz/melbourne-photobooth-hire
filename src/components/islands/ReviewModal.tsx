@@ -67,9 +67,13 @@ function ratingText(rating: number | undefined): string {
 export default function ReviewModal({
   eventTypes,
   turnstileSiteKey,
+  initialTrigger,
 }: {
   eventTypes: string[];
   turnstileSiteKey?: string;
+  /** When mounted on demand by a trigger click, open immediately and return
+      focus to the element that launched it. */
+  initialTrigger?: HTMLElement;
 }) {
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
@@ -108,6 +112,13 @@ export default function ReviewModal({
   }, [open]);
 
   useEffect(() => () => window.clearTimeout(exitTimerRef.current), []);
+
+  // Opened on demand from a trigger click (load-on-demand mount).
+  useEffect(() => {
+    if (!initialTrigger) return;
+    returnFocusRef.current = initialTrigger;
+    setOpen(true);
+  }, [initialTrigger]);
 
   // Trigger delegation (GalleryLightbox pattern): any [data-review-open]
   // element opens the dialog and receives focus back on close.

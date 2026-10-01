@@ -1,0 +1,110 @@
+---
+/**
+ * Homepage trust ticker (DEC-050).
+ *
+ * Static SSR markup instead of a React island (which forced react-dom onto the
+ * homepage's initial load). Business facts come from Site Settings and the
+ * Event Types module; live edits are applied by the shared vanilla chrome
+ * runtime via `data-live-section`. Icons are rendered server-side to static
+ * SVG (lib/ssrIcon). Empty facts stay hidden; the strip hides entirely when
+ * there is nothing to show.
+ */
+import {
+  BadgeCheck,
+  Briefcase,
+  Cake,
+  Gem,
+  MapPin,
+  PartyPopper,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { EventTypeItem, SiteSettingsContent } from "../lib/cms/types";
+import { lucideMarkup } from "../lib/ssrIcon";
+
+interface Props {
+  initialSettings: SiteSettingsContent;
+  initialEventTypes: EventTypeItem[];
+}
+const { initialSettings: settings, initialEventTypes } = Astro.props;
+
+type TickerItem =
+  | { kind: "area"; text: string }
+  | { kind: "phone"; text: string }
+  | { kind: "badge"; text: string; abn: boolean }
+  | { kind: "event"; text: string };
+
+const items: TickerItem[] = [
+  ...(settings.serviceAreaStatement.trim()
+    ? [{ kind: "area" as const, text: settings.serviceAreaStatement.trim() }]
+    : []),
+  ...[settings.phonePrimary, settings.phoneSecondary]
+    .filter((phone): phone is string => Boolean(phone && phone.trim()))
+    .map((phone) => ({ kind: "phone" as const, text: phone.trim() })),
+  ...(settings.abn && settings.abn.trim()
+    ? [{ kind: "badge" as const, text: `ABN ${settings.abn.trim()}`, abn: true }]
+    : []),
+  ...(settings.trustItems ?? [])
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((text) => ({ kind: "badge" as const, text, abn: false })),
+  ...initialEventTypes
+    .map((item) => item.label.trim())
+    .filter(Boolean)
+    .map((text) => ({ kind: "event" as const, text })),
+];
+
+function eventIcon(label: string): LucideIcon {
+  const text = label.toLowerCase();
+  if (text.includes("wedding") || text.includes("engagement")) return Gem;
+  if (text.includes("corporate") || text.includes("business") || text.includes("formal"))
+    return Briefcase;
+  if (text.includes("birth") || text.includes("milestone")) return Cake;
+  if (text.includes("private") || text.includes("celebration") || text.includes("christmas"))
+    return PartyPopper;
+  return Sparkles;
+}
+
+function iconFor(item: TickerItem): string {
+  switch (item.kind) {
+    case "area":
+      return lucideMarkup(MapPin, 16);
+    case "phone":
+      return lucideMarkup(Phone, 16);
+    case "badge":
+      return lucideMarkup(item.abn ? BadgeCheck : ShieldCheck, 16);
+    case "event":
+      return lucideMarkup(eventIcon(item.text), 16);
+  }
+}
+---
+
+{items.length > 0 ? (
+  <section class="trust-strip" aria-label="Business details" data-live-section="trust-strip">
+    <div
+      class="ts-viewport"
+      tabindex="0"
+      role="group"
+      aria-label="Business details (focus pauses scrolling)"
+    >
+      <ul class="ts-track">
+        {[false, true].map((clone) =>
+          items.map((item) => (
+            <li class="ts-item" aria-hidden={clone ? "true" : undefined}>
+              <span class="trust-strip__icon" aria-hidden={clone ? undefined : "true"}>
+                <Fragment set:html={iconFor(item)} />
+              </span>
+              {item.kind === "phone" && !clone ? (
+                <a href={`tel:${item.text.replace(/[\s()]/g, "")}`}>{item.text}</a>
+              ) : (
+                <span>{item.text}</span>
+              )}
+            </li>
+          )),
+        )}
+      </ul>
+    </div>
+  </section>
+) : null}

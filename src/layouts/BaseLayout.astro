@@ -3,7 +3,6 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import FloatingMessenger from "../components/FloatingMessenger.astro";
 import StructuredData from "../components/StructuredData.astro";
-import SeoLive from "../components/islands/SeoLive";
 import { getContent } from "../lib/content/repository";
 import { loadPublicPages } from "../lib/supabase/public";
 import type { SeoPageKey } from "../lib/cms/types";
@@ -19,6 +18,7 @@ import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import "../styles/tokens.css";
 import "../styles/global.css";
+import "../styles/live.css";
 import "../styles/mobile-nav.css";
 import "../styles/gallery-lightbox.css";
 // Dialog + form systems used by islands (review modal): loaded globally like
@@ -161,7 +161,7 @@ const siteSchema = {
 ---
 
 <!doctype html>
-<html lang="en-AU">
+<html lang="en-AU" data-seo-page={seoPageKey}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -223,6 +223,58 @@ const siteSchema = {
     </main>
     <Footer items={NAV_ITEMS} initialSettings={siteSettings} />
     <FloatingMessenger initialSettings={siteSettings} />
-    {seoPageKey ? <SeoLive client:idle pageKey={seoPageKey} /> : null}
+    <script>
+      import { initLiveChrome } from "../lib/live/liveChrome";
+
+      // Live chrome (static sections + SEO) without React.
+      initLiveChrome();
+
+      // Load the React dialogs on demand (first trigger click) so react-dom
+      // stays off the initial load. Falls back to normal navigation if the
+      // chunk fails to load.
+      let reviewMounted = false;
+      let lightboxMounted = false;
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const reviewTrigger = target.closest("[data-review-open]");
+        if (reviewTrigger && !reviewMounted) {
+          event.preventDefault();
+          reviewMounted = true;
+          void (async () => {
+            try {
+              const { mountReview } = await import("../components/islands/reviewMount");
+              const el = document.getElementById("review-config");
+              let config: { eventTypes?: string[]; turnstileSiteKey?: string } = {};
+              try {
+                config = el?.textContent ? JSON.parse(el.textContent) : {};
+              } catch {
+                config = {};
+              }
+              mountReview(config, reviewTrigger as HTMLElement);
+            } catch {
+              // Leave the trigger inert rather than throwing.
+            }
+          })();
+          return;
+        }
+
+        const lightboxAnchor = target.closest<HTMLAnchorElement>("[data-lightbox]");
+        if (lightboxAnchor && !lightboxMounted) {
+          event.preventDefault();
+          lightboxMounted = true;
+          void (async () => {
+            try {
+              const { mountLightbox } = await import("../components/islands/lightboxMount");
+              mountLightbox(lightboxAnchor);
+            } catch {
+              window.location.href = lightboxAnchor.href;
+            }
+          })();
+        }
+      });
+    </script>
   </body>
 </html>
