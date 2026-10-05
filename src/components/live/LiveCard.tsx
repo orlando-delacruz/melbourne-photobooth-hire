@@ -9,10 +9,29 @@ import type { CmsIconName } from "../../lib/cms/icons";
 
 export type LiveCardIcon = CmsIconName;
 
-/** Image badges overlaying the card's top-right corner. */
-const CARD_BADGE_IMAGES: Record<Exclude<PackageCardBadge, "none">, { src: string; alt: string }> = {
-  "best-seller": { src: "/images/best-seller.png", alt: "Best seller" },
-  "top-rated": { src: "/images/top-rated.png", alt: "Top rated" },
+/** Image badges overlaying the card's top-right corner.
+ * Right-sized WebP (rendered 84px desktop, 112px mobile) with 2x for retina.
+ * PNG originals kept on disk unreferenced as fallback history. */
+const CARD_BADGE_IMAGES: Record<
+  Exclude<PackageCardBadge, "none">,
+  { src: string; srcSet: string; sizes: string; width: number; height: number; alt: string }
+> = {
+  "best-seller": {
+    src: "/images/best-seller-224.webp",
+    srcSet: "/images/best-seller-112.webp 112w, /images/best-seller-224.webp 224w",
+    sizes: "(max-width: 639px) 112px, 84px",
+    width: 112,
+    height: 112,
+    alt: "Best seller",
+  },
+  "top-rated": {
+    src: "/images/top-rated-224.webp",
+    srcSet: "/images/top-rated-112.webp 112w, /images/top-rated-224.webp 224w",
+    sizes: "(max-width: 639px) 112px, 84px",
+    width: 112,
+    height: 100,
+    alt: "Top rated",
+  },
 };
 
 export interface LiveCardProps {
@@ -94,6 +113,10 @@ export default function LiveCard({
         <img
           className="card-ribbon"
           src={CARD_BADGE_IMAGES[cardBadge].src}
+          srcSet={CARD_BADGE_IMAGES[cardBadge].srcSet}
+          sizes={CARD_BADGE_IMAGES[cardBadge].sizes}
+          width={CARD_BADGE_IMAGES[cardBadge].width}
+          height={CARD_BADGE_IMAGES[cardBadge].height}
           alt={CARD_BADGE_IMAGES[cardBadge].alt}
           loading="lazy"
           decoding="async"

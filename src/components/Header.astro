@@ -3,6 +3,7 @@ import MobileNav from "./MobileNav.astro";
 import type { NavItem } from "../lib/navigation";
 import type { SiteSettingsContent } from "../lib/cms/types";
 import { ENQUIRY_HREF } from "../lib/navigation";
+import { imageSrcSet } from "../lib/images";
 
 interface Props {
   items: NavItem[];
@@ -11,6 +12,9 @@ interface Props {
 }
 const { items, currentPath, initialSettings } = Astro.props;
 const logo = initialSettings.logo;
+// CMS logo variants (320w when stored at 512w) let DPR1 screens skip the full
+// file; DPR2+ still picks the full file, so no sharpness loss.
+const logoSrcSet = logo ? imageSrcSet(logo) : undefined;
 ---
 
 <header class="site-header" data-site-header>
@@ -20,9 +24,12 @@ const logo = initialSettings.logo;
         <img
           class="brand-logo"
           src={logo.src}
+          srcset={logoSrcSet}
+          sizes={logoSrcSet ? "(max-width: 479px) 152px, 192px" : undefined}
           alt={logo.alt || initialSettings.brandName}
           width={logo.width}
           height={logo.height}
+          decoding="async"
         />
       ) : null}
       <span class="brand-mark" aria-hidden="true">
