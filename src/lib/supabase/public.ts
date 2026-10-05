@@ -183,19 +183,21 @@ export async function loadPublicSeo(key: SeoPageKey): Promise<PageMeta> {
       console.warn(`[public-content] SEO query failed for ${key}: using fallback metadata.`);
       return fallback;
     }
-    if (!data.seo_title.trim() && !data.seo_description.trim()) return fallback;
+    // Merge per field over the seed fallback. Rows are seeded empty and the
+    // client may save only some fields (for example an OG image), so a
+    // partially-filled row must not discard the saved values.
     return {
-      seoTitle: data.seo_title,
-      seoDescription: data.seo_description,
+      seoTitle: data.seo_title || fallback.seoTitle,
+      seoDescription: data.seo_description || fallback.seoDescription,
       ogImage: {
-        key: data.og_image_key,
-        src: data.og_image_src,
-        alt: data.og_image_alt,
+        key: data.og_image_key ?? fallback.ogImage.key,
+        src: data.og_image_src || fallback.ogImage.src,
+        alt: data.og_image_alt || fallback.ogImage.alt,
       },
-      keywords: data.keywords,
-      canonicalUrl: data.canonical_url,
-      ogTitle: data.og_title,
-      ogDescription: data.og_description,
+      keywords: data.keywords || fallback.keywords,
+      canonicalUrl: data.canonical_url || fallback.canonicalUrl,
+      ogTitle: data.og_title || fallback.ogTitle,
+      ogDescription: data.og_description || fallback.ogDescription,
       noindex: data.noindex,
       nofollow: data.nofollow,
     };

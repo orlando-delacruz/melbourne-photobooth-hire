@@ -5,7 +5,7 @@
 // plus the settings social list. Rendered as a dark "event noir" panel that
 // balances the light form card; human labels stay CMS-driven, only the icon
 // scaffolding and panel chrome are presentation.
-import { BadgeCheck, Clock, MapPin, Phone, Truck } from "lucide-react";
+import { BadgeCheck, Clock, Mail, MapPin, Phone, Truck } from "lucide-react";
 import type { ContactContent, SiteSettingsContent } from "../../lib/cms/types";
 import { fetchPageContent } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
@@ -62,6 +62,19 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
             </dd>
           </div>
         ) : null}
+        {settings.contactEmail ? (
+          <div className="aside-fact">
+            <dt className="aside-fact__label">
+              <span className="aside-fact__icon" aria-hidden="true">
+                <Mail size={16} />
+              </span>
+              Email
+            </dt>
+            <dd>
+              <a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>
+            </dd>
+          </div>
+        ) : null}
         {settings.abn ? (
           <div className="aside-fact">
             <dt className="aside-fact__label">
@@ -96,7 +109,7 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
       </dl>
       {socials.length > 0 ? (
         <div className="aside-social">
-          <h2 className="aside-social-heading">Follow</h2>
+          <h3 className="aside-social-heading">Follow</h3>
           <ul className="aside-social-list">
             {socials.map((social) => (
               <li key={social.url}>

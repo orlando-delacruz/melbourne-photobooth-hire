@@ -65,16 +65,16 @@ Vercel
            └── Cloudflare Turnstile
 ```
 
-Provisional production domain (pending client confirmation):
+Production domain (confirmed — see `docs/DECISIONS.md` DEC-016 and DEC-052):
 
 ```text
-melbournephotoboothhire.com.au
+www.melbournephotoboothhire.com.au
         │
         ▼
       Vercel
 ```
 
-The exact production configuration remains an implementation concern and must be verified during deployment.
+The apex hostname `melbournephotoboothhire.com.au` redirects to the canonical www host. The exact production configuration must be verified during deployment.
 
 ---
 
@@ -110,13 +110,13 @@ Manual production changes should be avoided where the same configuration can be 
 
 ## 5. Domain
 
-The production domain (confirmed 2026-09-16 — see `docs/DECISIONS.md` DEC-016) is:
+The production canonical domain (confirmed — see `docs/DECISIONS.md` DEC-016 and DEC-052) is:
 
 ```text
-melbournephotoboothhire.com.au
+www.melbournephotoboothhire.com.au
 ```
 
-Canonical URLs, sitemap URLs, metadata, and related production SEO configuration follow this domain. It is configured as the Astro `site` value in `astro.config.mjs` (DEC-016); the alternate hostname (www / non-www) must redirect to the chosen canonical hostname once DNS is connected.
+Canonical URLs, sitemap URLs, metadata, and related production SEO configuration follow this domain. It is configured as the Astro `site` value in `astro.config.mjs` (DEC-052); the apex hostname `melbournephotoboothhire.com.au` must redirect to the www host (already in place at the Vercel/DNS layer).
 
 The domain registrar is:
 
@@ -132,7 +132,7 @@ Namecheap
 Vercel
    │
    ▼
-melbournephotoboothhire.com.au
+www.melbournephotoboothhire.com.au
 ```
 
 ### 5.1 Domain Connection

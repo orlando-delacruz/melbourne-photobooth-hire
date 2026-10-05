@@ -289,7 +289,7 @@ export const mockContent: SiteContent = {
       id: "how-much",
       question: "How much does photobooth hire cost?",
       answer:
-        "Price Starts $150. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.",
+        "Packages start from $350. Extended hire is $150 per hour. Every package includes styling, HD printing, QR downloads, props and full setup and pack-down, so there are no surprise extras.",
     },
     {
       id: "whats-included",
@@ -384,9 +384,11 @@ export const mockContent: SiteContent = {
     src: "https://images.pexels.com/photos/30562607/pexels-photo-30562607.jpeg?auto=compress&cs=tinysrgb&w=1920",
     alt: "An outdoor event set with elegant tables beneath warm string lights at night",
   },
+  // No star-rating claim: it depended on placeholder testimonials and an
+  // unverified rating. The service count is derived from the live module.
   heroStats: [
-    { value: "5", label: "star rated", icon: "star" },
-    { value: "Public Liability", label: "ensured", icon: "shield-check" },
+    { value: "3", label: "booth experiences", icon: "camera", source: "services" },
+    { value: "Public Liability", label: "insured", icon: "shield-check" },
     { value: "HD", label: "prints and QR downloads", icon: "qrcode" },
   ],
   serviceImages: {

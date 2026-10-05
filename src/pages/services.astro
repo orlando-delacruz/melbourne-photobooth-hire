@@ -27,6 +27,25 @@ const servicesPage = cmsPages.services;
 // Page-header image is the likely LCP on this route; preload it (see head).
 const headerImageSrc = services[0] ? serviceImages?.[services[0].id]?.src : undefined;
 setPublicCache(Astro.response.headers);
+
+// The three confirmed services, described as Service nodes linked to the
+// business entity in the site graph (Phase 0, DEC-052). Anchors match the
+// in-page service sections.
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const areaServed = [
+  { "@type": "City", name: "Melbourne" },
+  { "@type": "AdministrativeArea", name: "Victoria" },
+];
+const serviceSchema = services.map((service) => ({
+  "@type": "Service",
+  "@id": `${siteOrigin}/services#${service.id}`,
+  name: service.name,
+  serviceType: service.name,
+  description: service.summary,
+  url: `${siteOrigin}/services#${service.id}`,
+  provider: { "@id": `${siteOrigin}/#localbusiness` },
+  areaServed,
+}));
 ---
 
 <BaseLayout
@@ -44,6 +63,7 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={headerImageSrc}
+  structuredData={serviceSchema}
 >
   <LivePageHeader
     client:visible

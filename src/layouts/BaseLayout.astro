@@ -66,7 +66,7 @@ const {
   structuredData = [],
   seoPageKey,
 } = Astro.props;
-const { site, heroBackgroundImage } = getContent();
+const { site } = getContent();
 // Site chrome (brand, footer, messenger) reads the CMS settings blob so the
 // Site Settings admin is real; hero imagery keeps its mock source for now.
 const { settings: siteSettings } = await loadPublicPages();
@@ -88,7 +88,7 @@ function faviconMime(src: string): string {
   return "image/png";
 }
 
-const siteOrigin = (Astro.site ?? new URL("https://melbournephotoboothhire.com.au")).origin;
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
 // Canonical URLs are normalised without a trailing slash (root keeps "/"),
 // unless the SEO module sets an absolute-URL override for the page.
 const canonicalPath = currentPath.replace(/\/+$/, "") || "/";
@@ -97,10 +97,12 @@ const canonicalUrl = canonicalOverride ?? new URL(canonicalPath, siteOrigin).hre
 const socialTitle = ogTitle || title;
 const socialDescription = ogDescription || description;
 
-const socialImageSrc = ogImage ?? heroBackgroundImage?.src;
+// Social image comes only from the per-page SEO setting (all public pages
+// provide a client-uploaded image). There is deliberately no global stock
+// fallback, so a placeholder can never be shared as the brand's OG image.
+const socialImageSrc = ogImage;
 const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
-const socialImageAlt =
-  ogImage && ogImageAlt ? ogImageAlt : ogImage ? brandName : heroBackgroundImage?.alt;
+const socialImageAlt = socialImageSrc ? ogImageAlt || brandName : undefined;
 
 // CMS images are served from Supabase Storage; opening the connection early
 // shortens the LCP image fetch. The Pexels mock origin is only used when a
@@ -117,14 +119,35 @@ const googleVerification =
   (import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION as string | undefined) ??
   "HemkyvmWRx4jOA7etp5IrpO5f0UIdf3jQhkP_38mvkQ";
 
+// Google Analytics 4 (Phase 0, DEC-052). Rendered only when a valid
+// Measurement ID is configured; the ID is public by design and no secret is
+// stored here. Blank (the current default) emits nothing, so no duplicate or
+// placeholder installation can occur.
+const rawGa4Id = (import.meta.env.PUBLIC_GA4_MEASUREMENT_ID as string | undefined)?.trim();
+const ga4Id = rawGa4Id && /^G-[A-Z0-9]+$/i.test(rawGa4Id) ? rawGa4Id : undefined;
+
 /**
  * Site-wide structured data.
  *
- * Only confirmed facts are emitted: brand, production URL and Melbourne
- * service area, plus CMS-saved social profile URLs (sameAs) once the client
- * provides them. Address, phone and service/price detail are deliberately
- * omitted until the client confirms them (DEC-016).
+ * Only confirmed facts are emitted: brand, production URL, contact details,
+ * Melbourne/Victoria service area and CMS-saved social profile URLs (sameAs).
+ * The business is a mobile service-area business, so no postal address is
+ * emitted (there is no public street address — DEC-016/Phase 0). No Review or
+ * AggregateRating data is emitted: the on-site testimonials are placeholder
+ * content awaiting real client reviews, and Google does not support
+ * self-serving review snippets.
  */
+const logoUrl = siteSettings.logo?.src ? new URL(siteSettings.logo.src, siteOrigin).href : undefined;
+const contactPhone = siteSettings.phonePrimary?.replace(/\s+/g, "") || undefined;
+const contactEmail = siteSettings.contactEmail?.trim() || undefined;
+const sameAs = socials.length > 0 ? socials.map((social) => social.url) : undefined;
+const areaServed = [
+  { "@type": "City", name: "Melbourne" },
+  { "@type": "AdministrativeArea", name: "Victoria" },
+];
+const businessDescription =
+  "Photobooth hire for weddings, corporate events, birthdays and private celebrations across Melbourne and Victoria.";
+
 const siteSchema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -133,10 +156,23 @@ const siteSchema = {
       "@id": `${siteOrigin}/#organization`,
       name: brandName,
       url: `${siteOrigin}/`,
-      description:
-        "Photobooth hire for weddings, birthdays, corporate events and celebrations across Melbourne, Victoria.",
-      areaServed: { "@type": "City", name: "Melbourne" },
-      ...(socials.length > 0 ? { sameAs: socials.map((social) => social.url) } : {}),
+      description: businessDescription,
+      ...(logoUrl ? { logo: logoUrl } : {}),
+      areaServed,
+      ...(sameAs ? { sameAs } : {}),
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": `${siteOrigin}/#localbusiness`,
+      name: brandName,
+      url: `${siteOrigin}/`,
+      description: businessDescription,
+      ...(logoUrl ? { image: logoUrl, logo: logoUrl } : {}),
+      ...(contactPhone ? { telephone: contactPhone } : {}),
+      ...(contactEmail ? { email: contactEmail } : {}),
+      areaServed,
+      parentOrganization: { "@id": `${siteOrigin}/#organization` },
+      ...(sameAs ? { sameAs } : {}),
     },
     {
       "@type": "WebSite",
@@ -203,6 +239,15 @@ const siteSchema = {
       <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
     ) : null}
     <link rel="icon" type={faviconType} href={faviconHref} />
+    {ga4Id ? (
+      <>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+        <script
+          is:inline
+          set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}');`}
+        />
+      </>
+    ) : null}
     <StructuredData schema={siteSchema} />
     {structuredData.map((node) => (
       <StructuredData schema={{ "@context": "https://schema.org", ...node }} />

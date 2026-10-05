@@ -70,7 +70,7 @@ export const cmsSeed: CmsContent = {
       packagesHeading: {
         eyebrow: "Packages",
         title: "All-inclusive hire, priced up front",
-        lede: "Price Starts $150. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
+        lede: "Packages start from $350. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
       },
       packagesCompareLabel: "Compare all packages",
       processHeading: {
@@ -119,7 +119,7 @@ export const cmsSeed: CmsContent = {
 
     services: {
       header: {
-        title: "Photobooth experiences",
+        title: "Photobooth hire services in Melbourne",
         eyebrow: "Our booths",
         lede: "Three ways to put a photo studio in the middle of your event, each styled, staffed and built to keep the line moving.",
         image: {
@@ -170,7 +170,7 @@ export const cmsSeed: CmsContent = {
       plansHeading: {
         eyebrow: "Choose your hire",
         title: "Priced up front, nothing hidden",
-        lede: "Price Starts $150. Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
+        lede: "Packages start from $350. Deposit confirms your date, balance due on the day. Every option can be tailored at enquiry.",
       },
       emptyState: {
         title: "Package options will be shown here once confirmed.",
@@ -404,9 +404,9 @@ export const cmsSeed: CmsContent = {
         url: "https://www.facebook.com/share/1BV42dwtgq/?mibextid=wwXIfr",
       },
     ],
-    phonePrimary: "+61 459918987",
-    phoneSecondary: "+61 402332908",
-    contactEmail: "",
+    phonePrimary: "+61 459 918 987",
+    phoneSecondary: "+61 402 332 908",
+    contactEmail: "melbournephotoboothhire.au@gmail.com",
     abn: "77363405585",
     trustItems: ["ABN Registered Business", "Public Liability Insured"],
     transportNote: "Transportation Allowance Varies Depending to Location",

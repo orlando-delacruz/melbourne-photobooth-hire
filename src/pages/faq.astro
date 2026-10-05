@@ -16,14 +16,17 @@ import { setPublicCache } from "../lib/http-cache";
 // Independent loads run in parallel to keep server response time low (LCP).
 // FAQ rows seed the live island (DEC-033): edits, creates, deletes and
 // highlight changes patch the list with no refresh.
-const [{ ctaImage }, { pages: cmsPages }, liveModules, seo] = await Promise.all([
+const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = await Promise.all([
   loadPublicContent(),
   loadPublicPages(),
   loadPublicModules(),
   loadPublicSeo("faq"),
 ]);
 const faqPage = cmsPages.faq;
-const headerImageSrc = ctaImage?.src;
+// The FAQ header uses a client-uploaded service photo; the previous Pexels
+// placeholder is no longer used as production imagery (Phase 0, DEC-052).
+const headerImage = serviceImages?.["360-video-booth"] ?? serviceImages?.["premium-photobooth"];
+const headerImageSrc = headerImage?.src;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -48,7 +51,7 @@ setPublicCache(Astro.response.headers);
     pageKey="faq"
     initial={faqPage.header}
     imageSrc={headerImageSrc}
-    imageAlt={ctaImage?.alt}
+    imageAlt={headerImage?.alt}
   />
 
   {liveModules.faqs.length === 0 ? (

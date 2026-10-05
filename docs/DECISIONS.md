@@ -306,6 +306,7 @@ Fifty-one decision records exist (DEC-001 through DEC-051). Existing selections,
 | DEC-049 | Unused JavaScript: interaction-gated live-sync, no Motion, lazy zod, logo dimensions | Accepted | 2026-09-30 |
 | DEC-050 | Remove react-dom from the homepage initial load | Accepted | 2026-09-30 |
 | DEC-051 | Deep-ink CTA label on coral (AA contrast) and list semantics fix | Accepted | 2026-10-01 |
+| DEC-052 | Phase 0 SEO remediation: www canonical host, confirmed facts, GA4 path | Accepted | 2026-10-05 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1198,6 +1199,26 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** DEC-040 (original deep-ink palette decision), `src/styles/tokens.css`, `src/components/islands/LiveSteps.tsx`, `src/styles/global.css` (homepage secondary-as-primary rule), `docs/REQUIREMENTS.md` (REQ-ACC-008), `docs/DESIGN-SYSTEM.md` (§heading "Accessible contrast and states").
 - **Supersedes / Superseded by:** Supersedes the white-label portion of the `3963ff5` UI pass.
 - **Open questions or follow-up:** Re-run the mobile accessibility audit to confirm both failures clear; browser QA of the coral CTA label on header/homepage/mobile-nav/inquiry submit; confirm the client accepts the deep-ink label over the previously requested white.
+
+### DEC-052 — Phase 0 SEO remediation: www canonical host, confirmed facts, GA4 path
+
+- **ID:** DEC-052
+- **Title:** Phase 0 SEO remediation: www canonical host, confirmed facts, GA4 path
+- **Status:** Accepted
+- **Date:** 2026-10-05
+- **Context:** The Phase 0 baseline audit (`docs/seo/PHASE-0.md`) confirmed launch-blocking issues: every canonical/OG/sitemap URL used the non-www host while the live apex domain 308-redirects to `www` (so every canonical redirected); the live `/services` H1 contained internal test copy ("Photobooth testing"); public pricing said "Price Starts $150" while packages start at $350; the hero displayed an unverified "5 star-rated" claim with placeholder testimonials; `Public Liability ensured` was misspelled; the contact email existed in the CMS but was never rendered; `og:image`/FAQ header fell back to hotlinked Pexels placeholders; and no analytics existed. The client then confirmed: official canonical domain `https://www.melbournephotoboothhire.com.au/`; packages start from $350; Public Liability Insured is current; business email `melbournephotoboothhire.au@gmail.com`; no Google Business Profile yet; GA4 approved; the three services and four target occasions; on-site testimonials remain placeholders to be replaced through the CMS.
+- **Decision:**
+  1. **Canonical host.** `astro.config.mjs` `site`, the explicit sitemap URL list, `public/robots.txt` and the `BaseLayout` fallback origin all use `https://www.melbournephotoboothhire.com.au`. The apex → www redirect is left to the existing Vercel/DNS configuration (already in place).
+  2. **Content corrections.** The live CMS rows were corrected via `scripts/phase0-cms-fixes.mjs` (mirrored in `supabase/migration-phase0-seo-fixes.sql`): test H1 replaced with "Photobooth hire services in Melbourne"; pricing ledes and the FAQ answer now say "Packages start from $350" (the $150 extended-hire add-on price is retained as an add-on); the hero's unverified "5 / star-rated" stat is replaced by the derived services count ("3 / booth experiences"); "ensured" → "insured"; phones formatted as approved; package card duration label, duplicate inclusion, US spelling and "Full Liability Insured" label corrected; `contactEmail` set and rendered in the contact aside and footer.
+  3. **Trust and schema.** `BaseLayout` adds a `ProfessionalService` node (name, URL, logo, telephone, email, Melbourne + Victoria `areaServed`, `parentOrganization`, `sameAs`) and expands `Organization` (`logo`, expanded `areaServed`). `/services` emits one `Service` node per confirmed booth, linked to `#localbusiness`. No postal address is emitted (mobile service-area business; none confirmed). No `Review`/`AggregateRating` is emitted: the testimonials are placeholders and Google does not support self-serving review snippets. No Google Business Profile or review URL is invented (`reviewUrl` stays empty and the footer link stays hidden).
+  4. **Imagery.** The FAQ header no longer uses the Pexels `ctaImage` (it uses a client-uploaded service photo); the eight seeded Pexels gallery rows have `highlight` cleared so the homepage showcase and about story use client photos. The gallery page intentionally renders all public rows, so those eight rows remain until the client replaces or removes them in the admin.
+  5. **Analytics.** GA4 is implemented in `BaseLayout`, env-gated on `PUBLIC_GA4_MEASUREMENT_ID` (validated `G-` format) and loaded with `async`; a blank value emits nothing. No Measurement ID is invented or hardcoded.
+- **Alternatives considered:** Switching the site to non-www to match the code (rejected: the client confirmed www and the live host already serves www); deleting the placeholder gallery rows or repointing them at client photos (rejected: deletion is out of scope and repointing would duplicate images); emitting `LocalBusiness` with a fabricated address or `priceRange` (rejected: invented facts); adding `Review`/`AggregateRating` for placeholder testimonials (rejected: misleading and ineligible); hardcoding a GA4 ID (rejected: no confirmed ID).
+- **Rationale:** Aligns every canonical signal with the host actually serving content, removes misleading/test content, represents only client-confirmed facts in visible copy and structured data, and prepares measurement without inventing identifiers — all inside the existing Astro/CMS architecture with no new dependencies.
+- **Consequences:** Canonicals, OG URLs, JSON-LD and sitemap now use www; the CMS content changes are live immediately (within the edge cache window). The `page_seo` OG images now point at client-uploaded service photos. GA4 stays inert until the Measurement ID is supplied in Vercel env. The eight Pexels gallery rows still appear on the gallery page and must be replaced by the client.
+- **Related documents:** `docs/seo/PHASE-0.md` (baseline audit), DEC-016 (SEO foundation; domain clarified), DEC-021 (SEO module), DEC-024/DEC-028 (Supabase SSR + edge cache), `scripts/phase0-cms-fixes.mjs`, `supabase/migration-phase0-seo-fixes.sql`, `src/layouts/BaseLayout.astro`, `src/pages/services.astro`, `src/pages/faq.astro`.
+- **Supersedes / Superseded by:** Clarifies DEC-016's domain choice (non-www → www); does not supersede DEC-016 otherwise.
+- **Open questions or follow-up:** Supply `PUBLIC_GA4_MEASUREMENT_ID`; confirm the Search Console property matches the www host; replace or remove the eight placeholder gallery rows; confirm the real `reviewUrl` once a Google Business Profile exists; decide on `FAQPage`/breadcrumb schema and the event-type content depth in a later phase.
 
 ## 22. Related Documentation
 

@@ -65,6 +65,11 @@ const year = new Date().getFullYear();
           ))}
         </p>
       ) : null}
+      {initialSettings.contactEmail ? (
+        <p class="footer-contact">
+          <a href={`mailto:${initialSettings.contactEmail}`}>{initialSettings.contactEmail}</a>
+        </p>
+      ) : null}
       {initialSettings.transportNote ? (
         <p class="footer-contact">{initialSettings.transportNote}</p>
       ) : null}
