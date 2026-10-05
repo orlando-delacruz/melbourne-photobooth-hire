@@ -35,8 +35,15 @@ export default function LiveButton({
   arrow = false,
   children,
 }: LiveButtonProps) {
+  // Enquiry CTAs carry the analytics marker; the delegated listener derives
+  // the service/package context from the href (Phase 1A).
+  const analyticsAttributes = href.startsWith("/contact") ? { "data-ga-cta": "true" } : {};
   return (
-    <a href={href} className={`button button--${variant} button--tone-${tone} button--${size}`}>
+    <a
+      href={href}
+      className={`button button--${variant} button--tone-${tone} button--${size}`}
+      {...analyticsAttributes}
+    >
       <span className="button__label">{children}</span>
       {arrow ? ARROW_SVG : null}
     </a>

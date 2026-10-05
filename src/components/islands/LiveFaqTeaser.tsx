@@ -8,17 +8,17 @@ import LiveAccordion from "../live/LiveAccordion";
 import LiveButton from "../live/LiveButton";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 import { useLiveRows } from "./useLiveSync";
 
 export interface LiveFaqTeaserProps {
   initial: FaqItem[];
-  initialHome: HomePageContent;
+  initialHome: Pick<HomePageContent, "faqHeading" | "faqCtaLabel">;
 }
 
 export default function LiveFaqTeaser({ initial, initialHome }: LiveFaqTeaserProps) {
   const faqs = useLiveRows("faqs", initial, fetchFaqs);
-  const home = useLiveHome(initialHome);
+  const home = useLiveHomeSlice(initialHome);
   const heading = home.faqHeading;
   const ctaLabel = home.faqCtaLabel;
   const visible = faqs.filter((faq) => faq.highlight !== false).slice(0, 4);

@@ -7,10 +7,14 @@ import "../../styles/live.css";
 import CmsIcon from "../live/CmsIcon";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 
-export default function LiveSteps({ initialHome }: { initialHome: HomePageContent }) {
-  const home = useLiveHome(initialHome);
+export default function LiveSteps({
+  initialHome,
+}: {
+  initialHome: Pick<HomePageContent, "processHeading" | "steps">;
+}) {
+  const home = useLiveHomeSlice(initialHome);
 
   return (
     <section className="section" aria-labelledby="process-heading">

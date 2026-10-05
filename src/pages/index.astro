@@ -100,22 +100,43 @@ const DEFERRED = { rootMargin: "0px 0px -20% 0px" };
   <LivePackagesSection
     client:visible={DEFERRED}
     initial={liveModules.packages}
-    initialHome={home}
+    initialHome={{
+      packagesHeading: home.packagesHeading,
+      packagesCompareLabel: home.packagesCompareLabel,
+    }}
   />
 
   <LiveServicesSection
     client:visible={DEFERRED}
     initial={liveModules.services}
-    initialHome={home}
+    initialHome={{ servicesHeading: home.servicesHeading }}
   />
 
-  <LiveShowcaseSection client:visible={DEFERRED} initial={liveModules.gallery} initialHome={home} />
+  <LiveShowcaseSection
+    client:visible={DEFERRED}
+    initial={liveModules.gallery.filter((item) => item.highlight !== false)}
+    initialHome={{
+      showcaseHeading: home.showcaseHeading,
+      showcaseLabel: home.showcaseLabel,
+    }}
+  />
 
-  <LiveMarquee client:visible={DEFERRED} initial={liveTestimonials} initialHome={home} />
+  <LiveMarquee
+    client:visible={DEFERRED}
+    initial={liveTestimonials}
+    initialHome={{ reviewsHeading: home.reviewsHeading }}
+  />
 
-  <LiveFaqTeaser client:visible={DEFERRED} initial={liveModules.faqs} initialHome={home} />
+  <LiveFaqTeaser
+    client:visible={DEFERRED}
+    initial={liveModules.faqs}
+    initialHome={{ faqHeading: home.faqHeading, faqCtaLabel: home.faqCtaLabel }}
+  />
 
-  <LiveSteps client:visible={DEFERRED} initialHome={home} />
+  <LiveSteps
+    client:visible={DEFERRED}
+    initialHome={{ processHeading: home.processHeading, steps: home.steps }}
+  />
 
   <LiveCtaBand
     client:visible={DEFERRED}

@@ -42,7 +42,12 @@ const {
 } = Astro.props;
 ---
 
-<section class="hero" aria-labelledby="page-title" data-live-section="home-hero">
+<section
+  class="hero"
+  aria-labelledby="page-title"
+  data-live-section="home-hero"
+  data-ga-location="hero"
+>
   {backgroundSrc ? (
     <img
       class="hero-bg"

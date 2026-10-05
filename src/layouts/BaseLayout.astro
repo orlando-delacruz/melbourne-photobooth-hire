@@ -11,7 +11,6 @@ import "@fontsource/fraunces/latin-400.css";
 import "@fontsource/fraunces/latin-400-italic.css";
 import "@fontsource/fraunces/latin-500.css";
 import "@fontsource/fraunces/latin-600.css";
-import "@fontsource/fraunces/latin-600-italic.css";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -270,9 +269,13 @@ const siteSchema = {
     <FloatingMessenger initialSettings={siteSettings} />
     <script>
       import { initLiveChrome } from "../lib/live/liveChrome";
+      import { initAnalytics } from "../lib/analytics";
 
       // Live chrome (static sections + SEO) without React.
       initLiveChrome();
+
+      // GA4 conversion events (no-op when the measurement ID is blank).
+      initAnalytics();
 
       // Load the React dialogs on demand (first trigger click) so react-dom
       // stays off the initial load. Falls back to normal navigation if the

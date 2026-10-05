@@ -71,7 +71,7 @@ const { items, currentPath, ctaHref } = Astro.props;
       </li>
     ))}
   </ul>
-  <a class="mn-cta" href={ctaHref}>
+  <a class="mn-cta" href={ctaHref} data-ga-cta="true" data-ga-location="mobile_nav">
     Book Now
   </a>
 </nav>

@@ -2312,6 +2312,15 @@ body:has(.trust-strip) .hero {
   width: 100%;
   justify-content: center;
 }
+.faq-support .faq-support-link {
+  position: relative;
+  z-index: 1;
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-small);
+}
+.faq-support .faq-support-link a {
+  color: var(--color-accent-strong);
+}
 
 /* ── About page (mirror about.astro) ─────────────────────────────────── */
 .story {

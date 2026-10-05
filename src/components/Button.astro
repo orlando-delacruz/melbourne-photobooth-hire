@@ -26,9 +26,12 @@ const classes = [
 ]
   .filter(Boolean)
   .join(" ");
+// Enquiry CTAs carry the analytics marker; the delegated listener derives the
+// service/package context from the href (Phase 1A).
+const analyticsAttributes = href.startsWith("/contact") ? { "data-ga-cta": "true" } : {};
 ---
 
-<a class={classes} href={href}>
+<a class={classes} href={href} {...analyticsAttributes}>
   <span class="button__label">
     <slot />
   </span>

@@ -6,6 +6,7 @@ import type { InquiryInput } from "../../lib/validation/inquiry";
 import type { PackageItem, ServiceItem } from "../../lib/cms/types";
 import { fetchEventTypes, fetchPackages, fetchServices } from "../../lib/realtime/fetchers";
 import { ensureTurnstile } from "../../lib/turnstile";
+import { trackEvent } from "../../lib/analytics";
 import { useLiveRows } from "./useLiveSync";
 
 /**
@@ -187,6 +188,13 @@ export default function InquiryForm({
         message?: unknown;
       } | null;
       if (response.ok && payload?.ok === true) {
+        // Conversion fires only after the API confirms receipt. Service and
+        // package names are non-PII context; contact fields are never sent.
+        trackEvent("generate_lead", {
+          form_name: "event_enquiry",
+          service: values.service,
+          package: values.package,
+        });
         resetTurnstile();
         setPhase("received");
         return;

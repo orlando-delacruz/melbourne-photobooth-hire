@@ -10,12 +10,12 @@ import LiveButton from "../live/LiveButton";
 import LiveGalleryFigure from "../live/LiveGalleryFigure";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 import { useLiveRows } from "./useLiveSync";
 
 export interface LiveShowcaseSectionProps {
   initial: GalleryItem[];
-  initialHome: HomePageContent;
+  initialHome: Pick<HomePageContent, "showcaseHeading" | "showcaseLabel">;
 }
 
 /** Items per carousel page on mobile. Desktop keeps the full grid. */
@@ -23,7 +23,7 @@ const MOBILE_PER_PAGE = 2;
 
 export default function LiveShowcaseSection({ initial, initialHome }: LiveShowcaseSectionProps) {
   const gallery = useLiveRows("gallery_items", initial, fetchGallery);
-  const home = useLiveHome(initialHome);
+  const home = useLiveHomeSlice(initialHome);
   const [page, setPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 

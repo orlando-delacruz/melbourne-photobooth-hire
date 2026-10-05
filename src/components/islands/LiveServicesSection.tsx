@@ -11,17 +11,17 @@ import "../../styles/live.css";
 import LiveCard from "../live/LiveCard";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 import { useLiveRows } from "./useLiveSync";
 
 export interface LiveServicesSectionProps {
   initial: ServiceItem[];
-  initialHome: HomePageContent;
+  initialHome: Pick<HomePageContent, "servicesHeading">;
 }
 
 export default function LiveServicesSection({ initial, initialHome }: LiveServicesSectionProps) {
   const services = useLiveRows("services", initial, fetchServices);
-  const home = useLiveHome(initialHome);
+  const home = useLiveHomeSlice(initialHome);
   const heading = home.servicesHeading;
   const visible = services.filter((service) => service.highlight !== false);
 

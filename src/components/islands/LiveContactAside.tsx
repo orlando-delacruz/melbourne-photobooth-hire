@@ -32,7 +32,7 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
   );
 
   return (
-    <aside className="contact-aside">
+    <aside className="contact-aside" data-ga-location="contact_details">
       <div className="contact-aside__glow" aria-hidden="true" />
       <dl className="aside-facts">
         <div className="aside-fact">

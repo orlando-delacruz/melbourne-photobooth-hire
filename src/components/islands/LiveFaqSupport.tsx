@@ -29,6 +29,9 @@ export default function LiveFaqSupport({ initialPage }: { initialPage: FaqPageCo
       <LiveButton href="/contact" variant="primary" tone="light" size="lg" arrow>
         {page.support.label}
       </LiveButton>
+      <p className="faq-support-link">
+        <a href="/services">Explore our photobooth services</a>
+      </p>
     </div>
   );
 }

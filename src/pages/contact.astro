@@ -100,6 +100,10 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
 
       <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
     </div>
+    <p class="contact-links">
+      Not sure which booth fits? <a href="/services">Compare our photobooth services</a> or
+      <a href="/packages">view packages and pricing</a>.
+    </p>
   </section>
 </BaseLayout>
 
@@ -114,6 +118,14 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
     gap: var(--space-xl);
     max-width: 48rem;
     margin-inline: auto;
+  }
+
+  .contact-links {
+    max-width: 48rem;
+    margin: var(--space-lg) auto 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+    text-align: center;
   }
 
   .form-card {

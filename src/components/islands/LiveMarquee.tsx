@@ -13,7 +13,7 @@ import { fetchTestimonials } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 import { useLiveRows } from "./useLiveSync";
 
 const STAR_PATH =
@@ -47,10 +47,10 @@ export default function LiveMarquee({
   initialHome,
 }: {
   initial: TestimonialItem[];
-  initialHome: HomePageContent;
+  initialHome: Pick<HomePageContent, "reviewsHeading">;
 }) {
   const testimonials = useLiveRows("testimonials", initial, fetchTestimonials);
-  const home = useLiveHome(initialHome);
+  const home = useLiveHomeSlice(initialHome);
   if (testimonials.length === 0) return null;
   const heading = home.reviewsHeading;
 

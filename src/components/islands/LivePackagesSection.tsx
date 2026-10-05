@@ -8,19 +8,19 @@ import LiveButton from "../live/LiveButton";
 import LiveCard from "../live/LiveCard";
 import LiveSectionHeading from "../live/LiveSectionHeading";
 import Reveal from "./Reveal";
-import { useLiveHome } from "./useLiveHome";
+import { useLiveHomeSlice } from "./useLiveHome";
 import { useLiveRows } from "./useLiveSync";
 
 import type { HomePageContent, PackageItem } from "../../lib/cms/types";
 
 export interface LivePackagesSectionProps {
   initial: PackageItem[];
-  initialHome: HomePageContent;
+  initialHome: Pick<HomePageContent, "packagesHeading" | "packagesCompareLabel">;
 }
 
 export default function LivePackagesSection({ initial, initialHome }: LivePackagesSectionProps) {
   const packages = useLiveRows("packages", initial, fetchPackages);
-  const home = useLiveHome(initialHome);
+  const home = useLiveHomeSlice(initialHome);
   const heading = home.packagesHeading;
   const compareLabel = home.packagesCompareLabel;
   const visible = packages.filter((pkg) => pkg.highlight !== false);

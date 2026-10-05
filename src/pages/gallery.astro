@@ -56,6 +56,10 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
     emptyState={galleryPage.emptyState}
   />
 
+  <p class="gallery-services-link">
+    Looking for a specific booth? <a href="/services">Explore our photobooth services</a>.
+  </p>
+
   <LiveCtaBand
     client:visible
     pageKey="gallery"
@@ -67,3 +71,11 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
     fallbackImageAlt={ctaImage?.alt}
   />
 </BaseLayout>
+
+<style>
+  .gallery-services-link {
+    margin: var(--space-lg) 0 0;
+    color: var(--color-ink-soft);
+    font-size: var(--text-small);
+  }
+</style>
