@@ -16,6 +16,10 @@ export interface LivePageHeaderProps {
   initial: Pick<PageHeaderContent, "title" | "eyebrow" | "lede">;
   imageSrc?: string;
   imageAlt?: string;
+  /** Responsive `srcset` for the header/LCP image; omitted for legacy images. */
+  imageSrcSet?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   rule?: boolean;
   children?: ReactNode;
 }
@@ -25,6 +29,9 @@ export default function LivePageHeader({
   initial,
   imageSrc,
   imageAlt,
+  imageSrcSet,
+  imageWidth,
+  imageHeight,
   rule = true,
   children,
 }: LivePageHeaderProps) {
@@ -40,9 +47,11 @@ export default function LivePageHeader({
           <img
             className="page-header__media"
             src={imageSrc}
+            srcSet={imageSrcSet}
+            sizes={imageSrcSet ? "100vw" : undefined}
             alt=""
-            width={1600}
-            height={900}
+            width={imageWidth ?? 1600}
+            height={imageHeight ?? 900}
             loading="eager"
             decoding="async"
             fetchPriority="high"

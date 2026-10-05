@@ -21,7 +21,13 @@ export function getEventTypes(): string[] {
 function serviceImage(modules: CmsModules, id: string): SampleImage | undefined {
   const item = modules.services.find((service) => service.id === id);
   if (!item) return undefined;
-  return { src: item.image.src, alt: item.image.alt || item.name };
+  return {
+    src: item.image.src,
+    alt: item.image.alt || item.name,
+    variants: item.image.variants,
+    width: item.image.width,
+    height: item.image.height,
+  };
 }
 
 /**

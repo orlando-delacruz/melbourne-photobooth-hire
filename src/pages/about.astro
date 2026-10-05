@@ -10,6 +10,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -21,7 +22,8 @@ const [{ serviceImages, ctaImage }, { pages: cmsPages }, liveModules, seo] = awa
   loadPublicSeo("about"),
 ]);
 const aboutPage = cmsPages.about;
-const headerImageSrc = serviceImages?.["roaming-photobooth"]?.src;
+const headerImage = serviceImages?.["roaming-photobooth"];
+const headerImageSrc = headerImage?.src;
 setPublicCache(Astro.response.headers);
 ---
 
@@ -40,13 +42,18 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
 >
   <LivePageHeader
     client:visible
     pageKey="about"
     initial={aboutPage.header}
     imageSrc={headerImageSrc}
-    imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   />
 
   <LiveAboutSections

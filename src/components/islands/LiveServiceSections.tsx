@@ -7,6 +7,7 @@
 // serviceImages map in lib/content/cmsSource.ts.
 import { serviceBadgeText } from "../../lib/cms/types";
 import type { ServiceItem } from "../../lib/cms/types";
+import { imageSrcSet } from "../../lib/images";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import { CHECK_SVG_INNER } from "../live/icons";
@@ -38,7 +39,11 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
               {service.image.src ? (
                 <img
                   src={service.image.src}
+                  srcSet={imageSrcSet(service.image)}
+                  sizes="(min-width: 900px) 50vw, 100vw"
                   alt={service.image.alt || service.name}
+                  width={service.image.width}
+                  height={service.image.height}
                   loading={index === 0 ? "eager" : "lazy"}
                   decoding="async"
                 />

@@ -11,6 +11,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -25,7 +26,8 @@ const [{ services, serviceImages, ctaImage }, liveModules, { pages: cmsPages }, 
   ]);
 const servicesPage = cmsPages.services;
 // Page-header image is the likely LCP on this route; preload it (see head).
-const headerImageSrc = services[0] ? serviceImages?.[services[0].id]?.src : undefined;
+const headerImage = services[0] ? serviceImages?.[services[0].id] : undefined;
+const headerImageSrc = headerImage?.src;
 setPublicCache(Astro.response.headers);
 
 // The three confirmed services, described as Service nodes linked to the
@@ -63,6 +65,8 @@ const serviceSchema = services.map((service) => ({
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
   structuredData={serviceSchema}
 >
   <LivePageHeader
@@ -70,7 +74,10 @@ const serviceSchema = services.map((service) => ({
     pageKey="services"
     initial={servicesPage.header}
     imageSrc={headerImageSrc}
-    imageAlt={serviceImages?.[services[0]?.id]?.alt}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   >
     <LiveServiceJump client:visible initial={liveModules.services} />
   </LivePageHeader>

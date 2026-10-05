@@ -32,6 +32,10 @@ interface Props {
   bodyClass?: string;
   /** URL to preload (LCP image), homepage hero background. */
   preloadImage?: string;
+  /** Responsive `srcset` for the preloaded LCP image, when variants exist. */
+  preloadImageSrcSet?: string;
+  /** `sizes` matching the preloaded LCP image's rendered layout. */
+  preloadImageSizes?: string;
   /** Social share image; defaults to the hero background image. */
   ogImage?: string;
   /** Alt text for the social share image; defaults to the brand or hero alt. */
@@ -55,6 +59,8 @@ const {
   description,
   bodyClass = "",
   preloadImage,
+  preloadImageSrcSet,
+  preloadImageSizes,
   ogImage,
   ogImageAlt,
   canonicalUrl: canonicalOverride,
@@ -235,7 +241,14 @@ const siteSchema = {
     {supabaseOrigin ? <link rel="preconnect" href={supabaseOrigin} /> : null}
     {usesMockImage ? <link rel="preconnect" href="https://images.pexels.com" crossorigin /> : null}
     {preloadImage ? (
-      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
+      <link
+        rel="preload"
+        as="image"
+        href={preloadImage}
+        imagesrcset={preloadImageSrcSet}
+        imagesizes={preloadImageSrcSet ? preloadImageSizes : undefined}
+        fetchpriority="high"
+      />
     ) : null}
     <link rel="icon" type={faviconType} href={faviconHref} />
     {ga4Id ? (

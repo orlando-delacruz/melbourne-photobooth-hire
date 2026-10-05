@@ -6,6 +6,7 @@
 // index.astro class-for-class; styles come from styles/live.css.
 import { serviceBadgeText } from "../../lib/cms/types";
 import type { HomePageContent, ServiceItem } from "../../lib/cms/types";
+import { imageSrcSet } from "../../lib/images";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveCard from "../live/LiveCard";
@@ -53,6 +54,9 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
               highlights={previewHighlights(service)}
               imageSrc={service.image.src || undefined}
               imageAlt={service.image.alt || service.name}
+              imageSrcSet={imageSrcSet(service.image)}
+              imageWidth={service.image.width}
+              imageHeight={service.image.height}
               href={`/contact?service=${encodeURIComponent(service.id)}`}
               ctaLabel="Book Now"
               cmsId={service.id}

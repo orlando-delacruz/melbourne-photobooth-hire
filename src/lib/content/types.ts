@@ -8,6 +8,7 @@
 // Phase 3 satisfies the same ContentSource interface at this seam.
 
 import type { CmsIconName } from "../cms/icons";
+import type { CmsImageVariant } from "../cms/types";
 
 export interface Service {
   id: string;
@@ -98,6 +99,10 @@ export interface SampleImage {
   src: string;
   alt: string;
   caption?: string;
+  /** Responsive variants from the CMS image (Phase 1B.6). */
+  variants?: CmsImageVariant[];
+  width?: number;
+  height?: number;
 }
 
 export interface HeroStat {

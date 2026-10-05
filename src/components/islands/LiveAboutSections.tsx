@@ -10,6 +10,7 @@ import type {
   GalleryItem,
   ServiceItem,
 } from "../../lib/cms/types";
+import { imageSrcSet } from "../../lib/images";
 import { fetchGallery, fetchPageContent, fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveSectionHeading from "../live/LiveSectionHeading";
@@ -65,9 +66,9 @@ export default function LiveAboutSections({
   const highlightedGallery = gallery.filter((item) => item.highlight !== false);
   const premium = services.find((service) => service.id === "premium-photobooth");
   const storyImage = highlightedGallery[0]
-    ? { src: highlightedGallery[0].image.src, alt: highlightedGallery[0].image.alt }
+    ? { ...highlightedGallery[0].image, alt: highlightedGallery[0].image.alt }
     : premium
-      ? { src: premium.image.src, alt: premium.image.alt || premium.name }
+      ? { ...premium.image, alt: premium.image.alt || premium.name }
       : null;
 
   return (
@@ -87,7 +88,16 @@ export default function LiveAboutSections({
         {storyImage ? (
           <Reveal delay={0.08} className="story-media" variant="blur">
             <figure className="story-figure">
-              <img src={storyImage.src} alt={storyImage.alt} loading="lazy" decoding="async" />
+              <img
+                src={storyImage.src}
+                srcSet={imageSrcSet(storyImage)}
+                sizes="(min-width: 900px) 50vw, 100vw"
+                alt={storyImage.alt}
+                width={storyImage.width}
+                height={storyImage.height}
+                loading="lazy"
+                decoding="async"
+              />
             </figure>
           </Reveal>
         ) : null}

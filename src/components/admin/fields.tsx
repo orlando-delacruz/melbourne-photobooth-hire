@@ -219,14 +219,26 @@ export function ImageField({
     if (!file) return;
     try {
       setLocalError(null);
-      const { key, width, height } = await putImage(file, "img", maxEdge ? { maxEdge } : undefined);
+      const { key, width, height, variants } = await putImage(
+        file,
+        "img",
+        maxEdge ? { maxEdge } : undefined,
+      );
+      // The stored width travels on the URL fragment so the public renderer
+      // can build an accurate `srcset` (Phase 1B.6).
+      const src = width ? `${getPublicImageUrl(key)}#w=${width}` : getPublicImageUrl(key);
       const next: CmsImage = {
         key,
-        src: getPublicImageUrl(key),
+        src,
         alt: value.alt,
         caption: value.caption,
         width,
         height,
+        variants: variants.map((variant) => ({
+          width: variant.width,
+          key: variant.key,
+          src: getPublicImageUrl(variant.key),
+        })),
       };
       onChange(next);
     } catch (error) {
@@ -246,6 +258,13 @@ export function ImageField({
         await deleteImage(value.key);
       } catch {
         // Blob removal is best-effort; the record edit proceeds.
+      }
+      for (const variant of value.variants ?? []) {
+        try {
+          await deleteImage(variant.key);
+        } catch {
+          // Variant removal is best-effort too.
+        }
       }
     }
     onChange({

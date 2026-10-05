@@ -57,6 +57,17 @@ export const PAGE_META_DEFAULTS = {
 } as const;
 
 /**
+ * One responsive variant of an uploaded image. The list always includes the
+ * stored original as its largest entry (width = intrinsic width), plus any
+ * smaller WebP variants generated at upload time (Phase 1B.6).
+ */
+export type CmsImageVariant = {
+  width: number;
+  key: string;
+  src: string;
+};
+
+/**
  * An image managed through file uploads.
  * `key` references the blob in the local image store; `src` is the fallback
  * remote URL from the seeded content (used until the image is replaced).
@@ -70,6 +81,9 @@ export interface CmsImage {
       can set explicit width/height attributes (reserves layout space). */
   width?: number;
   height?: number;
+  /** Responsive variants (including the original). Empty or absent means the
+      image predates variant generation and renders from `src` alone. */
+  variants?: CmsImageVariant[];
 }
 
 /** Editable copy for a SectionHeading block (eyebrow, title, lede). */

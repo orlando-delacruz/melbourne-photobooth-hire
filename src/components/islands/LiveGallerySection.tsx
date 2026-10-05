@@ -6,6 +6,7 @@
 // working on re-rendered anchors with no extra wiring.
 import { useEffect, useRef, useState } from "react";
 import type { EmptyStateContent, GalleryItem } from "../../lib/cms/types";
+import { imageSrcSet } from "../../lib/images";
 import { fetchGallery } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveButton from "../live/LiveButton";
@@ -89,6 +90,10 @@ export default function LiveGallerySection({ initial, emptyState }: LiveGalleryS
                 alt={item.image.alt}
                 caption={item.caption}
                 figureClass="gallery-item"
+                srcSet={imageSrcSet(item.image)}
+                sizes="(min-width: 900px) 33vw, (min-width: 640px) 50vw, 100vw"
+                width={item.image.width}
+                height={item.image.height}
               />
             </Reveal>
           </li>

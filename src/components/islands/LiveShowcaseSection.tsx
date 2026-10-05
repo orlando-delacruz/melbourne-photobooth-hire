@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { GalleryItem, HomePageContent } from "../../lib/cms/types";
+import { imageSrcSet } from "../../lib/images";
 import { fetchGallery } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveButton from "../live/LiveButton";
@@ -84,6 +85,10 @@ export default function LiveShowcaseSection({ initial, initialHome }: LiveShowca
                     caption={item.caption}
                     figureClass="showcase-item"
                     alwaysCaption
+                    srcSet={imageSrcSet(item.image)}
+                    sizes="(min-width: 640px) 33vw, 50vw"
+                    width={item.image.width}
+                    height={item.image.height}
                   />
                 </Reveal>
               </li>

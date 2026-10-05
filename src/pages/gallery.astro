@@ -10,6 +10,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -23,7 +24,7 @@ const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = awa
 const galleryPage = cmsPages.gallery;
 setPublicCache(Astro.response.headers);
 // Page-header image is the likely LCP on this route; preload it (see head).
-const headerImage = serviceImages?.["360-video-booth"]?.src;
+const headerImage = serviceImages?.["360-video-booth"];
 ---
 
 <BaseLayout
@@ -40,14 +41,19 @@ const headerImage = serviceImages?.["360-video-booth"]?.src;
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
-  preloadImage={headerImage}
+  preloadImage={headerImage?.src}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
 >
   <LivePageHeader
     client:visible
     pageKey="gallery"
     initial={galleryPage.header}
-    imageSrc={headerImage}
-    imageAlt={serviceImages?.["360-video-booth"]?.alt}
+    imageSrc={headerImage?.src}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   />
 
   <LiveGallerySection

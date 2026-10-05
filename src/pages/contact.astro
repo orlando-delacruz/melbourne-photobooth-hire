@@ -12,6 +12,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -36,7 +37,8 @@ const packageSlug = Astro.url.searchParams.get("package");
 const initialService = publicServices.find((service) => service.id === serviceSlug)?.name ?? "";
 const initialPackage = publicPackages.find((pkg) => pkg.id === packageSlug)?.name ?? "";
 // Page-header image is the likely LCP on this route; preload it (see head).
-const headerImageSrc = serviceImages?.["roaming-photobooth"]?.src;
+const headerImage = serviceImages?.["roaming-photobooth"];
+const headerImageSrc = headerImage?.src;
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
@@ -57,13 +59,18 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
 >
   <LivePageHeader
     client:visible
     pageKey="contact"
     initial={contactPage.header}
     imageSrc={headerImageSrc}
-    imageAlt={serviceImages?.["roaming-photobooth"]?.alt}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   />
 
   <section class="section contact" aria-labelledby="contact-form-heading">

@@ -11,6 +11,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -45,6 +46,8 @@ setPublicCache(Astro.response.headers);
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
 >
   <LivePageHeader
     client:visible
@@ -52,6 +55,9 @@ setPublicCache(Astro.response.headers);
     initial={faqPage.header}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   />
 
   {liveModules.faqs.length === 0 ? (

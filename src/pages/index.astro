@@ -17,6 +17,7 @@ import {
   loadPublicPages,
 } from "../lib/supabase/public";
 import { heroStatValue } from "../lib/content/heroStats";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -79,6 +80,8 @@ const DEFERRED = { rootMargin: "0px 0px -20% 0px" };
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
   preloadImage={heroPreloadSrc}
+  preloadImageSrcSet={imageSrcSet(home.hero.background)}
+  preloadImageSizes="100vw"
 >
   <Hero
     eyebrow={home.hero.eyebrow}
@@ -90,6 +93,9 @@ const DEFERRED = { rootMargin: "0px 0px -20% 0px" };
     secondaryLabel={home.hero.secondaryLabel}
     backgroundSrc={home.hero.background?.src || heroBackgroundImage?.src}
     backgroundAlt={home.hero.background?.alt || heroBackgroundImage?.alt}
+    backgroundSrcSet={imageSrcSet(home.hero.background)}
+    backgroundWidth={home.hero.background?.width}
+    backgroundHeight={home.hero.background?.height}
     stats={heroStats}
     scrollHref="#packages-heading"
     scrollLabel="Scroll to our packages"

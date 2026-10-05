@@ -30,6 +30,12 @@ export interface LiveGalleryFigureProps {
   showCaption?: boolean;
   /** Homepage showcase renders figcaption unconditionally (even when empty). */
   alwaysCaption?: boolean;
+  /** Responsive `srcset` from the CMS variants; omitted for legacy images. */
+  srcSet?: string;
+  /** `sizes` matching the grid/carousel layout. */
+  sizes?: string;
+  width?: number;
+  height?: number;
 }
 
 export default function LiveGalleryFigure({
@@ -40,6 +46,10 @@ export default function LiveGalleryFigure({
   figureClass,
   showCaption = true,
   alwaysCaption = false,
+  srcSet,
+  sizes,
+  width,
+  height,
 }: LiveGalleryFigureProps) {
   const showFigcaption = showCaption && (alwaysCaption || !!caption);
   return (
@@ -51,7 +61,16 @@ export default function LiveGalleryFigure({
         data-full={src}
         data-caption={caption}
       >
-        <img src={src} alt={alt} loading="lazy" decoding="async" />
+        <img
+          src={src}
+          srcSet={srcSet}
+          sizes={srcSet ? sizes : undefined}
+          alt={alt}
+          width={width}
+          height={height}
+          loading="lazy"
+          decoding="async"
+        />
         <span className="gallery-trigger-view" aria-hidden="true">
           {EYE_SVG}
         </span>

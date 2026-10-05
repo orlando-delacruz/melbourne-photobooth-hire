@@ -12,6 +12,7 @@ import {
   loadPublicSeo,
   loadPublicPages,
 } from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
 import { setPublicCache } from "../lib/http-cache";
 
 // Independent loads run in parallel to keep server response time low (LCP).
@@ -26,7 +27,7 @@ const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = awa
 const packagesPage = cmsPages.packages;
 setPublicCache(Astro.response.headers);
 
-const headerImage = serviceImages?.["premium-photobooth"]?.src;
+const headerImage = serviceImages?.["premium-photobooth"];
 
 function svgWrap(inner: string, size = 16): string {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
@@ -69,14 +70,19 @@ const jumpItems = [
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
-  preloadImage={headerImage}
+  preloadImage={headerImage?.src}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
 >
   <LivePageHeader
     client:visible
     pageKey="packages"
     initial={packagesPage.header}
-    imageSrc={headerImage}
-    imageAlt={serviceImages?.["premium-photobooth"]?.alt}
+    imageSrc={headerImage?.src}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
   >
     <ul class="package-jump">
       {jumpItems.map((item) => (

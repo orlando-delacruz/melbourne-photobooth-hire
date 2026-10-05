@@ -29,6 +29,10 @@ export interface LiveCardProps {
   ctaLabel?: string;
   imageSrc?: string;
   imageAlt?: string;
+  /** Responsive `srcset` from the CMS variants; omitted for legacy images. */
+  imageSrcSet?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   tone?: "light" | "dark";
   featured?: boolean;
   /** Image badge shown in the card's top-right corner. */
@@ -70,6 +74,9 @@ export default function LiveCard({
   ctaLabel,
   imageSrc,
   imageAlt,
+  imageSrcSet,
+  imageWidth,
+  imageHeight,
   tone = "light",
   featured = false,
   cardBadge = "none",
@@ -97,7 +104,11 @@ export default function LiveCard({
           <img
             className="card-image"
             src={imageSrc}
+            srcSet={imageSrcSet}
+            sizes={imageSrcSet ? "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" : undefined}
             alt={imageAlt ?? ""}
+            width={imageWidth}
+            height={imageHeight}
             loading="lazy"
             decoding="async"
           />
