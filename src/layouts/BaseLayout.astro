@@ -251,12 +251,18 @@ const siteSchema = {
       />
     ) : null}
     <link rel="icon" type={faviconType} href={faviconHref} />
+    {/* GA4 library deferred past window load so it never competes with the
+        LCP image. The dataLayer stub above queues js/config/events in order,
+        so nothing is lost when the library arrives late. */}
     {ga4Id ? (
       <>
-        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
         <script
           is:inline
           set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga4Id}');`}
+        />
+        <script
+          is:inline
+          set:html={`(function(){function l(){if(document.getElementById('ga-gtag'))return;var s=document.createElement('script');s.id='ga-gtag';s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=${ga4Id}';document.head.appendChild(s);}if(document.readyState==='complete'){l();}else{window.addEventListener('load',l,{once:true});}})();`}
         />
       </>
     ) : null}
