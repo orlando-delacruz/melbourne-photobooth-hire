@@ -1,0 +1,104 @@
+---
+export const prerender = false;
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BoothCrossLinks from "../components/BoothCrossLinks.astro";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveBoothSections from "../components/islands/LiveBoothSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
+import { buildBreadcrumbList } from "../lib/seo";
+import { setPublicCache } from "../lib/http-cache";
+
+// Independent loads run in parallel to keep server response time low (LCP).
+// The 360 blob seeds the booth island; highlighted FAQs and the 360 service
+// row seed the FAQ/schema blocks. Empty CMS rows render seed fallbacks and
+// the island omits unfilled sections, so no thin copy is ever published.
+const [{ ctaImage, serviceImages }, liveModules, { pages: cmsPages }, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicModules(),
+  loadPublicPages(),
+  loadPublicSeo("360"),
+]);
+const boothPage = cmsPages["360"];
+const boothService = liveModules.services.find((service) => service.id === "360-video-booth");
+const boothFaqs = liveModules.faqs.filter((faq) => faq.highlight !== false).slice(0, 6);
+// Page-header image is the likely LCP on this route; preload it (see head).
+const headerImage = serviceImages?.["360-video-booth"];
+const headerImageSrc = headerImage?.src;
+setPublicCache(Astro.response.headers);
+
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const areaServed = [
+  { "@type": "City", name: "Melbourne" },
+  { "@type": "AdministrativeArea", name: "Victoria" },
+];
+// The 360 service as its own node on its dedicated URL (Phase 1, DEC-055).
+// Description comes from the live Services module row — never invented.
+const serviceSchema = {
+  "@type": "Service",
+  "@id": `${siteOrigin}/360-video-booth-melbourne#service`,
+  name: boothService?.name ?? "360 Video Booth",
+  serviceType: boothService?.name ?? "360 Video Booth",
+  description: boothService?.summary ?? "",
+  url: `${siteOrigin}/360-video-booth-melbourne`,
+  provider: { "@id": `${siteOrigin}/#localbusiness` },
+  areaServed,
+};
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "360 Video Booth", path: "/360-video-booth-melbourne" },
+]);
+---
+
+<BaseLayout
+  seoPageKey="360"
+  title={seo.seoTitle || "360 Video Booth Melbourne | 360 Booth Hire for Events"}
+  description={
+    seo.seoDescription ||
+    "Hire a 360 video booth in Melbourne for weddings, corporate events and birthdays: slow-motion platform, instant QR clips and styled setup."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
+  structuredData={[serviceSchema, breadcrumbSchema]}
+>
+  <LivePageHeader
+    client:visible
+    pageKey="360"
+    initial={boothPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/360-video-booth-melbourne", label: "360 Video Booth" }]}
+    imageSrc={headerImageSrc}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
+  />
+
+  <LiveBoothSections client:visible pageKey="360" initialPage={boothPage} initialFaqs={boothFaqs} />
+
+  <BoothCrossLinks />
+
+  <LiveCtaBand
+    client:visible
+    pageKey="360"
+    initial={boothPage.ctaBand}
+    id="booth-360-enquire"
+    primaryHref="/contact?service=360-video-booth"
+    secondaryHref="/packages"
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
+  />
+</BaseLayout>

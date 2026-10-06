@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Fifty-four decision records exist (DEC-001 through DEC-054). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Fifty-eight decision records exist (DEC-001 through DEC-058). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -309,6 +309,10 @@ Fifty-four decision records exist (DEC-001 through DEC-054). Existing selections
 | DEC-052 | Phase 0 SEO remediation: www canonical host, confirmed facts, GA4 path | Accepted | 2026-10-05 |
 | DEC-053 | Breadcrumb navigation with BreadcrumbList schema; footer heading semantics | Accepted | 2026-10-06 |
 | DEC-054 | Internal-linking pass: card secondary links, services → gallery | Accepted | 2026-10-06 |
+| DEC-055 | Dedicated 360 Video Booth page (B1): route, CMS key, hub rewiring | Accepted | 2026-10-06 |
+| DEC-056 | Per-FAQ contextual link pair (single, internal-only) | Accepted | 2026-10-06 |
+| DEC-057 | Footer service-pages sub-list driven by the detail-page registry | Accepted | 2026-10-06 |
+| DEC-058 | Premium + Roaming booth pages by generalizing the booth pattern | Accepted | 2026-10-06 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1255,7 +1259,81 @@ Future records are appended here in ID order with status and date kept current.
 - **Consequences:** No new URLs; sitemap unchanged. Anchors match section `id={service.id}` (same source as the existing jump nav). No ranking change is promised; search-engine validation remains pending.
 - **Related documents:** `docs/seo/PHASE-1.md` (§10), `docs/REQUIREMENTS.md` (REQ-NAV-006), `src/components/live/LiveCard.tsx`, `src/components/islands/LiveServicesSection.tsx`, `src/components/islands/LivePlansSection.tsx`, `src/components/islands/LivePackagesSection.tsx`, `src/components/islands/LiveServiceSections.tsx`.
 - **Supersedes / Superseded by:** —
-- **Open questions or follow-up:** Per-FAQ contextual links need a CMS link-field decision; dedicated booth/occasion pages still need explicit approval (`REQ-SEO-021`).
+- **Open questions or follow-up:** Per-FAQ contextual links need a CMS link-field decision; wedding/corporate pages still need explicit approval (`REQ-SEO-021`) — 360 approval consumed by DEC-055.
+
+### DEC-055 — Dedicated 360 Video Booth page (B1): route, CMS key, hub rewiring
+
+- **ID:** DEC-055
+- **Title:** Dedicated 360 Video Booth page (B1): route, CMS key, hub rewiring
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** `docs/seo/PHASE-1.md` (§8–9) identifies the 360 cluster (*360 photobooth melbourne / 360 video booth melbourne / 360 booth hire melbourne*) as the strongest service-specific intent with competitor evidence, represented only as a `/services` anchor. The user explicitly approved a dedicated page (`REQ-SEO-021` gate passed for this URL only) with client-finalized content.
+- **Decision:**
+  1. **Route.** `/360-video-booth-melbourne` (`src/pages/360-video-booth-melbourne.astro`, SSR + edge SWR like all public pages). Not added to main nav (keeps 7-item `REQ-NAV-002`); entry via hub links. Sitemap registry 9→10 URLs.
+  2. **CMS key.** New `"360"` page key: `BoothPageContent` type (header, steps, pricing block, best-for, venue notes, FAQ copy, ctaBand, seo — reusing `ProcessStep`/`AboutValue` shapes), `boothPageSchema`, empty-shape seed fallback (never invented copy; unfilled sections omit themselves), `supabase/migration-360-page.sql` (extends both key checks; operator-run once), `schema.sql` aligned (also backfills the previously missing privacy/terms keys so fresh environments match production), admin registry entry + `BoothPageEditor` + `/admin/360-page` route + SEO-module row.
+  3. **Rendering.** `LiveBoothSections` island (blob via `useLiveDoc`, FAQs via `useLiveRows`, steps reuse `.steps` styles) + `LivePageHeader` (in-header breadcrumbs) + highlighted-FAQ block + gallery/services text links + `LiveCtaBand` to `/contact?service=360-video-booth`. Pricing panel omits itself on blank price (packages CTA remains). `Service` schema node on the new URL (description from the live module row); `BreadcrumbList` included.
+  4. **Hub rewiring.** `serviceDetailHref()` map in `src/lib/seo.ts` (single entry, extendable only on approval): homepage 360 card and `/services` 360 section link to the page instead of the anchor; `/services` stays the hub.
+- **Alternatives considered:** One section per booth page for all three booths (rejected: only 360 has the intent evidence; premium/roaming stay sections until the model proves); keyword-filtered 360 FAQs (rejected: fragile string matching — highlight order is the explicit signal); per-package→booth mapping (rejected: no such relation exists); booth-filtered gallery (rejected: same reason — honest general link instead).
+- **Rationale:** Captures the evidenced 360 intent with a full commercial section while reusing every established pattern (SSR, islands, CMS blobs, contextual enquiry, sitemap discipline) and publishing zero unconfirmed facts.
+- **Consequences:** New indexable URL (GSC inspection + indexing request post-deploy). `Service` schema now exists on two URLs (anchor node on `/services` kept stable to avoid churning indexed anchors). Migration must be operator-run before CMS saves; until then the page renders the empty fallback (verified 200, no crash, sections omitted).
+- **Related documents:** `docs/seo/PHASE-1.md` (§3, 8–9), `docs/REQUIREMENTS.md` (REQ-SEO-021 approved for this URL; REQ-NAV-002/006), `docs/ARCHITECTURE.md` (§18), DEC-036 (contextual enquiry), DEC-053 (breadcrumbs), DEC-054 (internal links).
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** CMS `360` rows must be filled before this deploys (publish gate); wedding/corporate stay sections pending GSC query evidence; GBP track stays last per client direction.
+
+### DEC-056 — Per-FAQ contextual link pair (single, internal-only)
+
+- **ID:** DEC-056
+- **Title:** Per-FAQ contextual link pair (single, internal-only)
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** `docs/seo/PHASE-1.md` (§10) prescribes contextual links from FAQ answers into commercial pages, but answers render as plain text (`LiveAccordion`: `<p>{item.answer}</p>`) with no link capability. Rich text would be a larger security/content change; an invented answer→page mapping would fabricate editorial intent.
+- **Decision:**
+  1. **One optional pair per FAQ** (`linkLabel` + `linkHref`): set together or left blank together, enforced by a `superRefine` on the faq item (field-specific errors via the existing `toFieldErrors` path). One link per answer keeps the editor simple and avoids link-stuffing.
+  2. **Internal-only:** href must match `^/(?!/)[^\s]*$` (relative path, anchors and `?service=`/`?package=` queries allowed; external, protocol-relative, `javascript:` and whitespace paths rejected). The DB check additionally rejects whitespace; the renderer re-checks before emitting, so rows written outside the admin can never produce an external link.
+  3. **Plumbing:** nullable `link_label`/`link_href` columns (`migration-faq-links.sql` + `schema.sql`; existing rows unaffected), `FaqItem` + `faqFromRow` + `LiveAccordionItem` extended, editor create/edit fields + detail row, single link rendered under the answer (`.accordion__link`, dark-tone aware). Covers `/faq`, homepage teaser, and 360 page at once. Dead `Accordion.astro` untouched.
+  4. **No pre-filled links:** targets are per-row CMS content chosen in the editor, not invented here.
+- **Alternatives considered:** Rich-text answers (rejected: sanitization burden, disproportionate scope); multiple links per answer (rejected: complexity without proven gain); hardcoded answer→page mapping (rejected: fabricated editorial intent).
+- **Rationale:** Closes the last `PHASE-1 §10` loop with the smallest safe change: structured data instead of markup, enforced pairing, triple-layer internal-only guarantee (Zod + DB + render), fully backward compatible.
+- **Consequences:** `rowMappers.ts` uses a regen-tolerant intersection type until `supabase gen types` is re-run post-migration (noted in code). Migration is operator-run. Suggested first links (CMS entry, not code): pricing answer → `/packages`, 360 answer → `/360-video-booth-melbourne`, booking answer → `/contact`.
+- **Related documents:** `docs/seo/PHASE-1.md` (§10), `docs/REQUIREMENTS.md` (REQ-NAV-006, REQ-FAQ-006), DEC-054 (internal links), `src/components/live/LiveAccordion.tsx`, `src/components/admin/editors/FaqsModuleEditor.tsx`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Fill the first per-row links in admin after deploy; OG dimensions, sitemap `lastmod`, and font trim remain separate batches.
+
+### DEC-057 — Footer service-pages sub-list driven by the detail-page registry
+
+- **ID:** DEC-057
+- **Title:** Footer service-pages sub-list driven by the detail-page registry
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** The dedicated 360 page (DEC-055) had no footer entry, and future approved service pages will need one. A new footer column would break the 4-column grid; CMS-driven footer labels would duplicate content ownership (nav labels are already static IA in `NAV_ITEMS`).
+- **Decision:**
+  1. **Single source.** `SERVICE_DETAIL_PAGES` in `src/lib/seo.ts` now holds `{ href, label }` per entry (labels are stable IA names); `serviceDetailHref()` behavior unchanged, new `serviceDetailPages()` feeds `SERVICE_LINKS` in `src/lib/navigation.ts`. Future approved pages extend the registry only — no footer edit.
+  2. **Placement.** A `footer-subnav` list (`aria-label="Service pages"`) inside the existing Explore nav, below a hairline separator, inheriting the nav link styles at small size. No grid change, no new heading level (consistent with DEC-053).
+- **Alternatives considered:** New footer column (rejected: breaks the responsive 4-column grid); CMS-driven labels (rejected: duplicates ownership, nav labels are static precedent); hardcoding the 360 link in the footer (rejected: interstitial duplication — the registry already owns the href).
+- **Rationale:** Smallest change that lists the page on every screen while making the next approved service page a one-line registry addition.
+- **Consequences:** Footer on all pages links `/360-video-booth-melbourne`. No sitemap/nav-structure change.
+- **Related documents:** DEC-055 (detail-page registry), DEC-053 (footer heading semantics), `docs/REQUIREMENTS.md` (REQ-NAV-006/008).
+- **Supersedes / Superseded by:** — Extends DEC-055.
+- **Open questions or follow-up:** None.
+
+### DEC-058 — Premium + Roaming booth pages by generalizing the booth pattern
+
+- **ID:** DEC-058
+- **Title:** Premium + Roaming booth pages by generalizing the booth pattern
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** DEC-055 proved the dedicated-booth model with the 360 page. The remaining services (Premium, Roaming) had only `/services` anchors while carrying distinct commercial intent (`PHASE-1 §9`: open-air/premium and roaming queries). The user approved building both.
+- **Decision:**
+  1. **Generalize, don't duplicate.** `LiveBoothSections` takes `pageKey`; `BoothPageEditor` takes `pageKey` + `pageName`; the detail registry holds all three entries (footer, cards, hub sections update with no further edits).
+  2. **Two routes** (`/premium-photobooth-melbourne`, `/roaming-photobooth-melbourne`), same assembly as 360: header + in-header breadcrumbs, booth sections, gallery/services links, contextual CTA, per-page `Service` node (module-row description) + `BreadcrumbList`. Sitemap 10→12. Seed fallbacks are empty shapes; `migration-booth-pages.sql` extends both key checks; `schema.sql` aligned; `seed-premium/roaming-page.sql` furnish copy derived strictly from confirmed module/FAQ text (both pass the real `boothPageSchema`).
+  3. **No booth-specific prices confirmed** (packages are duration-based), so both pricing panels omit themselves by the established rule; conversion runs via packages + enquiry CTAs.
+  4. **Differentiation honesty.** The three pages share structure but must not share substance: each seeder draws only on its own booth's module row (open-air studio vs mingling vs 360 platform). Near-duplicate CMS copy across blobs would set the pages competing — flagged, not solved, in code.
+- **Alternatives considered:** Duplicating the island/editor per booth (rejected: triple maintenance for identical logic); one dynamic `[booth].astro` route (rejected: all public pages are explicit files, and SSR routes aren't sitemap-discovered anyway); templated copy with swapped nouns (rejected: doorway-pattern risk — each seeder is hand-derived per booth).
+- **Rationale:** Completes the service architecture (`PHASE-1 §9`) at minimal marginal cost by generalizing proven pieces, publishing zero unconfirmed facts.
+- **Consequences:** `/services` title kept stable (revisit on GSC evidence only). Live DB already carries all three booth rows (verified via anon read); publish gate for premium/roaming is CMS review of the seeded copy, not furnishing.
+- **Related documents:** DEC-055 (established pattern), `docs/seo/PHASE-1.md` (§3, 8–9), `docs/REQUIREMENTS.md` (REQ-SEO-021 approved for these URLs).
+- **Supersedes / Superseded by:** — Extends DEC-055/057.
+- **Open questions or follow-up:** GSC query evidence decides whether wedding/corporate stay sections; GBP track stays last.
 
 ## 22. Related Documentation
 

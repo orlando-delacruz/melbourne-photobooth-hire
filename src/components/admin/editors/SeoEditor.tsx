@@ -23,6 +23,9 @@ interface SeoPage {
 const SEO_PAGES: SeoPage[] = [
   { key: "home", label: "Homepage", href: "/" },
   { key: "services", label: "Services", href: "/services" },
+  { key: "360", label: "360 Video Booth", href: "/360-video-booth-melbourne" },
+  { key: "premium", label: "Premium Photobooth", href: "/premium-photobooth-melbourne" },
+  { key: "roaming", label: "Roaming Photobooth", href: "/roaming-photobooth-melbourne" },
   { key: "packages", label: "Packages", href: "/packages" },
   { key: "gallery", label: "Gallery", href: "/gallery" },
   { key: "about", label: "About", href: "/about" },

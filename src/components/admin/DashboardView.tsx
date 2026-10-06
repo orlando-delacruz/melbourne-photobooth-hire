@@ -59,6 +59,12 @@ function summarizePage(key: CmsPageKey, content: CmsContent): string {
       return "Page header, search and support copy; questions live in Modules";
     case "contact":
       return "Page header, aside facts and form copy";
+    case "360":
+    case "premium":
+    case "roaming": {
+      const page = content.pages[key];
+      return `${page.steps.length} steps, ${page.bestFor.length} occasions, ${page.venueNotes.length} venue notes`;
+    }
   }
 }
 

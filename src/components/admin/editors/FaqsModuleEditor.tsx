@@ -27,9 +27,15 @@ type View =
   | { name: "edit"; id: string };
 
 function blankFaq(): FaqItem {
-  return { id: createId("faq"), question: "", answer: "", highlight: true };
+  return {
+    id: createId("faq"),
+    question: "",
+    answer: "",
+    highlight: true,
+    linkLabel: "",
+    linkHref: "",
+  };
 }
-
 export default function FaqsModuleEditor() {
   const store = useModuleList<FaqItem>("mod-faqs");
   const [view, setView] = useState<View>({ name: "list" });
@@ -164,6 +170,34 @@ export default function FaqsModuleEditor() {
             />
           </AdField>
           <AdField
+            id="faq-link-label"
+            label="Related link label (optional)"
+            hint="Shown with the answer only when both fields are set."
+            error={err("linkLabel")}
+          >
+            <TextInput
+              id="faq-link-label"
+              type="text"
+              value={draft.linkLabel ?? ""}
+              error={err("linkLabel")}
+              onChange={(e) => setDraft({ ...draft, linkLabel: e.target.value })}
+            />
+          </AdField>
+          <AdField
+            id="faq-link-href"
+            label="Related link path (optional)"
+            hint="Internal path only, e.g. /packages, /services#360-video-booth, /contact?service=360-video-booth."
+            error={err("linkHref")}
+          >
+            <TextInput
+              id="faq-link-href"
+              type="text"
+              value={draft.linkHref ?? ""}
+              error={err("linkHref")}
+              onChange={(e) => setDraft({ ...draft, linkHref: e.target.value })}
+            />
+          </AdField>
+          <AdField
             id="faq-highlight"
             label="Highlighted for homepage"
             required
@@ -234,6 +268,14 @@ export default function FaqsModuleEditor() {
             />
             <DetailRow label="Question" value={selected.question} />
             <DetailRow label="Answer" value={selected.answer} />
+            <DetailRow
+              label="Related link"
+              value={
+                selected.linkLabel && selected.linkHref
+                  ? `${selected.linkLabel} → ${selected.linkHref}`
+                  : "None"
+              }
+            />
             <DetailRow
               label="Homepage"
               value={selected.highlight ? "Eligible for homepage" : "Not on homepage"}

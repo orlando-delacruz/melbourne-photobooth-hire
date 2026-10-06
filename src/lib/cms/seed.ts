@@ -7,7 +7,12 @@
 // deleted; images keep their original remote URLs until replaced by uploads.
 
 import { mockContent } from "../content/mock";
-import type { CmsContent, LegalPageContent, LegalPageKey } from "./types";
+import type {
+  BoothPageContent,
+  CmsContent,
+  LegalPageContent,
+  LegalPageKey,
+} from "./types";
 
 const HERO_IMAGE = mockContent.heroBackgroundImage;
 const PREMIUM_IMAGE = mockContent.serviceImages?.["premium-photobooth"];
@@ -16,6 +21,48 @@ const VIDEO360_IMAGE = mockContent.serviceImages?.["360-video-booth"];
 const CTA_IMAGE = mockContent.ctaImage;
 
 const SERVICE_AREA_STATEMENT = "Melbourne Wide / Victoria Wide";
+
+/**
+ * Empty dedicated-booth page shape (360, premium, roaming). Deliberately
+ * blank: this seed is only a build-failure fallback, and booth copy must
+ * come from the client-confirmed CMS blob — never invented here. Empty
+ * sections are omitted on the public page until the CMS row is saved.
+ */
+function emptyBoothPage(): BoothPageContent {
+  return {
+    header: {
+      title: "",
+      eyebrow: "",
+      lede: "",
+      image: { key: null, src: "", alt: "", caption: undefined },
+    },
+    stepsHeading: { eyebrow: "", title: "", lede: "" },
+    steps: [],
+    pricingHeading: { eyebrow: "", title: "", lede: "" },
+    priceLabel: "",
+    priceNote: "",
+    pricingPoints: [],
+    bestForHeading: { eyebrow: "", title: "", lede: "" },
+    bestFor: [],
+    venueHeading: { eyebrow: "", title: "", lede: "" },
+    venueNotes: [],
+    faqHeading: { eyebrow: "", title: "", lede: "" },
+    faqCtaLabel: "",
+    ctaBand: {
+      eyebrow: "",
+      headline: "",
+      lede: "",
+      primaryLabel: "",
+      secondaryLabel: "",
+      image: { key: null, src: "", alt: "", caption: undefined },
+    },
+    seo: {
+      seoTitle: "",
+      seoDescription: "",
+      ogImage: { key: null, src: "", alt: "", caption: undefined },
+    },
+  };
+}
 
 /** Initial contact-form event types, in dropdown order. */
 const EVENT_TYPE_SEEDS = [
@@ -154,6 +201,16 @@ export const cmsSeed: CmsContent = {
         },
       },
     },
+
+    // Dedicated booth page (e.g. 360 Video Booth). Deliberately empty: this
+    // seed is only a build-failure fallback, and booth copy must come from
+    // the client-confirmed CMS blob — never invented here. Empty sections
+    // are omitted on the public page until the CMS row is saved.
+    "360": emptyBoothPage(),
+
+    premium: emptyBoothPage(),
+
+    roaming: emptyBoothPage(),
 
     packages: {
       header: {

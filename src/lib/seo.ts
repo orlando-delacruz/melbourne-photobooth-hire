@@ -17,7 +17,7 @@ export interface BreadcrumbTrailItem {
  * Build a Schema.org BreadcrumbList node with absolute URLs.
  * `origin` is the site origin (e.g. https://www.…); `trail` starts with
  * Home ("/") followed by the current page.
- */
+  */
 export function buildBreadcrumbList(
   origin: string,
   trail: BreadcrumbTrailItem[],
@@ -32,4 +32,32 @@ export function buildBreadcrumbList(
       item: `${cleanOrigin}${item.path}`,
     })),
   };
+}
+
+/**
+ * Service rows with a dedicated commercial page (Phase 1, DEC-055).
+ * Cards and hub sections link here instead of the in-page anchor, so each
+ * URL owns distinct intent and `/services` stays the hub. Extend only when
+ * a new dedicated page is approved and published — never speculatively.
+ * Labels are stable IA names (like NAV_ITEMS), not CMS service names.
+ */
+export interface ServiceDetailPage {
+  href: string;
+  label: string;
+}
+
+const SERVICE_DETAIL_PAGES: Record<string, ServiceDetailPage> = {
+  "premium-photobooth": { href: "/premium-photobooth-melbourne", label: "Premium Photobooth" },
+  "roaming-photobooth": { href: "/roaming-photobooth-melbourne", label: "Roaming Photobooth" },
+  "360-video-booth": { href: "/360-video-booth-melbourne", label: "360 Video Booth" },
+};
+
+/** Dedicated-page href for a service row, or undefined for anchor-only rows. */
+export function serviceDetailHref(serviceId: string): string | undefined {
+  return SERVICE_DETAIL_PAGES[serviceId]?.href;
+}
+
+/** Dedicated service pages in registry order, for footer/IA listings. */
+export function serviceDetailPages(): ServiceDetailPage[] {
+  return Object.values(SERVICE_DETAIL_PAGES);
 }

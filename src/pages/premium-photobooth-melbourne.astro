@@ -1,0 +1,106 @@
+---
+export const prerender = false;
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BoothCrossLinks from "../components/BoothCrossLinks.astro";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveBoothSections from "../components/islands/LiveBoothSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
+import { buildBreadcrumbList } from "../lib/seo";
+import { setPublicCache } from "../lib/http-cache";
+
+// Independent loads run in parallel to keep server response time low (LCP).
+// The premium blob seeds the booth island; highlighted FAQs and the premium
+// service row seed the FAQ/schema blocks. Empty CMS rows render seed
+// fallbacks and the island omits unfilled sections, so no thin copy is
+// ever published.
+const [{ ctaImage, serviceImages }, liveModules, { pages: cmsPages }, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicModules(),
+  loadPublicPages(),
+  loadPublicSeo("premium"),
+]);
+const boothPage = cmsPages.premium;
+const boothService = liveModules.services.find((service) => service.id === "premium-photobooth");
+const boothFaqs = liveModules.faqs.filter((faq) => faq.highlight !== false).slice(0, 6);
+// Page-header image is the likely LCP on this route; preload it (see head).
+const headerImage = serviceImages?.["premium-photobooth"];
+const headerImageSrc = headerImage?.src;
+setPublicCache(Astro.response.headers);
+
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const areaServed = [
+  { "@type": "City", name: "Melbourne" },
+  { "@type": "AdministrativeArea", name: "Victoria" },
+];
+// The premium service as its own node on its dedicated URL (Phase 1,
+// DEC-058). Description comes from the live Services module row — never
+// invented.
+const serviceSchema = {
+  "@type": "Service",
+  "@id": `${siteOrigin}/premium-photobooth-melbourne#service`,
+  name: boothService?.name ?? "Premium Photobooth",
+  serviceType: boothService?.name ?? "Premium Photobooth",
+  description: boothService?.summary ?? "",
+  url: `${siteOrigin}/premium-photobooth-melbourne`,
+  provider: { "@id": `${siteOrigin}/#localbusiness` },
+  areaServed,
+};
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Premium Photobooth", path: "/premium-photobooth-melbourne" },
+]);
+---
+
+<BaseLayout
+  seoPageKey="premium"
+  title={seo.seoTitle || "Premium Photobooth Melbourne | Open-Air Booth Hire for Events"}
+  description={
+    seo.seoDescription ||
+    "Hire a premium open-air photobooth in Melbourne for weddings, corporate events and birthdays: studio lighting, styled setup and instant prints."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
+  structuredData={[serviceSchema, breadcrumbSchema]}
+>
+  <LivePageHeader
+    client:visible
+    pageKey="premium"
+    initial={boothPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/premium-photobooth-melbourne", label: "Premium Photobooth" }]}
+    imageSrc={headerImageSrc}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
+  />
+
+  <LiveBoothSections client:visible pageKey="premium" initialPage={boothPage} initialFaqs={boothFaqs} />
+
+  <BoothCrossLinks />
+
+  <LiveCtaBand
+    client:visible
+    pageKey="premium"
+    initial={boothPage.ctaBand}
+    id="booth-premium-enquire"
+    primaryHref="/contact?service=premium-photobooth"
+    secondaryHref="/packages"
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
+  />
+</BaseLayout>

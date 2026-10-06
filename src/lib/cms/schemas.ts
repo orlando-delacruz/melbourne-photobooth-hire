@@ -239,6 +239,43 @@ export const servicesPageSchema = z.object({
   seo: pageMetaSchema,
 });
 
+export const boothPageSchema = z.object({
+  header: pageHeaderSchema,
+  stepsHeading: sectionHeadingSchema,
+  steps: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: shortText("the step title"),
+        summary: longText("the step summary", 1000),
+        icon: z.enum(ICON_NAMES).optional(),
+      }),
+    )
+    .max(12),
+  pricingHeading: sectionHeadingSchema,
+  // Blank price omits the pricing panel on the public page (the packages
+  // CTA remains); never a signal to invent a price.
+  priceLabel: z.string().trim().max(60).optional().default(""),
+  priceNote: z.string().trim().max(300).optional().default(""),
+  pricingPoints: z.array(shortText("each pricing point", 400)).max(20),
+  bestForHeading: sectionHeadingSchema,
+  bestFor: z
+    .array(
+      z.object({
+        id: z.string(),
+        title: shortText("the occasion title"),
+        detail: longText("the occasion detail", 1000),
+      }),
+    )
+    .max(12),
+  venueHeading: sectionHeadingSchema,
+  venueNotes: z.array(shortText("each venue note", 400)).max(12),
+  faqHeading: sectionHeadingSchema,
+  faqCtaLabel: shortText("the button label", 60),
+  ctaBand: ctaBandSchema,
+  seo: pageMetaSchema,
+});
+
 export const packagesPageSchema = z.object({
   header: pageHeaderSchema,
   plansHeading: sectionHeadingSchema,
@@ -465,12 +502,45 @@ export const galleryModuleSchema = z
 
 export const faqsModuleSchema = z
   .array(
-    z.object({
-      id: z.string(),
-      question: shortText("the question", 300),
-      answer: longText("the answer"),
-      highlight: z.boolean(),
-    }),
+    z
+      .object({
+        id: z.string(),
+        question: shortText("the question", 300),
+        answer: longText("the answer"),
+        highlight: z.boolean(),
+        // Optional related-link pair (DEC-056): label and internal path must
+        // be set together, and the path must stay on-site (no external URLs,
+        // so the CMS can never become an open-redirect source).
+        linkLabel: z
+          .string()
+          .trim()
+          .max(80, "Link label must be 80 characters or fewer.")
+          .optional(),
+        linkHref: z
+          .string()
+          .trim()
+          .max(200, "Link path must be 200 characters or fewer.")
+          .optional(),
+      })
+      .superRefine((item, ctx) => {
+        const hasLabel = (item.linkLabel ?? "") !== "";
+        const hasHref = (item.linkHref ?? "") !== "";
+        if (hasLabel !== hasHref) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Set both the link label and the link path, or leave both blank.",
+            path: [hasLabel ? "linkHref" : "linkLabel"],
+          });
+          return;
+        }
+        if (hasHref && !/^\/(?!\/)[^\s]*$/.test(item.linkHref ?? "")) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Link path must start with / and stay on this site.",
+            path: ["linkHref"],
+          });
+        }
+      }),
   )
   .max(60);
 

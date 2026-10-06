@@ -1,0 +1,106 @@
+---
+export const prerender = false;
+import BaseLayout from "../layouts/BaseLayout.astro";
+import BoothCrossLinks from "../components/BoothCrossLinks.astro";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveBoothSections from "../components/islands/LiveBoothSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
+import { buildBreadcrumbList } from "../lib/seo";
+import { setPublicCache } from "../lib/http-cache";
+
+// Independent loads run in parallel to keep server response time low (LCP).
+// The roaming blob seeds the booth island; highlighted FAQs and the roaming
+// service row seed the FAQ/schema blocks. Empty CMS rows render seed
+// fallbacks and the island omits unfilled sections, so no thin copy is
+// ever published.
+const [{ ctaImage, serviceImages }, liveModules, { pages: cmsPages }, seo] = await Promise.all([
+  loadPublicContent(),
+  loadPublicModules(),
+  loadPublicPages(),
+  loadPublicSeo("roaming"),
+]);
+const boothPage = cmsPages.roaming;
+const boothService = liveModules.services.find((service) => service.id === "roaming-photobooth");
+const boothFaqs = liveModules.faqs.filter((faq) => faq.highlight !== false).slice(0, 6);
+// Page-header image is the likely LCP on this route; preload it (see head).
+const headerImage = serviceImages?.["roaming-photobooth"];
+const headerImageSrc = headerImage?.src;
+setPublicCache(Astro.response.headers);
+
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const areaServed = [
+  { "@type": "City", name: "Melbourne" },
+  { "@type": "AdministrativeArea", name: "Victoria" },
+];
+// The roaming service as its own node on its dedicated URL (Phase 1,
+// DEC-058). Description comes from the live Services module row — never
+// invented.
+const serviceSchema = {
+  "@type": "Service",
+  "@id": `${siteOrigin}/roaming-photobooth-melbourne#service`,
+  name: boothService?.name ?? "Roaming Photobooth",
+  serviceType: boothService?.name ?? "Roaming Photobooth",
+  description: boothService?.summary ?? "",
+  url: `${siteOrigin}/roaming-photobooth-melbourne`,
+  provider: { "@id": `${siteOrigin}/#localbusiness` },
+  areaServed,
+};
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Roaming Photobooth", path: "/roaming-photobooth-melbourne" },
+]);
+---
+
+<BaseLayout
+  seoPageKey="roaming"
+  title={seo.seoTitle || "Roaming Photobooth Melbourne | Mingling Booth Hire for Events"}
+  description={
+    seo.seoDescription ||
+    "Hire a roaming photobooth in Melbourne for weddings, corporate events and birthdays: candid crowd photos with no fixed backdrop, perfect for cocktail hours."
+  }
+  ogImage={seo.ogImage.src || undefined}
+  ogImageAlt={seo.ogImage.alt || undefined}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
+  structuredData={[serviceSchema, breadcrumbSchema]}
+>
+  <LivePageHeader
+    client:visible
+    pageKey="roaming"
+    initial={boothPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/roaming-photobooth-melbourne", label: "Roaming Photobooth" }]}
+    imageSrc={headerImageSrc}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
+  />
+
+  <LiveBoothSections client:visible pageKey="roaming" initialPage={boothPage} initialFaqs={boothFaqs} />
+
+  <BoothCrossLinks />
+
+  <LiveCtaBand
+    client:visible
+    pageKey="roaming"
+    initial={boothPage.ctaBand}
+    id="booth-roaming-enquire"
+    primaryHref="/contact?service=roaming-photobooth"
+    secondaryHref="/packages"
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
+  />
+</BaseLayout>

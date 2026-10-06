@@ -1,0 +1,21 @@
+---
+export const prerender = false;
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminShell from "../../components/admin/AdminShell.astro";
+import BoothPageEditor from "../../components/admin/editors/BoothPageEditor";
+import { CMS_SECTIONS } from "../../components/admin/sections";
+
+const section = CMS_SECTIONS.find((item) => item.key === "premium")!;
+---
+
+<AdminLayout title={`Edit ${section.label}`}>
+  <AdminShell
+    active={section.key}
+    title={section.label}
+    heading={`Edit ${section.label}`}
+    lede={section.blurb}
+    publicHref={section.publicHref}
+  >
+    <BoothPageEditor client:load pageKey="premium" pageName="Premium Photobooth" />
+  </AdminShell>
+</AdminLayout>

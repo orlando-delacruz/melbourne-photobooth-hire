@@ -8,6 +8,7 @@
 import { serviceBadgeText } from "../../lib/cms/types";
 import type { ServiceItem } from "../../lib/cms/types";
 import { imageSrcSet } from "../../lib/images";
+import { serviceDetailHref } from "../../lib/seo";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import { CHECK_SVG_INNER } from "../live/icons";
@@ -95,6 +96,11 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
                 <LiveButton href="/packages" variant="secondary" size="lg">
                   View packages
                 </LiveButton>
+                {serviceDetailHref(service.id) ? (
+                  <a className="service-gallery-link" href={serviceDetailHref(service.id)}>
+                    Explore the {service.name}
+                  </a>
+                ) : null}
               </p>
             </div>
           </Reveal>

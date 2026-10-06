@@ -9,6 +9,10 @@ export interface LiveAccordionItem {
   id: string;
   question: string;
   answer: string;
+  /** Optional related-link label; rendered only together with linkHref. */
+  linkLabel?: string;
+  /** Optional internal path; external URLs never render (see below). */
+  linkHref?: string;
 }
 
 export default function LiveAccordion({
@@ -77,6 +81,11 @@ export default function LiveAccordion({
           <div className="accordion__answer">
             <div className="accordion__answer-inner">
               <p>{item.answer}</p>
+              {item.linkLabel && item.linkHref && /^\/(?!\/)[^\s]*$/.test(item.linkHref) ? (
+                <p className="accordion__link">
+                  <a href={item.linkHref}>{item.linkLabel}</a>
+                </p>
+              ) : null}
             </div>
           </div>
         </details>

@@ -95,6 +95,8 @@ create table if not exists public.faqs (
   question text not null check (char_length(question) between 1 and 300),
   answer text not null check (char_length(answer) between 1 and 6000),
   highlight boolean not null default true,
+  link_label text check (link_label is null or char_length(link_label) <= 80),
+  link_href text check (link_href is null or (char_length(link_href) <= 200 and link_href not like '% %')),
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -127,19 +129,21 @@ create table if not exists public.testimonials (
   updated_at timestamptz not null default now()
 );
 
--- Page-level CMS copy (7 pages + settings). Shapes differ per page, so the
+-- Page-level CMS copy (10 pages + settings + legal). Shapes differ per page, so the
 -- validated content blob stays JSONB; Zod schemas remain the validator.
+-- (privacy/terms were added on live DBs by migration-legal-pages.sql;
+-- listed here so fresh environments match production.)
 create table if not exists public.page_contents (
   page_key text primary key
-    check (page_key in ('home','services','packages','gallery','about','faq','contact','settings')),
+    check (page_key in ('home','services','packages','gallery','about','faq','contact','settings','privacy','terms','360','premium','roaming')),
   content jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
--- Per-page SEO (9 pages: 7 CMS + privacy/terms). Mirrors PageMeta.
+-- Per-page SEO (12 pages: 10 CMS + privacy/terms). Mirrors PageMeta.
 create table if not exists public.page_seo (
   page_key text primary key
-    check (page_key in ('home','services','packages','gallery','about','faq','contact','privacy','terms')),
+    check (page_key in ('home','services','packages','gallery','about','faq','contact','privacy','terms','360','premium','roaming')),
   seo_title text not null check (char_length(seo_title) between 1 and 120),
   seo_description text not null check (char_length(seo_description) between 1 and 400),
   keywords text not null default '',

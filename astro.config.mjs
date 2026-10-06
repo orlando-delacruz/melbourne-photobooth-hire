@@ -16,6 +16,9 @@ import vercel from "@astrojs/vercel";
 const PUBLIC_SITEMAP_URLS = [
   "https://www.melbournephotoboothhire.com.au/",
   "https://www.melbournephotoboothhire.com.au/services",
+  "https://www.melbournephotoboothhire.com.au/premium-photobooth-melbourne",
+  "https://www.melbournephotoboothhire.com.au/roaming-photobooth-melbourne",
+  "https://www.melbournephotoboothhire.com.au/360-video-booth-melbourne",
   "https://www.melbournephotoboothhire.com.au/packages",
   "https://www.melbournephotoboothhire.com.au/gallery",
   "https://www.melbournephotoboothhire.com.au/about",

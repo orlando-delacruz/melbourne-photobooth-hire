@@ -7,6 +7,7 @@
 import { serviceBadgeText } from "../../lib/cms/types";
 import type { HomePageContent, ServiceItem } from "../../lib/cms/types";
 import { imageSrcSet } from "../../lib/images";
+import { serviceDetailHref } from "../../lib/seo";
 import { fetchServices } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import LiveCard from "../live/LiveCard";
@@ -59,7 +60,9 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
               imageHeight={service.image.height}
               href={`/contact?service=${encodeURIComponent(service.id)}`}
               ctaLabel="Book Now"
-              secondaryHref={`/services#${encodeURIComponent(service.id)}`}
+              secondaryHref={
+                serviceDetailHref(service.id) ?? `/services#${encodeURIComponent(service.id)}`
+              }
               secondaryLabel="Learn more"
               secondaryAriaLabel={`Learn more about ${service.name}`}
               cmsId={service.id}

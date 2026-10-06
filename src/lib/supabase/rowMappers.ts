@@ -61,12 +61,25 @@ export function galleryFromRow(row: GalleryRow): GalleryItem {
   };
 }
 
-export function faqFromRow(row: FaqRow): FaqItem {
+/**
+ * faqs rows including the optional related-link columns
+ * (migration-faq-links.sql). Kept as an intersection so mapping works both
+ * before and after `supabase gen types` is re-run against the migrated
+ * database; remove the intersection once the generated types include them.
+ */
+type FaqRowWithLink = FaqRow & {
+  link_label?: string | null;
+  link_href?: string | null;
+};
+
+export function faqFromRow(row: FaqRowWithLink): FaqItem {
   return {
     id: row.slug,
     question: row.question,
     answer: row.answer,
     highlight: row.highlight,
+    linkLabel: row.link_label ?? undefined,
+    linkHref: row.link_href ?? undefined,
   };
 }
 

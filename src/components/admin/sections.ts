@@ -53,7 +53,40 @@ export const CMS_SECTIONS: AdminSection[] = [
     publicHref: "/services",
     blurb: "Page header, band and SEO; booth items live in Modules.",
     icon: svg(
-      '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+      '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0-2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+    ),
+  },
+  {
+    key: "360",
+    label: "360 Booth Page",
+    href: "/admin/360-page",
+    group: "cms",
+    publicHref: "/360-video-booth-melbourne",
+    blurb: "Dedicated 360 Video Booth page: steps, pricing, occasions and venue notes.",
+    icon: svg(
+      '<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+    ),
+  },
+  {
+    key: "premium",
+    label: "Premium Booth Page",
+    href: "/admin/premium-page",
+    group: "cms",
+    publicHref: "/premium-photobooth-melbourne",
+    blurb: "Dedicated Premium Photobooth page: steps, pricing, occasions and venue notes.",
+    icon: svg(
+      '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0-2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+    ),
+  },
+  {
+    key: "roaming",
+    label: "Roaming Booth Page",
+    href: "/admin/roaming-page",
+    group: "cms",
+    publicHref: "/roaming-photobooth-melbourne",
+    blurb: "Dedicated Roaming Photobooth page: steps, pricing, occasions and venue notes.",
+    icon: svg(
+      '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
     ),
   },
   {

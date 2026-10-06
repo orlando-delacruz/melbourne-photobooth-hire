@@ -772,6 +772,29 @@ body.page-home .card--light .card-title {
 .accordion--dark .accordion__answer-inner p {
   color: var(--color-on-ink-secondary);
 }
+/* Optional related link under an FAQ answer (per-FAQ CMS link pair). */
+.accordion__link {
+  margin-top: var(--space-xs);
+  font-size: var(--text-small);
+}
+.accordion__link a {
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.accordion__link a:hover {
+  color: var(--color-ink);
+}
+.accordion__link a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.accordion--dark .accordion__link a {
+  color: var(--color-accent-on-dark);
+}
 @media (prefers-reduced-motion: reduce) {
   .accordion__marker,
   .accordion__marker::before,
@@ -1436,6 +1459,91 @@ body.page-home .card--light .card-title {
   }
   .service-media:hover img {
     transform: none;
+  }
+}
+
+/* ── Dedicated booth page (360 Video Booth) ───────────────────────────── */
+.booth-price {
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-coral);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md);
+  box-shadow: var(--elevation-1);
+}
+.booth-price-amount {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  font-weight: 500;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-ink);
+}
+.booth-price-note {
+  margin: var(--space-2xs) 0 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+}
+.booth-price-list,
+.booth-checklist {
+  list-style: none;
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-xs);
+  text-align: left;
+}
+.booth-price-list li,
+.booth-checklist li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2xs);
+  align-items: start;
+  color: var(--color-ink-soft);
+}
+.booth-check {
+  display: inline-flex;
+  margin-top: 0.18em;
+  color: var(--color-accent);
+}
+.booth-checklist {
+  max-width: 44rem;
+}
+.booth-grid {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: 1fr;
+}
+.booth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--elevation-1);
+}
+.booth-card h3 {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--text-h3);
+}
+.booth-card p {
+  margin: 0;
+  color: var(--color-ink-soft);
+}
+.booth-faq-cta {
+  margin: var(--space-lg) 0 0;
+  color: var(--color-ink-soft);
+  font-size: var(--text-small);
+}
+.booth-faq-cta a {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+@media (min-width: 900px) {
+  .booth-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

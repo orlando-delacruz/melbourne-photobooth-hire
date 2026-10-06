@@ -1,3 +1,5 @@
+import { serviceDetailPages } from "./seo";
+
 /** A primary navigation destination. */
 export interface NavItem {
   href: string;
@@ -16,3 +18,10 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const ENQUIRY_HREF = "/contact";
+
+/**
+ * Dedicated service pages featured in the footer Explore column
+ * (single source: the DEC-055 registry in lib/seo.ts). Future approved
+ * service pages appear here by extending that registry — no footer edit.
+ */
+export const SERVICE_LINKS: NavItem[] = serviceDetailPages();

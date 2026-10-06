@@ -12,7 +12,17 @@
 
 import type { CmsIconName } from "./icons";
 
-export type CmsPageKey = "home" | "services" | "packages" | "gallery" | "about" | "faq" | "contact";
+export type CmsPageKey =
+  | "home"
+  | "services"
+  | "packages"
+  | "gallery"
+  | "about"
+  | "faq"
+  | "contact"
+  | "360"
+  | "premium"
+  | "roaming";
 
 export type StoreSectionKey =
   | CmsPageKey
@@ -212,6 +222,28 @@ export interface GalleryPageContent {
   seo: PageMeta;
 }
 
+// ── Page-level: dedicated booth page (e.g. 360 Video Booth) ────────────────
+// Page-scoped copy for one booth's commercial page. Reuses the
+// shared step/value shapes; pricing is an explicit confirmed block (blank
+// price omits the panel and defers to the packages CTA — never invented).
+export interface BoothPageContent {
+  header: PageHeaderContent;
+  stepsHeading: SectionHeadingContent;
+  steps: ProcessStep[];
+  pricingHeading: SectionHeadingContent;
+  priceLabel: string;
+  priceNote: string;
+  pricingPoints: string[];
+  bestForHeading: SectionHeadingContent;
+  bestFor: AboutValue[];
+  venueHeading: SectionHeadingContent;
+  venueNotes: string[];
+  faqHeading: SectionHeadingContent;
+  faqCtaLabel: string;
+  ctaBand: CtaBandContent;
+  seo: PageMeta;
+}
+
 // ── Page-level: About / FAQ / Contact ───────────────────────────────────────
 
 export interface AboutPageContent {
@@ -334,6 +366,10 @@ export interface FaqItem {
   question: string;
   answer: string;
   highlight: boolean;
+  /** Optional related-link label; rendered only together with linkHref. */
+  linkLabel?: string;
+  /** Optional internal path (e.g. /packages); never an external URL. */
+  linkHref?: string;
 }
 
 /**
@@ -441,6 +477,9 @@ export interface CmsContent {
     about: AboutPageContent;
     faq: FaqPageContent;
     contact: ContactContent;
+    "360": BoothPageContent;
+    premium: BoothPageContent;
+    roaming: BoothPageContent;
   };
   settings: SiteSettingsContent;
   modules: CmsModules;

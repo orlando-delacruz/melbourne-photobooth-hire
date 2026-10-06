@@ -4,6 +4,7 @@ import type { SiteSettingsContent } from "../lib/cms/types";
 import SocialIcon from "./SocialIcon.astro";
 import Button from "./Button.astro";
 import { ENQUIRY_HREF } from "../lib/navigation";
+import { SERVICE_LINKS } from "../lib/navigation";
 import { imageSrcSet } from "../lib/images";
 
 interface Props {
@@ -114,6 +115,15 @@ const year = new Date().getFullYear();
           </li>
         ))}
       </ul>
+      {SERVICE_LINKS.length > 0 ? (
+        <ul class="footer-subnav" aria-label="Service pages">
+          {SERVICE_LINKS.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </nav>
     <nav class="footer-nav" aria-label="Legal">
       <p class="footer-heading">Legal</p>
@@ -223,6 +233,16 @@ const year = new Date().getFullYear();
     padding: 0;
     display: grid;
     gap: var(--space-xs);
+  }
+  /* Dedicated service pages (registry-driven): visually grouped below the
+     principal destinations with a hairline separator. */
+  .footer-nav .footer-subnav {
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+  }
+  .footer-nav .footer-subnav a {
+    font-size: var(--text-small);
   }
   .footer-nav a {
     position: relative;
