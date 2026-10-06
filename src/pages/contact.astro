@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import InquiryForm from "../components/islands/InquiryForm";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveContactAside from "../components/islands/LiveContactAside";
@@ -42,6 +43,11 @@ const headerImageSrc = headerImage?.src;
 // Spam protection renders only when a site key is configured; the server
 // verifies the token when its secret is set (see src/pages/api/inquiries.ts).
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | undefined;
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Contact", path: "/contact" },
+]);
 ---
 
 <BaseLayout
@@ -61,11 +67,13 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY as string | u
   preloadImage={headerImageSrc}
   preloadImageSrcSet={imageSrcSet(headerImage)}
   preloadImageSizes="100vw"
+  structuredData={[breadcrumbSchema]}
 >
   <LivePageHeader
     client:visible
     pageKey="contact"
     initial={contactPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/contact", label: "Contact" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}
     imageSrcSet={imageSrcSet(headerImage)}

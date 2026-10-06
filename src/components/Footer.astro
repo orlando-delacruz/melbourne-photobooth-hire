@@ -86,7 +86,7 @@ const year = new Date().getFullYear();
       ) : null}
       {socials.length > 0 ? (
         <div class="footer-social">
-          <h2>Follow</h2>
+          <p class="footer-heading">Follow</p>
           <ul>
             {socials.map((social) => (
               <li>
@@ -106,7 +106,7 @@ const year = new Date().getFullYear();
       ) : null}
     </div>
     <nav class="footer-nav" aria-label="Explore">
-      <h2>Explore</h2>
+      <p class="footer-heading">Explore</p>
       <ul>
         {items.map((item) => (
           <li>
@@ -116,7 +116,7 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
     <nav class="footer-nav" aria-label="Legal">
-      <h2>Legal</h2>
+      <p class="footer-heading">Legal</p>
       <ul>
         <li>
           <a href="/privacy">Privacy Policy</a>
@@ -127,7 +127,7 @@ const year = new Date().getFullYear();
       </ul>
     </nav>
     <div class="footer-cta" data-live-section="footer-cta">
-      <h2>{initialSettings.footerCta.title}</h2>
+      <p class="footer-cta-title">{initialSettings.footerCta.title}</p>
       <p>{initialSettings.footerCta.lede}</p>
       <Button href={ENQUIRY_HREF} variant="primary" tone="light" size="lg" arrow>
         {initialSettings.footerCta.label}
@@ -196,7 +196,8 @@ const year = new Date().getFullYear();
     display: inline-flex;
     color: var(--color-accent-strong);
   }
-  .footer-nav h2 {
+  .footer-nav h2,
+  .footer-nav .footer-heading {
     margin: 0 0 var(--space-sm);
     padding-bottom: var(--space-3xs);
     color: var(--color-ink);
@@ -206,7 +207,8 @@ const year = new Date().getFullYear();
     letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
   }
-  .footer-nav h2::after {
+  .footer-nav h2::after,
+  .footer-nav .footer-heading::after {
     content: "";
     display: block;
     width: 1.75rem;

@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import LiveServiceJump from "../components/islands/LiveServiceJump";
@@ -48,6 +49,10 @@ const serviceSchema = services.map((service) => ({
   provider: { "@id": `${siteOrigin}/#localbusiness` },
   areaServed,
 }));
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Services", path: "/services" },
+]);
 ---
 
 <BaseLayout
@@ -67,12 +72,13 @@ const serviceSchema = services.map((service) => ({
   preloadImage={headerImageSrc}
   preloadImageSrcSet={imageSrcSet(headerImage)}
   preloadImageSizes="100vw"
-  structuredData={serviceSchema}
+  structuredData={[...serviceSchema, breadcrumbSchema]}
 >
   <LivePageHeader
     client:visible
     pageKey="services"
     initial={servicesPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/services", label: "Services" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}
     imageSrcSet={imageSrcSet(headerImage)}

@@ -46,6 +46,12 @@ export interface LiveCardProps {
   highlights?: string[];
   href?: string;
   ctaLabel?: string;
+  /** Optional secondary text link rendered beside the primary CTA (internal
+   * linking: card → related page without weakening the booking action). */
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  /** Accessible name for the secondary link; falls back to its visible label. */
+  secondaryAriaLabel?: string;
   imageSrc?: string;
   imageAlt?: string;
   /** Responsive `srcset` from the CMS variants; omitted for legacy images. */
@@ -91,6 +97,9 @@ export default function LiveCard({
   highlights = [],
   href,
   ctaLabel,
+  secondaryHref,
+  secondaryLabel,
+  secondaryAriaLabel,
   imageSrc,
   imageAlt,
   imageSrcSet,
@@ -190,6 +199,15 @@ export default function LiveCard({
             <LiveButton href={href} variant="primary" tone={featured ? "dark" : tone} arrow>
               {ctaLabel}
             </LiveButton>
+            {secondaryHref && secondaryLabel ? (
+              <a
+                className="card-secondary"
+                href={secondaryHref}
+                aria-label={secondaryAriaLabel || secondaryLabel}
+              >
+                {secondaryLabel}
+              </a>
+            ) : null}
           </p>
         ) : null}
       </div>

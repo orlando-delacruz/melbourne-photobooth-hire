@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import LiveLegalPage from "../components/islands/LiveLegalPage";
 import { loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
@@ -9,6 +10,11 @@ const seo = await loadPublicSeo("privacy");
 const { legal } = await loadPublicPages();
 const page = legal.privacy;
 setPublicCache(Astro.response.headers);
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Privacy Policy", path: "/privacy" },
+]);
 ---
 
 <BaseLayout
@@ -25,6 +31,12 @@ setPublicCache(Astro.response.headers);
   nofollow={seo.nofollow}
   ogTitle={seo.ogTitle || undefined}
   ogDescription={seo.ogDescription || undefined}
+  structuredData={[breadcrumbSchema]}
 >
-  <LiveLegalPage client:visible pageKey="privacy" initial={page} />
+  <LiveLegalPage
+    client:visible
+    pageKey="privacy"
+    initial={page}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/privacy", label: "Privacy Policy" }]}
+  />
 </BaseLayout>

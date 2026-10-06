@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import LiveFaqSection from "../components/islands/LiveFaqSection";
@@ -29,6 +30,11 @@ const faqPage = cmsPages.faq;
 const headerImage = serviceImages?.["360-video-booth"] ?? serviceImages?.["premium-photobooth"];
 const headerImageSrc = headerImage?.src;
 setPublicCache(Astro.response.headers);
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "FAQ", path: "/faq" },
+]);
 ---
 
 <BaseLayout
@@ -48,11 +54,13 @@ setPublicCache(Astro.response.headers);
   preloadImage={headerImageSrc}
   preloadImageSrcSet={imageSrcSet(headerImage)}
   preloadImageSizes="100vw"
+  structuredData={[breadcrumbSchema]}
 >
   <LivePageHeader
     client:visible
     pageKey="faq"
     initial={faqPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/faq", label: "FAQ" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}
     imageSrcSet={imageSrcSet(headerImage)}

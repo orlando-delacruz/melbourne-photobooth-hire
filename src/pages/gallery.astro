@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import LiveGallerySection from "../components/islands/LiveGallerySection";
@@ -25,6 +26,11 @@ const galleryPage = cmsPages.gallery;
 setPublicCache(Astro.response.headers);
 // Page-header image is the likely LCP on this route; preload it (see head).
 const headerImage = serviceImages?.["360-video-booth"];
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Gallery", path: "/gallery" },
+]);
 ---
 
 <BaseLayout
@@ -44,11 +50,13 @@ const headerImage = serviceImages?.["360-video-booth"];
   preloadImage={headerImage?.src}
   preloadImageSrcSet={imageSrcSet(headerImage)}
   preloadImageSizes="100vw"
+  structuredData={[breadcrumbSchema]}
 >
   <LivePageHeader
     client:visible
     pageKey="gallery"
     initial={galleryPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/gallery", label: "Gallery" }]}
     imageSrc={headerImage?.src}
     imageAlt={headerImage?.alt}
     imageSrcSet={imageSrcSet(headerImage)}

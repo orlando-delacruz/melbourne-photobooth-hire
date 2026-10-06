@@ -11,6 +11,11 @@ import { fetchPageHeader } from "../../lib/realtime/fetchers";
 import "../../styles/live.css";
 import { useLiveDoc } from "./useLiveSync";
 
+export interface LivePageHeaderCrumb {
+  href: string;
+  label: string;
+}
+
 export interface LivePageHeaderProps {
   pageKey: string;
   initial: Pick<PageHeaderContent, "title" | "eyebrow" | "lede">;
@@ -21,6 +26,8 @@ export interface LivePageHeaderProps {
   imageWidth?: number;
   imageHeight?: number;
   rule?: boolean;
+  /** Breadcrumb trail rendered inside the header, above the eyebrow. */
+  breadcrumbs?: LivePageHeaderCrumb[];
   children?: ReactNode;
 }
 
@@ -33,6 +40,7 @@ export default function LivePageHeader({
   imageWidth,
   imageHeight,
   rule = true,
+  breadcrumbs,
   children,
 }: LivePageHeaderProps) {
   const header = useLiveDoc("page_contents", pageKey, initial, async () => {
@@ -62,6 +70,26 @@ export default function LivePageHeader({
       ) : null}
       <div className="page-header__glow" aria-hidden="true" />
       <div className="container page-header__inner">
+        {breadcrumbs && breadcrumbs.length > 1 ? (
+          <nav className="breadcrumbs" aria-label="Breadcrumb">
+            <ol>
+              {breadcrumbs.map((item, index) => (
+                <li key={item.href}>
+                  {index > 0 ? (
+                    <span className="breadcrumbs-sep" aria-hidden="true">
+                      ›
+                    </span>
+                  ) : null}
+                  {index < breadcrumbs.length - 1 ? (
+                    <a href={item.href}>{item.label}</a>
+                  ) : (
+                    <span aria-current="page">{item.label}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        ) : null}
         {header.eyebrow ? (
           <p className={`eyebrow${rule ? " eyebrow--rule" : ""}`}>{header.eyebrow}</p>
         ) : null}

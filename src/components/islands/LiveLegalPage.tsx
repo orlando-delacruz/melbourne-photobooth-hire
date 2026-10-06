@@ -6,15 +6,16 @@
 import { Fragment } from "react";
 import type { LegalPageContent, LegalPageKey } from "../../lib/cms/types";
 import { fetchPageContent } from "../../lib/realtime/fetchers";
-import LivePageHeader from "./LivePageHeader";
+import LivePageHeader, { type LivePageHeaderCrumb } from "./LivePageHeader";
 import { useLiveDoc } from "./useLiveSync";
 
 export interface LiveLegalPageProps {
   pageKey: LegalPageKey;
   initial: LegalPageContent;
+  breadcrumbs?: LivePageHeaderCrumb[];
 }
 
-export default function LiveLegalPage({ pageKey, initial }: LiveLegalPageProps) {
+export default function LiveLegalPage({ pageKey, initial, breadcrumbs }: LiveLegalPageProps) {
   const page = useLiveDoc("page_contents", pageKey, initial, async () => {
     const content = (await fetchPageContent(pageKey)) as LegalPageContent | null;
     return content ?? initial;
@@ -22,7 +23,7 @@ export default function LiveLegalPage({ pageKey, initial }: LiveLegalPageProps) 
 
   return (
     <>
-      <LivePageHeader pageKey={pageKey} initial={page.header} />
+      <LivePageHeader pageKey={pageKey} initial={page.header} breadcrumbs={breadcrumbs} />
       <div className="section">
         <div className="prose">
           {page.intro.map((paragraph, index) => (

@@ -52,6 +52,9 @@ export default function LivePlansSection({ initial, initialPage }: LivePlansSect
                 cardBadge={pkg.cardBadge}
                 href={`/contact?package=${encodeURIComponent(pkg.id)}`}
                 ctaLabel="Book Now"
+                secondaryHref="/services"
+                secondaryLabel="Compare services"
+                secondaryAriaLabel={`Compare photobooth services for ${pkg.name}`}
                 cmsId={pkg.id}
               />
             </Reveal>

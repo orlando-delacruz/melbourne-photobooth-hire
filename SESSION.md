@@ -2,104 +2,101 @@
 
 > How this works: when the user says **"hand-off context SESSION.md"**, update this file with a fresh summary of the current chat session (what was asked, what changed, decisions, state, open items). Keep it concise but include the small key details another agent needs to continue safely.
 
-- **Last updated:** 2026-10-01
+- **Last updated:** 2026-10-06
 - **Repo:** `C:\Users\SSD-ORLANDO\Documents\Project\melbourne-photobooth-hire`
-- **Branch:** `performance` at `9502277` "performance v5" — **working tree CLEAN, in sync with `origin/performance`**. (Prior hand-off was `develop` at `5a776fa`; the operator moved to a `performance` branch this session.)
-- **Mode:** build. The operator committed 6 times between turns: `9187aa7` footer + hero stats UI → `65a5a04` performance → `98bd343` performance v2 → `f8d9ebc` performance v3 → `6672cd3` performance v4 → `9502277` performance v5. **Everything is committed.** Always re-check `git log`/`git status` first — the operator has shifted state mid-turn before.
+- **Branch:** `release/v1.4` at `8145b3d` "enhance: gallery page performance" — **working tree clean and in sync with `origin/release/v1.4`**.
+- **Mode:** build. Chat style is terse caveman; files, docs, code, commits, and reports use normal prose.
+- Recent commits in this session: `1bb872f` "seo: phase 0" → `4f09ef3` gallery alt/captions → `69cf540` Phase 1A/1B → `8145b3d` gallery responsive-image work. Prior `release/v1.3` was at `d2cdc70`.
 
 ---
 
 ## 1. Project snapshot
 
-- **What:** SEO-focused marketing site + custom CMS/admin for a Melbourne photobooth business. Fixed **₱15,000** scope. Inquiry-only (not a booking engine).
-- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide (`lucide-react@1.45`), Motion (now **public pages are Motion-free**), RHF + Zod (lazy-loaded in forms), `@fontsource` Fraunces/Inter, `sweetalert2`, `@supabase/supabase-js`, `@supabase/ssr`, `@astrojs/vercel@11`, `sharp` (build/one-off only).
-- **Backend:** Supabase (PostgreSQL + Auth + Storage `cms-media`), RLS everywhere, cookie sessions, Astro server routes (`POST /api/inquiries`, `POST /api/reviews`, public `GET /api/health`).
-- **Rendering model:** ALL pages SSR (`prerender = false`); public edge cache now `s-maxage=300, stale-while-revalidate=3600` (DEC-028 extended by DEC-046); admin/API `no-store`. Public CSS is **inlined** (DEC-048, `astro.config.mjs` `build.inlineStylesheets: "always"`).
-- **Homepage is React-free on initial load** (DEC-050): header/footer/messenger/hero/trust-strip are static Astro; mobile nav is vanilla; the review modal + gallery lightbox load on first click; the 7 remaining content sections are `client:visible` with `rootMargin: "0px 0px -20% 0px"`.
-- **Decisions on record:** DEC-001 through **DEC-050** (`docs/DECISIONS.md`).
+- **What:** SEO-focused marketing site + custom CMS/admin for a Melbourne photobooth business. Fixed **₱15,000** scope. Inquiry-only booking system.
+- **Stack:** Astro 7 + React 19 islands, strict TypeScript, token CSS, Lucide, RHF + Zod, `@fontsource` Fraunces/Inter, `sweetalert2`, Supabase, `@astrojs/vercel@11`, `sharp` for one-off scripts only.
+- **Backend:** Supabase PostgreSQL + Auth + Storage bucket `cms-media`, RLS, cookie sessions, Astro server endpoints.
+- **Rendering:** All public pages SSR (`prerender = false`); edge cache `s-maxage=300, stale-while-revalidate=3600`; admin/API responses are `no-store`.
+- **Business source of truth:** Melbourne Photobooth Hire; canonical `https://www.melbournephotoboothhire.com.au/`; Melbourne-wide/Victoria-wide; Public Liability Insured; packages start from $350; no fake GBP, reviews, address, or suburb pages.
+- **Decisions on record:** DEC-001 through **DEC-052** in `docs/DECISIONS.md`.
 
 ---
 
-## 2. This session, in order
+## 2. Current session, in order
 
-1. **Read-only familiarization** of the whole codebase (no edits) — architecture, flows, conventions, caution areas. Delivered a report.
-2. **Footer redesign (light).** Replaced the dark footer with a light white surface + coral accents so the black CMS logo is visible: white bg, coral gradient top rule, ink/soft-ink text, coral section-heading underlines, ivory CTA card. Files: `Footer.astro`, `LiveFooterPanels` (live.css mirror), `tokens.css` comment. No DEC (UI only).
-3. **Hero stats cards.** Individual frosted-glass stat cards (translucent surface + `backdrop-filter`, coral top edge → later removed), forced into **one non-scrolling row** (grid `auto-flow: column`), content centered, fluid type/padding; mobile keeps a 3-card row. `hero-email` pill (mailto) added under the stats, centered on mobile.
-4. **Hero email setting.** New optional `contactEmail` on `SiteContent`/settings (type + `optionalEmail` zod + seed + `SettingsEditor` field + `LiveHomeHero` render). Live value already set to `melbournephotoboothhire.au@gmail.com`.
-5. **Performance pass (DEC-046 → DEC-050)** — see §3/§5. LCP discovery/image delivery, lazy live-sync, on-demand Turnstile, inlined CSS, Motion removal, lazy zod, upload-time image optimization + media backfill, and finally **react-dom removed from the homepage initial load**.
-
----
-
-## 3. Performance work (DEC-046 → DEC-050), condensed
-
-- **DEC-046** — Real `<img>` hero/page-header (eager, `fetchpriority=high`, explicit dims, `object-fit`); preload the actual CMS hero (was preloading the mock Pexels fallback); `Promise.all` page loads; Supabase preconnect; supabase-js loaded lazily + realtime gated; Turnstile loaded on demand from the form/modal (`lib/turnstile.ts`); upload-time WebP + max edge + 1-year cache; edge cache widened; unused Fraunces 700 dropped.
-- **DEC-047** — `scripts/optimize-cms-media.mjs` (one-off, **already run with `--apply`**): re-encoded 21 stored JPEGs to mozjpeg ≤1600px, same path + `cacheControl: 31536000`. 12.44 MB → 4.13 MB (−8.31 MB); hero 394 KB → 172 KB; `img-a16c7f48` 6.5 MB → 327 KB. `IMAGE_MAX_EDGE` 1920 → **1600**. Script is idempotent; safe to re-run.
-- **DEC-048** — `build.inlineStylesheets: "always"` (CSS inlined; 0 `.css` files emitted) to kill the render-blocking `<link>`s.
-- **DEC-049** — Removed framer-motion from all public islands (MobileNav/GalleryLightbox/ReviewModal → CSS transitions); forms use a lazy async zod resolver; realtime connects on first interaction (+15 s fallback); `CmsImage` gained optional `width`/`height` captured at upload.
-- **DEC-050** — Removed **react-dom** from the homepage initial graph: static header/footer/messenger/hero/trust-strip (+ `data-live-section`), vanilla `lib/live/liveChrome.ts` (debounced cache-busted SSR re-fetch + node swap; SEO meta patch), vanilla `MobileNav.astro`, load-on-click dialogs (`islands/reviewMount.tsx`, `islands/lightboxMount.tsx`), deferred content islands with negative `rootMargin`. Verified: react-dom's only static importers are the lazy mount modules.
-
----
-
-## 4. New files (this session)
-
-- `scripts/optimize-cms-media.mjs`
-- `src/lib/turnstile.ts`, `src/lib/supabase/lazy.ts`, `src/lib/supabase/rowMappers.ts`
-- `src/lib/live/liveChrome.ts`, `src/lib/ssrIcon.ts`
-- `src/components/MobileNav.astro`, `src/components/TrustStrip.astro`
-- `src/components/islands/reviewMount.tsx`, `src/components/islands/lightboxMount.tsx`
-
-**Deleted (now dead, DEC-050):** `islands/{LiveHomeHero,LiveTrustStrip,LiveBrandLogo,LiveBrandName,LiveFooterPanels,LiveMessengerLink,SeoLive,MobileNav}.tsx`, `islands/useLiveSettings.ts`.
-
----
-
-## 5. Key files modified / conventions to preserve
-
-- **Public chrome is static Astro + vanilla live-refresh.** `Header.astro`, `Footer.astro`, `FloatingMessenger.astro`, `Hero.astro`, `TrustStrip.astro` render SSR markup; `data-live-section="header-brand|footer-brand|footer-cta|footer-base|home-hero|trust-strip|messenger"` marks swappable nodes. `lib/live/liveChrome.ts` (init from `BaseLayout.astro`) subscribes via the shared registry and, on a debounced event, re-fetches `location.href + "?live=<ts>"` and swaps those nodes. SeoLive was replaced by this runtime (`<html data-seo-page>`).
-- **Live-sync pattern (unchanged for remaining islands):** SSR props → `useLiveRows`/`useLiveDoc` → debounced table-scoped refetch; one refcounted channel per table (`lib/realtime/channels.ts`); now **gated on first interaction** (+ 15 s fallback). `lib/realtime/fetchers.ts` uses `getLazySupabase()`; row mappers live client-free in `lib/supabase/rowMappers.ts` (do not add a supabase import there — it would pull supabase into the initial graph).
-- **Dialogs are load-on-click.** Removing `<ReviewModal client:idle>` / `<GalleryLightbox client:idle>`; `BaseLayout.astro` has a delegated click loader that dynamically imports the mount modules; review config comes from `<script type="application/json" id="review-config">` on `index.astro`. Dialogs accept `initialTrigger` / `initialAnchor` and use CSS transitions (no Motion). Do not re-add a static import of react-dom or the mount modules into a page.
-- **CSS loading (load-bearing):** `live.css` is now imported **statically by `BaseLayout.astro`** (the static chrome depends on it) alongside tokens/global/mobile-nav/gallery-lightbox/inquiry-form/review-modal. Admin CSS ships via `AdminShell.astro`. Always grep `dist/` after build.
-- **Reveal/animations:** `Reveal.tsx` is now CSS transform/opacity + IntersectionObserver. Reduced-motion is honored globally (`global.css`). The static hero has **no entrance animation on purpose** (hydration-delayed paint was hurting LCP).
-- **Tokens:** `--color-coral #ff6b5b` / `--color-on-coral #fff` (client-directed, below AA); never hardcode palette. Homepage button rule + `.hero-ctas` exception in `global.css`.
-- **Images:** uploads downscale (max edge 1600; logo 512, favicon 256) + WebP + `cacheControl: 31536000` (`lib/cms/storage.ts`). `CmsImage.width/height` captured at upload and rendered as `<img>` attributes. Existing oversized objects only shrink on re-upload — the backfill already handled the ones present at the time.
-- **Line endings (load-bearing):** the edit/write tools flip LF→CRLF. After every edit, check uniformity and normalise. This session touched mostly CRLF files (`live.css`, `global.css`, `mobile-nav.css`, `Hero.astro`, `Header/Footer/FloatingMessenger.astro`, islands, `DECISIONS.md`); `astro.config.mjs` is **LF**; new `.sql` migrations LF.
-- **DECISIONS.md:** register + body must stay consistent, IDs unique; count now **50**.
-- **Terminology:** inquiry/request; CTAs "Book Now"; "Send Us a Review".
-- Dev server at `:4321` is operator-run — SSR curls reflect live source. `.env` gitignored; anon key read-only, never printed; service-role used only by the backfill script (never printed/committed).
+1. Completed a read-only **Phase 0 SEO baseline audit** and wrote `docs/seo/PHASE-0.md`.
+2. Implemented **Phase 0 remediation**:
+   - Canonical host changed everywhere public to `www`.
+   - Removed live/internal test copy and pricing contradictions.
+   - Corrected gallery/package/FAQ/content trust issues.
+   - Added GA4 as an environment-gated measurement infrastructure.
+   - Added truthful Organization/ProfessionalService/Service structured data.
+   - Replaced placeholder social-image fallbacks and improved local/contact metadata.
+   - Added decision **DEC-052**.
+3. Ran a final Phase 0 QA pass. Result: code implementation was complete, but production then needed the new code deployed plus external Search Console/GA4/gallery steps.
+4. Checked all gallery images and assigned accurate image-specific alt text and captions for all 21 rows. Left placeholder Pexels files in place; updated text only.
+5. Researched and delivered the Phase 1 strategy in `docs/seo/PHASE-1.md`: keyword map, SERP/competitor/local findings, architecture and performance strategy.
+6. Implemented **Phase 1A and 1B**:
+   - GA4 conversion events: `generate_lead`, `phone_click`, `email_click`, `booking_cta_click`, `messenger_click`.
+   - Added `src/lib/analytics.ts`, GA wiring, CTA/location data attributes, and inland natural internal links.
+   - Reduced homepage island serialized props by passing only each island’s required home-blob fields.
+   - Compressed CMS JPEGs and removed the unused Fraunces 600 italic import.
+7. Implemented **Phase 1B.6 responsive CMS image delivery**:
+   - Upload-time WebP variants at 320, 640, and 1024 px when narrower than the stored source.
+   - Module images use deterministic variant naming next to the original.
+   - Intrinsic width is carried by a URL fragment such as `...jpg#w=1200`.
+   - Frontend emits `srcset`/`sizes` only when variant coverage exists.
+   - Page-level page blobs store explicit variant metadata.
+   - Gallery, showcase, services, cards, about story, page headers, and hero now render responsive sources.
+   - PageSpeed-reported gallery payload dropped from about 1421 KiB to about 173 KiB at mobile card sizes and 493 KiB at desktop DPR2.
+   - Did not use Supabase transformations, Vercel image service, breadcrumbs, FAQPage schema, Review schema, new SEO pages, or paid infrastructure.
 
 ---
 
-## 6. Validation status
+## 3. Important implementation details
 
-- `npm run check` → **0/0/0** (151 files) and `npm run build` → complete after every step this session.
-- `dist` greps: framer-motion absent; zod dynamically imported by `InquiryForm`/`ReviewModal` and statically only by admin chunks; supabase statically imported only by admin chunks; **react-dom static importers = `client.BNceNWhw.js` (react-dom sub-chunk), `lightboxMount`, `reviewMount` only (all lazy)**; 0 `.css` files emitted (inlined).
-- Dev SSR curls: all routes 200, unknown → 404; homepage has 7 `client:visible` islands (no `client:idle`/`client:media`), correct hero stats/icons/labels, correct hero preload + eager `<img>`, `data-live-section` markers, `review-config` JSON, nav trigger + panel, messenger.
-- Backfill verified live: hero `img-db9c0843.jpg` now 172 KB + `max-age=31536000`; `img-a16c7f48` 327 KB.
-- **Not verified (no browser/PSI tooling — operator's job):** all visual sign-off (footer, hero cards, hero-email pill), mobile menu open/close, review modal, gallery lightbox, live chrome refresh after a CMS edit, realtime start after interaction, and **the measured mobile PSI deltas**.
-
----
-
-## 7. Open items / operator actions
-
-1. **Re-run a mobile PageSpeed audit** to confirm the improvements and that `client.BcauovTw.js` (react-dom) is absent from the homepage's initial JS.
-2. **Browser QA** (no tooling here): footer/hero/hero-email visuals; mobile nav; review modal + lightbox (open/close/Escape/focus); a CMS edit updating chrome without refresh; live-sync starting after scroll/tap.
-3. **Re-upload the logo once** (Admin → Site Settings → Logo) so the explicit `width`/`height` attributes populate (existing stored logo predates the field).
-4. **Pending Supabase SQL (run ONCE each, verify which are already applied):** `migration-gallery-public-read-all.sql`, `migration-hero-stat-liability.sql`, `migration-hero-stat-liability-icon.sql`, `migration-packages-drop-image.sql`; verify `migration-inquiry-service-package.sql` and `migration-reviews.sql`. Confirm the DEC-042 open question (public `/gallery` highlight-grouped after saves).
-5. **Re-run `supabase gen types`** and diff `database.types.ts`.
-6. **EmailJS** (`melbournephotoboothhire.au@gmail.com` service + `EMAILJS_*` in Vercel; template `{{service}}`/`{{package}}`) and **Turnstile prod keys** in Vercel.
-7. **Client confirmations:** Google review URL, real imagery, Messenger username, legal content, "5 star rated" claim (REQ-REV-007), liability wording/split.
-8. **Carried over:** SEO phase (deferred); revoke the Supabase PAT (`sbp_fc49…`).
-9. **Optional follow-up:** the live-refresh module does a full cache-busted SSR fetch per realtime burst (fine at current edit frequency). Dialogs briefly show the page before the chunk loads on first open.
+- **Variant naming:** `<basename>-320.webp`, `<basename>-640.webp`, `<basename>-1024.webp`.
+- **Upload pipeline:** `putImage` generates all smaller variants and rolls back variants plus the original if any variant upload fails. Image admin stores the resulting metadata.
+- **GC:** `collectImageKeys` collects explicit variant keys and derives deterministic variant keys, so deleted/replaced CMS images can clean their variants.
+- **CMS compatibility:** old records without variants render the original `src`; external Pexels URLs never receive `srcset`.
+- **LCP:** page headers and hero remain eager with `fetchpriority="high"`; preload now includes matching responsive `imagesrcset`/`imagesizes`.
+- **Phase 0 protections remain:** Organization/ProfessionalService/Service JSON-LD, www canonicals, sitemap/robots behavior, no Review/AggregateRating schema, GA4 remains env-gated.
+- **Design:** no visual redesign. Changes are render/metadata/performance behavior, not new UI concepts.
 
 ---
 
-## 8. How to continue
+## 4. Validation status
 
-1. Read `AGENTS.md`, `CONTEXT.md`, relevant `docs/` before changing anything.
-2. Inspect before editing; preserve §5 (static chrome + `data-live-section`; do not re-import react-dom/supabase/Motion into public initial graphs; islands via `client:visible` with the negative rootMargin; line-ending normalise after every edit; prefer tokens; grep `dist/` after build).
-3. Verify with `npm run check`, `npm run build`, prettier on touched lines only, dev-server curls + `dist` grep; demand browser evidence for UI claims.
-4. Do not invent business facts, URLs, prices, policies, or imagery.
-5. Update `docs/DECISIONS.md` for material decisions (register at **50**).
-6. Harmful/irreversible ops (DB writes/migrations, storage re-uploads, token use, deploys) need explicit operator approval each time; secrets never touch disk or git.
-7. Check `git log`/`git status` before assuming state — the operator commits periodically between turns.
+- `npm run check`: **0 errors, 0 warnings, 0 hints**.
+- `npm run build`: **passes**.
+- SSR checks confirmed responsive `srcset`, correct `sizes`, lazy/eager behavior, width/height where available, email/phone/contacts, canonical URLs, SEO metadata, and structured data.
+- All referenced CMS variant URLs checked in this session returned HTTP 200.
+- CSS/scripts touched only where needed; changed files have no new formatting regressions versus their pre-edit baseline.
+- **Not yet measured externally:** field Core Web Vitals, PageSpeed after the Phase 1B.6 deploy, GA4 real-world event flow, and browser hydration edge cases.
+
+---
+
+## 5. State and open items
+
+- Code and reports are committed. Latest commit is `8145b3d`; working tree is clean.
+- Live CMS/storage corrections for pricing, testimonials/trust facts, gallery metadata, OG images, and responsive variant files have already been applied.
+- **Deploy/production validation is still the next external step.** Verify the newly deployed behavior, then rerun PageSpeed for `/`, `/services`, `/packages`, `/gallery`, and `/contact`.
+- Still external/client-owned:
+  - Search Console verification and sitemap checks.
+  - GA4 Measurement ID was already observed live during this work; confirm it remains configured after deploy.
+  - Replace or remove the 8 Pexels gallery placeholders through CMS when client-approved photos are available.
+  - Google Business Profile creation and review-URL/review-flow decisions.
+  - Suburb-page strategy, wedding/corporate content architecture, and paid directory budgets.
+- Do not assume production is current. Always recheck branch, status, deployment, and live output before continuing.
+
+---
+
+## 6. How to continue
+
+1. Read `AGENTS.md`, relevant `docs/`, and the latest `docs/seo/PHASE-0.md` and `docs/seo/PHASE-1.md` before changing SEO behavior.
+2. Preserve Phase 0 and Phase 1A/1B invariants: truthful business data, no fabricated reviews/GBP/address, valid canonicals, no Review/AggregateRating, minimal hydration, CMS compatibility.
+3. Inspect implementation before editing; do not rewrite CMS, routing, framework, image pipeline, or styling architecture for small tasks.
+4. Verify with `npm run check`, `npm run build`, targeted SSR checks, and production PageSpeed after deployment.
+5. Record material architecture/technology/content decisions in `docs/DECISIONS.md`.
+6. Harmful/irreversible operations—especially database writes, migrations, storage deletion/replacement, and production deploys—require explicit operator approval each time.
 
 (End of file)

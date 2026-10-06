@@ -52,6 +52,11 @@ export default function LiveServiceSections({ initial }: { initial: ServiceItem[
                 <CmsIcon name={service.icon} size={24} />
               </span>
             </div>
+            <p className="service-media-link">
+              <a className="service-gallery-link" href="/gallery">
+                See it in the gallery
+              </a>
+            </p>
           </Reveal>
           <Reveal className="service-cell service-cell--body" delay={0.08}>
             <div className="service-body">

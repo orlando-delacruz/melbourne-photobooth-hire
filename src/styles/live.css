@@ -403,6 +403,26 @@
   margin: auto 0 0;
   padding-top: var(--space-xs);
 }
+/* Secondary text link beside the primary card CTA (internal linking). Kept
+   as an inline underlined link so the booking button stays dominant. */
+.card-secondary {
+  display: inline-block;
+  margin-left: var(--space-sm);
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.card-secondary:hover {
+  color: var(--color-ink);
+}
+.card-secondary:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
 .card--dark {
   background: linear-gradient(
     180deg,
@@ -1295,6 +1315,11 @@ body.page-home .card--light .card-title {
 .service-body {
   max-width: 36rem;
 }
+/* Caption-style link under each service image (services → gallery). */
+.service-media-link {
+  margin: var(--space-2xs) 0 0;
+  font-size: var(--text-small);
+}
 .service-kicker {
   display: flex;
   align-items: center;
@@ -1375,6 +1400,23 @@ body.page-home .card--light .card-title {
   gap: var(--space-sm);
   margin: var(--space-lg) 0 0;
 }
+/* Tertiary text link in the service CTA row (services → gallery). */
+.service-gallery-link {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.service-gallery-link:hover {
+  color: var(--color-ink);
+}
+.service-gallery-link:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
 @media (min-width: 900px) {
   .service {
     grid-template-columns: 1fr 1fr;
@@ -1444,7 +1486,7 @@ body.page-home .card--light .card-title {
 }
 .page-header__inner {
   position: relative;
-  max-width: 56rem;
+  max-width: 75rem;
 }
 .page-header h1 {
   margin: var(--space-sm) 0 0;
@@ -1458,6 +1500,41 @@ body.page-home .card--light .card-title {
   max-width: 44rem;
   color: var(--color-ink-soft);
   font-size: var(--text-lead);
+}
+/* Breadcrumb trail inside the page header (rendered by LivePageHeader). */
+.page-header .breadcrumbs {
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-small);
+  color: var(--color-ink-faint);
+}
+.page-header .breadcrumbs ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3xs);
+}
+.page-header .breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+}
+.page-header .breadcrumbs a {
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+.page-header .breadcrumbs a:hover {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+}
+.page-header .breadcrumbs-sep {
+  color: var(--color-ink-faint);
+}
+.page-header .breadcrumbs [aria-current="page"] {
+  color: var(--color-ink);
+  font-weight: 600;
 }
 
 /* ── Hero (mirror Hero.astro) ───────────────────────────────────────── */
@@ -2604,7 +2681,8 @@ body:has(.trust-strip) .hero {
 .footer-social {
   margin-top: var(--space-md);
 }
-.footer-social h2 {
+.footer-social h2,
+.footer-social .footer-heading {
   margin: 0 0 var(--space-2xs);
   padding-bottom: var(--space-3xs);
   color: var(--color-ink);
@@ -2614,7 +2692,8 @@ body:has(.trust-strip) .hero {
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
 }
-.footer-social h2::after {
+.footer-social h2::after,
+.footer-social .footer-heading::after {
   content: "";
   display: block;
   width: 1.75rem;
@@ -2653,7 +2732,8 @@ body:has(.trust-strip) .hero {
   max-width: 22rem;
   color: var(--color-ink-soft);
 }
-.footer-cta h2 {
+.footer-cta h2,
+.footer-cta .footer-cta-title {
   margin: 0 0 var(--space-2xs);
   font-size: var(--text-h3);
   color: var(--color-ink);

@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBreadcrumbList } from "../lib/seo";
 import LivePageHeader from "../components/islands/LivePageHeader";
 import LiveCtaBand from "../components/islands/LiveCtaBand";
 import LiveAddons from "../components/islands/LiveAddons";
@@ -26,6 +27,12 @@ const [{ ctaImage, serviceImages }, { pages: cmsPages }, liveModules, seo] = awa
 ]);
 const packagesPage = cmsPages.packages;
 setPublicCache(Astro.response.headers);
+
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Packages", path: "/packages" },
+]);
 
 const headerImage = serviceImages?.["premium-photobooth"];
 
@@ -73,11 +80,13 @@ const jumpItems = [
   preloadImage={headerImage?.src}
   preloadImageSrcSet={imageSrcSet(headerImage)}
   preloadImageSizes="100vw"
+  structuredData={[breadcrumbSchema]}
 >
   <LivePageHeader
     client:visible
     pageKey="packages"
     initial={packagesPage.header}
+    breadcrumbs={[{ href: "/", label: "Home" }, { href: "/packages", label: "Packages" }]}
     imageSrc={headerImage?.src}
     imageAlt={headerImage?.alt}
     imageSrcSet={imageSrcSet(headerImage)}

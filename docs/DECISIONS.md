@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Fifty-one decision records exist (DEC-001 through DEC-051). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Fifty-four decision records exist (DEC-001 through DEC-054). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -307,6 +307,8 @@ Fifty-one decision records exist (DEC-001 through DEC-051). Existing selections,
 | DEC-050 | Remove react-dom from the homepage initial load | Accepted | 2026-09-30 |
 | DEC-051 | Deep-ink CTA label on coral (AA contrast) and list semantics fix | Accepted | 2026-10-01 |
 | DEC-052 | Phase 0 SEO remediation: www canonical host, confirmed facts, GA4 path | Accepted | 2026-10-05 |
+| DEC-053 | Breadcrumb navigation with BreadcrumbList schema; footer heading semantics | Accepted | 2026-10-06 |
+| DEC-054 | Internal-linking pass: card secondary links, services → gallery | Accepted | 2026-10-06 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1219,6 +1221,41 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/seo/PHASE-0.md` (baseline audit), DEC-016 (SEO foundation; domain clarified), DEC-021 (SEO module), DEC-024/DEC-028 (Supabase SSR + edge cache), `scripts/phase0-cms-fixes.mjs`, `supabase/migration-phase0-seo-fixes.sql`, `src/layouts/BaseLayout.astro`, `src/pages/services.astro`, `src/pages/faq.astro`.
 - **Supersedes / Superseded by:** Clarifies DEC-016's domain choice (non-www → www); does not supersede DEC-016 otherwise.
 - **Open questions or follow-up:** Supply `PUBLIC_GA4_MEASUREMENT_ID`; confirm the Search Console property matches the www host; replace or remove the eight placeholder gallery rows; confirm the real `reviewUrl` once a Google Business Profile exists; decide on `FAQPage`/breadcrumb schema and the event-type content depth in a later phase.
+
+### DEC-053 — Breadcrumb navigation with BreadcrumbList schema; footer heading semantics
+
+- **ID:** DEC-053
+- **Title:** Breadcrumb navigation with BreadcrumbList schema; footer heading semantics
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** `docs/seo/PHASE-0.md` (M4/M5) and `docs/seo/PHASE-1.md` (§11/13) identify two cheap, low-risk gaps: no breadcrumbs (visual or `BreadcrumbList` schema) on a shallow 9-URL site, and repeated footer `<h2>`s ("Follow", "Explore", "Legal", CTA title) on every page diluting the semantic outline. `BaseLayout` already accepts extra `structuredData` nodes but only `/services` used it.
+- **Decision:**
+  1. **Breadcrumbs.** New `src/lib/seo.ts:buildBreadcrumbList()` builds a `BreadcrumbList` node with absolute URLs; `LivePageHeader` renders the matching visual trail inside the page header above the eyebrow (Home › Page, `aria-label="Breadcrumb"`, `aria-current="page"`). All eight inner pages (services, packages, gallery, about, faq, contact, privacy, terms) emit the node via `structuredData` and pass the trail through the header's `breadcrumbs` prop (legal pages via `LiveLegalPage`). The homepage is excluded (single-item trail has no value). No new URLs are created; the sitemap list is unchanged.
+  2. **Footer headings.** `Footer.astro` demotes the four repeated `<h2>`s to `<p class="footer-heading">` / `<p class="footer-cta-title">` with identical visuals. Scoped selectors and the `live.css` mirrors (`footer-social`, `footer-cta`) cover both the old `h2` and new class selectors so live-patched chrome stays pixel-identical.
+- **Alternatives considered:** Adding `FAQPage` schema now (rejected: rich results ended May 2026, no display value — `PHASE-1 §11`); adding `Review`/`AggregateRating` for on-site testimonials (rejected: self-serving, ineligible); building suburb/location landing pages (rejected: doorway/thin-content risk, `REQ-SEO-021`); storing OG image dimensions (deferred: `page_seo` has no width/height columns, requires migration + admin changes).
+- **Rationale:** Breadcrumbs are eligible, low-risk navigation hygiene with display eligibility; heading demotion removes outline dilution without visual change. Both fit the Astro-first, minimal-JS architecture with no new dependencies.
+- **Consequences:** Eight pages emit `BreadcrumbList` alongside the existing Organization/ProfessionalService/WebSite/WebPage graph (`/services` appends to its `Service` nodes). No ranking change is promised; search-engine validation remains pending. OG dimensions and new service/occasion/location pages remain separate decisions requiring confirmation.
+- **Related documents:** `docs/seo/PHASE-0.md` (M4/M5), `docs/seo/PHASE-1.md` (§10/11/13), `docs/REQUIREMENTS.md` (REQ-SEO-011, REQ-NAV-006/007, REQ-SEO-021/022), `src/layouts/BaseLayout.astro`, `src/components/Breadcrumbs.astro`, `src/lib/seo.ts`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Dedicated 360/occasion pages need explicit approval (`REQ-SEO-021`); OG image dimensions need a `page_seo` migration decision; GBP/review-URL, real photos, and Search Console verification remain client/external tracks.
+
+### DEC-054 — Internal-linking pass: card secondary links, services → gallery
+
+- **ID:** DEC-054
+- **Title:** Internal-linking pass: card secondary links, services → gallery
+- **Status:** Accepted
+- **Date:** 2026-10-06
+- **Context:** `docs/seo/PHASE-1.md` (§10) prescribes contextual internal links between commercial pages (services ↔ packages ↔ gallery ↔ inquiry). The audit found: homepage booth cards linked only to `/contact?service=` (no path to the booth detail anchors); package cards linked only to `/contact?package=` (no path back to services); service sections linked to contact/packages but not the gallery. `LiveCard` exposed a single `href`/CTA, so any second link needed a component extension.
+- **Decision:**
+  1. **`LiveCard` secondary link.** New optional `secondaryHref`/`secondaryLabel`/`secondaryAriaLabel` props render an underlined tertiary text link beside the primary CTA. The booking button stays dominant; the link is omitted when unset, so existing callers are unaffected. Styles in `styles/live.css` (`.card-secondary`); the unused legacy `Card.astro` is untouched.
+  2. **Wiring (all derived from live CMS rows, no invented targets):** homepage booth cards → `/services#<id>` ("Learn more", aria-labelled with the service name); homepage + packages-page package cards → `/services` ("Compare services"); each `/services` section links "See it in the gallery" → `/gallery` under its image (`.service-media-link`).
+  3. **Already-present links kept as-is:** showcase → `/gallery`, FAQ teaser → `/faq`, gallery page → `/services`, contact page → `/services` + `/packages`, package CtaBands → `/contact` + `/services`.
+- **Alternatives considered:** Linking each package card to a specific booth section (rejected: packages carry no service relation — inventing one would fabricate a data dependency); adding contextual links inside FAQ answers (deferred: requires a CMS per-FAQ link field plus client-approved targets, a schema + editor change); footer service sub-links (deferred until dedicated booth pages exist).
+- **Rationale:** Closes the hub loop (services ↔ packages ↔ gallery ↔ inquiry) with descriptive anchor text using only confirmed routes and live CMS ids, inside the existing island architecture with no new dependencies and no visual redesign.
+- **Consequences:** No new URLs; sitemap unchanged. Anchors match section `id={service.id}` (same source as the existing jump nav). No ranking change is promised; search-engine validation remains pending.
+- **Related documents:** `docs/seo/PHASE-1.md` (§10), `docs/REQUIREMENTS.md` (REQ-NAV-006), `src/components/live/LiveCard.tsx`, `src/components/islands/LiveServicesSection.tsx`, `src/components/islands/LivePlansSection.tsx`, `src/components/islands/LivePackagesSection.tsx`, `src/components/islands/LiveServiceSections.tsx`.
+- **Supersedes / Superseded by:** —
+- **Open questions or follow-up:** Per-FAQ contextual links need a CMS link-field decision; dedicated booth/occasion pages still need explicit approval (`REQ-SEO-021`).
 
 ## 22. Related Documentation
 
