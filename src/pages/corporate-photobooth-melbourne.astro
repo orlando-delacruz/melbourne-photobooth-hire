@@ -1,0 +1,103 @@
+---
+export const prerender = false;
+import BaseLayout from "../layouts/BaseLayout.astro";
+import OccasionCrossLinks from "../components/OccasionCrossLinks.astro";
+import LivePageHeader from "../components/islands/LivePageHeader";
+import LiveCtaBand from "../components/islands/LiveCtaBand";
+import LiveBoothSections from "../components/islands/LiveBoothSections";
+import {
+  loadPublicContent,
+  loadPublicModules,
+  loadPublicSeo,
+  loadPublicPages,
+} from "../lib/supabase/public";
+import { imageSrcSet } from "../lib/images";
+import { buildBreadcrumbList } from "../lib/seo";
+import { setPublicCache } from "../lib/http-cache";
+
+// Dedicated Corporate Events occasion page (SEO Track 2): distinct commercial
+// intent (branding, activations, invoicing) with unique client-confirmed copy.
+// Reuses the booth content shape (steps, pricing, best-for, venue, FAQs) via
+// the shared editor, schema and live sections — no new CMS machinery.
+// Empty CMS rows render fallbacks and the island omits unfilled sections.
+const [{ ctaImage, heroBackgroundImage }, liveModules, { pages: cmsPages }, seo] =
+  await Promise.all([
+    loadPublicContent(),
+    loadPublicModules(),
+    loadPublicPages(),
+    loadPublicSeo("corporate"),
+  ]);
+const occasionPage = cmsPages.corporate;
+const occasionFaqs = liveModules.faqs.filter((faq) => faq.highlight !== false).slice(0, 6);
+// Header image is the likely LCP: the CMS header upload when set, else the
+// brand home hero (occasions have no service-module row of their own).
+const headerImage = occasionPage.header.image?.src
+  ? occasionPage.header.image
+  : heroBackgroundImage;
+const headerImageSrc = headerImage?.src;
+setPublicCache(Astro.response.headers);
+
+const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
+const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
+  { name: "Home", path: "/" },
+  { name: "Corporate Events", path: "/corporate-photobooth-melbourne" },
+]);
+---
+
+<BaseLayout
+  seoPageKey="corporate"
+  title={seo.seoTitle || "Corporate Photobooth Melbourne | Event & Brand Activations"}
+  description={
+    seo.seoDescription ||
+    "Photobooth hire for Melbourne corporate events: branded overlays, 360 video, instant sharing and invoice-friendly bookings for launches and EOFY parties."
+  }
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
+  canonicalUrl={seo.canonicalUrl || undefined}
+  noindex={seo.noindex}
+  nofollow={seo.nofollow}
+  ogTitle={seo.ogTitle || undefined}
+  ogDescription={seo.ogDescription || undefined}
+  preloadImage={headerImageSrc}
+  preloadImageSrcSet={imageSrcSet(headerImage)}
+  preloadImageSizes="100vw"
+  structuredData={[breadcrumbSchema]}
+>
+  <LivePageHeader
+    client:visible
+    pageKey="corporate"
+    initial={occasionPage.header}
+    fallbackTitle="Photobooth hire for Melbourne corporate events"
+    breadcrumbs={[
+      { href: "/", label: "Home" },
+      { href: "/corporate-photobooth-melbourne", label: "Corporate Events" },
+    ]}
+    imageSrc={headerImageSrc}
+    imageAlt={headerImage?.alt}
+    imageSrcSet={imageSrcSet(headerImage)}
+    imageWidth={headerImage?.width}
+    imageHeight={headerImage?.height}
+  />
+
+  <LiveBoothSections
+    client:visible
+    pageKey="corporate"
+    initialPage={occasionPage}
+    initialFaqs={occasionFaqs}
+  />
+
+  <OccasionCrossLinks siblingHref="/wedding-photobooth-melbourne" siblingLabel="Weddings" />
+
+  <LiveCtaBand
+    client:visible
+    pageKey="corporate"
+    initial={occasionPage.ctaBand}
+    id="occasion-corporate-enquire"
+    primaryHref="/contact"
+    secondaryHref="/packages"
+    fallbackImageSrc={ctaImage?.src}
+    fallbackImageAlt={ctaImage?.alt}
+  />
+</BaseLayout>

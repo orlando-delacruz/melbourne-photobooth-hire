@@ -109,7 +109,7 @@ export default function LiveContactAside({ initialPage, initialSettings }: LiveC
       </dl>
       {socials.length > 0 ? (
         <div className="aside-social">
-          <h3 className="aside-social-heading">Follow</h3>
+          <p className="aside-social-heading">Follow</p>
           <ul className="aside-social-list">
             {socials.map((social) => (
               <li key={social.url}>

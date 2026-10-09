@@ -46,6 +46,14 @@ const liveTestimonials =
 // mock fallback. Preloading the fallback while the CMS image renders (the
 // previous behaviour) wasted the request and left the real LCP undiscovered.
 const heroPreloadSrc = home.hero.background?.src || heroBackgroundImage?.src;
+// OG social image (OG = hero rule): CMS OG image first, else the hero
+// background actually rendered above. Dimensions follow the same chain.
+const ogHero = home.hero.background?.src ? home.hero.background : heroBackgroundImage;
+const ogImageSrc = seo.ogImage.src || ogHero?.src || undefined;
+const ogImageAltText = seo.ogImage.alt || ogHero?.alt || undefined;
+// Dimensions are known only for the hero fallback (SEO rows store no dims).
+const ogImageWidth = seo.ogImage.src ? undefined : ogHero?.width;
+const ogImageHeight = seo.ogImage.src ? undefined : ogHero?.height;
 // Derived hero stat values resolved at render (the hero is static markup).
 const heroStats = home.hero.stats.map((stat) => ({
   ...stat,
@@ -72,8 +80,10 @@ const DEFERRED = { rootMargin: "0px 0px -20% 0px" };
     seo.seoDescription ||
     "Photobooth hire in Melbourne for weddings, birthdays, corporate and school events. Open-air, roaming and 360 booths with HD prints and instant QR downloads."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={ogImageSrc}
+  ogImageAlt={ogImageAltText}
+  ogImageWidth={ogImageWidth}
+  ogImageHeight={ogImageHeight}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

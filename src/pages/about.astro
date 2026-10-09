@@ -40,8 +40,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Meet Melbourne Photobooth Hire, a local Melbourne team styling and running photobooth experiences for weddings, birthdays and corporate events."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

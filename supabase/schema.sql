@@ -135,7 +135,7 @@ create table if not exists public.testimonials (
 -- listed here so fresh environments match production.)
 create table if not exists public.page_contents (
   page_key text primary key
-    check (page_key in ('home','services','packages','gallery','about','faq','contact','settings','privacy','terms','360','premium','roaming')),
+    check (page_key in ('home','services','packages','gallery','about','faq','contact','settings','privacy','terms','360','premium','roaming','wedding','corporate')),
   content jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
@@ -143,7 +143,7 @@ create table if not exists public.page_contents (
 -- Per-page SEO (12 pages: 10 CMS + privacy/terms). Mirrors PageMeta.
 create table if not exists public.page_seo (
   page_key text primary key
-    check (page_key in ('home','services','packages','gallery','about','faq','contact','privacy','terms','360','premium','roaming')),
+    check (page_key in ('home','services','packages','gallery','about','faq','contact','privacy','terms','360','premium','roaming','wedding','corporate')),
   seo_title text not null check (char_length(seo_title) between 1 and 120),
   seo_description text not null check (char_length(seo_description) between 1 and 400),
   keywords text not null default '',

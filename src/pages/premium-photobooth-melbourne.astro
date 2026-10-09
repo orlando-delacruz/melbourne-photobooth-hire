@@ -65,8 +65,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Hire a premium open-air photobooth in Melbourne for weddings, corporate events and birthdays: studio lighting, styled setup and instant prints."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}
@@ -81,6 +83,7 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     client:visible
     pageKey="premium"
     initial={boothPage.header}
+    fallbackTitle="Hire a premium open-air photobooth in Melbourne"
     breadcrumbs={[{ href: "/", label: "Home" }, { href: "/premium-photobooth-melbourne", label: "Premium Photobooth" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}

@@ -1,0 +1,96 @@
+---
+// Occasion page cross-links (SEO Track 2).
+//
+// Rendered on each dedicated occasion page (weddings, corporate events):
+// a link to the sibling occasion page plus the services/gallery trail, under
+// the same quiet champagne hairline as BoothCrossLinks. Secondary
+// navigation, not a competing call to action.
+interface Props {
+  /** Href of the sibling occasion page, e.g. "/corporate-photobooth-melbourne". */
+  siblingHref: string;
+  /** Label of the sibling occasion page, e.g. "Corporate events". */
+  siblingLabel: string;
+}
+const { siblingHref, siblingLabel } = Astro.props;
+const arrow =
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>';
+const links = [
+  { href: siblingHref, label: siblingLabel },
+  { href: "/services", label: "Compare all photobooth services" },
+  { href: "/gallery", label: "Browse the event gallery" },
+];
+---
+
+<nav class="booth-crosslinks" aria-label="Related pages">
+  <p class="booth-crosslinks-lead">Planning something else?</p>
+  <ul>
+    {links.map((item) => (
+      <li>
+        <a href={item.href}>
+          <span>{item.label}</span>
+          <span set:html={arrow} />
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+<style>
+  .booth-crosslinks {
+    position: relative;
+    max-width: 44rem;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
+    text-align: center;
+  }
+  .booth-crosslinks::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-accent-line), transparent);
+    pointer-events: none;
+  }
+  .booth-crosslinks-lead {
+    margin: 0 0 var(--space-sm);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-lead);
+    color: var(--color-ink);
+  }
+  .booth-crosslinks ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs) var(--space-lg);
+  }
+  .booth-crosslinks a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding-block: 0.35rem;
+    color: var(--color-accent-strong);
+    font-weight: 600;
+    font-size: var(--text-small);
+    text-decoration: none;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .booth-crosslinks a:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .booth-crosslinks a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .booth-crosslinks a {
+      transition: none;
+    }
+  }
+</style>

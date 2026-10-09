@@ -36,10 +36,15 @@ interface Props {
   preloadImageSrcSet?: string;
   /** `sizes` matching the preloaded LCP image's rendered layout. */
   preloadImageSizes?: string;
-  /** Social share image; defaults to the hero background image. */
+  /** Social share image; resolved per page as CMS OG image, else the page
+      hero/header background image (OG = hero rule). Omit only if neither exists. */
   ogImage?: string;
   /** Alt text for the social share image; defaults to the brand or hero alt. */
   ogImageAlt?: string;
+  /** Intrinsic dimensions of the social share image, when known (CMS or hero
+      image metadata). Emitted as og:image:width/height for social rendering. */
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   /** Absolute-URL canonical override; defaults to the page URL. */
   canonicalUrl?: string;
   /** Keep a page out of search results (for example the 404 page). */
@@ -63,6 +68,8 @@ const {
   preloadImageSizes,
   ogImage,
   ogImageAlt,
+  ogImageWidth,
+  ogImageHeight,
   canonicalUrl: canonicalOverride,
   noindex = false,
   nofollow = false,
@@ -102,9 +109,9 @@ const canonicalUrl = canonicalOverride ?? new URL(canonicalPath, siteOrigin).hre
 const socialTitle = ogTitle || title;
 const socialDescription = ogDescription || description;
 
-// Social image comes only from the per-page SEO setting (all public pages
-// provide a client-uploaded image). There is deliberately no global stock
-// fallback, so a placeholder can never be shared as the brand's OG image.
+// Social image comes from the per-page resolution (CMS OG image, else the
+// page hero/header background image per the OG = hero rule). No Pexels or
+// stock placeholder is ever hardcoded here; pages pass their real hero.
 const socialImageSrc = ogImage;
 const socialImage = socialImageSrc ? new URL(socialImageSrc, canonicalUrl).href : undefined;
 const socialImageAlt = socialImageSrc ? ogImageAlt || brandName : undefined;
@@ -228,6 +235,12 @@ const siteSchema = {
     <meta property="og:description" content={socialDescription} />
     <meta property="og:url" content={canonicalUrl} />
     {socialImage ? <meta property="og:image" content={socialImage} /> : null}
+    {socialImage && ogImageWidth ? (
+      <meta property="og:image:width" content={String(ogImageWidth)} />
+    ) : null}
+    {socialImage && ogImageHeight ? (
+      <meta property="og:image:height" content={String(ogImageHeight)} />
+    ) : null}
     {socialImage && socialImageAlt ? (
       <meta property="og:image:alt" content={socialImageAlt} />
     ) : null}

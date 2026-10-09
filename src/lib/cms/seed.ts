@@ -212,6 +212,14 @@ export const cmsSeed: CmsContent = {
 
     roaming: emptyBoothPage(),
 
+    // Occasion pages (weddings, corporate events). Same deliberately-empty
+    // shape as the booth pages: copy must come from the client-confirmed CMS
+    // blob — never invented here. Empty sections are omitted on the public
+    // page until the CMS row is saved.
+    wedding: emptyBoothPage(),
+
+    corporate: emptyBoothPage(),
+
     packages: {
       header: {
         title: "Packages",

@@ -22,7 +22,9 @@ export type CmsPageKey =
   | "contact"
   | "360"
   | "premium"
-  | "roaming";
+  | "roaming"
+  | "wedding"
+  | "corporate";
 
 export type StoreSectionKey =
   | CmsPageKey
@@ -480,6 +482,8 @@ export interface CmsContent {
     "360": BoothPageContent;
     premium: BoothPageContent;
     roaming: BoothPageContent;
+    wedding: BoothPageContent;
+    corporate: BoothPageContent;
   };
   settings: SiteSettingsContent;
   modules: CmsModules;

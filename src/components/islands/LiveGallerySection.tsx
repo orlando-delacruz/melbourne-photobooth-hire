@@ -79,7 +79,10 @@ export default function LiveGallerySection({ initial, emptyState }: LiveGalleryS
   }
 
   return (
-    <section className="section" aria-label="Event gallery">
+    <section className="section" aria-labelledby="event-gallery-heading">
+      <h2 id="event-gallery-heading" className="sr-only">
+        Event gallery
+      </h2>
       <ul className="gallery-grid">
         {rendered.map((item, index) => (
           <li key={item.id}>

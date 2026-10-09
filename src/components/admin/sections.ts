@@ -90,6 +90,28 @@ export const CMS_SECTIONS: AdminSection[] = [
     ),
   },
   {
+    key: "wedding",
+    label: "Weddings Page",
+    href: "/admin/wedding-page",
+    group: "cms",
+    publicHref: "/wedding-photobooth-melbourne",
+    blurb: "Dedicated Weddings page: run-sheet steps, pricing, best-for and venue notes.",
+    icon: svg(
+      '<path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+    ),
+  },
+  {
+    key: "corporate",
+    label: "Corporate Page",
+    href: "/admin/corporate-page",
+    group: "cms",
+    publicHref: "/corporate-photobooth-melbourne",
+    blurb: "Dedicated Corporate Events page: branding steps, pricing and venue notes.",
+    icon: svg(
+      '<rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/><path d="M12 14h.01"/>',
+    ),
+  },
+  {
     key: "packages",
     label: "Packages",
     href: "/admin/packages",

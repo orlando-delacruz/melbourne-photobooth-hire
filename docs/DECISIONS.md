@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Fifty-eight decision records exist (DEC-001 through DEC-058). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Sixty decision records exist (DEC-001 through DEC-060). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -313,6 +313,8 @@ Fifty-eight decision records exist (DEC-001 through DEC-058). Existing selection
 | DEC-056 | Per-FAQ contextual link pair (single, internal-only) | Accepted | 2026-10-06 |
 | DEC-057 | Footer service-pages sub-list driven by the detail-page registry | Accepted | 2026-10-06 |
 | DEC-058 | Premium + Roaming booth pages by generalizing the booth pattern | Accepted | 2026-10-06 |
+| DEC-059 | OG image equals hero image per page; shared sitemap registry; heading/H1/404 hygiene | Accepted | 2026-10-09 |
+| DEC-060 | Wedding + Corporate occasion pages on the booth content shape | Accepted | 2026-10-09 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1334,6 +1336,44 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** DEC-055 (established pattern), `docs/seo/PHASE-1.md` (§3, 8–9), `docs/REQUIREMENTS.md` (REQ-SEO-021 approved for these URLs).
 - **Supersedes / Superseded by:** — Extends DEC-055/057.
 - **Open questions or follow-up:** GSC query evidence decides whether wedding/corporate stay sections; GBP track stays last.
+
+### DEC-059 — OG image equals hero image per page; shared sitemap registry; heading/H1/404 hygiene
+
+- **ID:** DEC-059
+- **Title:** OG image equals hero image per page; shared sitemap registry; heading/H1/404 hygiene
+- **Status:** Accepted
+- **Date:** 2026-10-09
+- **Context:** The user directed that every page's OG social image must be its hero section background image. Booth/legal pages with empty CMS OG rows emitted no `og:image` (summary card); the sitemap was a hardcoded 12-URL array that new pages could silently miss; the gallery grid had no H2, the contact aside used a parentless H3, booth blobs seed empty H1s, and `/404.html` served a soft-200 duplicate.
+- **Decision:**
+  1. **OG = hero rule.** Resolution chain per page: CMS SEO `ogImage.src` → page hero/header background `src` → omit. Alt follows the same chain (brand name as final fallback in `BaseLayout`); `og:image:width/height` emit only when the hero fallback supplies intrinsic dims (SEO rows store no dims). Legal pages (no photographic header) fall back to the home hero as the brand-level image.
+  2. **Shared sitemap registry.** `PUBLIC_ROUTE_PATHS` in `lib/seo.ts` is the single source; `astro.config.mjs` maps it to absolute URLs (TS import verified by build; sitemap now 14 URLs).
+  3. **Heading hygiene.** Gallery grid gains a visually-hidden H2 with `aria-labelledby` (replacing `aria-label`); contact-aside "Follow" H3 becomes a `<p>` matching the footer pattern (footer already uses `<p>` headings); `LivePageHeader` gains `fallbackTitle` so empty CMS titles render a descriptive H1 instead of an empty one (wired on all 3 booth + 2 occasion pages).
+  4. **`/404.html` redirect.** `vercel.json` 302s `/404.html` → `/404` (platform-level, no code path change).
+- **Alternatives considered:** Global default OG image (rejected: reintroduces the Phase-0 placeholder-sharing risk; the hero chain always reflects the page). CMS-stored OG dimensions (rejected: requires a `page_seo` migration for marginal social-render gain). Demoting footer headings further (rejected: already `<p>`, no issue).
+- **Rationale:** Every share renders a real page image with zero CMS action required, while a client-uploaded OG image still wins; sitemap drift becomes impossible; no empty H1 can ship.
+- **Consequences:** Until real CMS photos replace placeholders, some OG images are Pexels/mock URLs (same images as the hero — consistent, temporary). `vercel.json` is new repo surface (redirects only).
+- **Related documents:** `docs/seo/PHASE-0.md` (M5, M11, M12), `docs/seo/PHASE-1.md` (§11), DEC-052 (OG fallback removal — narrowed, not reversed: no stock is hardcoded; pages pass their real hero).
+- **Supersedes / Superseded by:** — Narrows DEC-052 §OG.
+- **Open questions or follow-up:** Real photo replacement via CMS (client assets); social-debugger spot check post-deploy.
+
+### DEC-060 — Wedding + Corporate occasion pages on the booth content shape
+
+- **ID:** DEC-060
+- **Title:** Wedding + Corporate occasion pages on the booth content shape
+- **Status:** Accepted
+- **Date:** 2026-10-09
+- **Context:** `PHASE-1` §§3, 8–9 identifies wedding/corporate occasion intent as high commercial value with competitor evidence and no local-operator dedicated URL observed; DEC-058 left the occasion decision to GSC evidence. The user approved building both pages now (implementation Track 2), with GBP deferred to a later client handoff.
+- **Decision:**
+  1. **Reuse, don't invent.** Occasion pages reuse `BoothPageContent` + `boothPageSchema` + `BoothPageEditor` + `LiveBoothSections` with new `wedding`/`corporate` keys (`CmsPageKey`, seed, `migration-occasion-pages.sql`, `schema.sql` aligned). No new CMS machinery; RLS/Realtime/admin save-load flow automatically.
+  2. **Two routes** (`/wedding-photobooth-melbourne`, `/corporate-photobooth-melbourne`): header + breadcrumbs, occasion sections, `OccasionCrossLinks` (sibling + services + gallery), contextual `/contact` CTA, `BreadcrumbList` only (no `Service` node — occasions are not services; no `FAQPage`/review markup per schema strategy). Sitemap 12→14 via the DEC-059 registry; footer gains an Occasions sub-list from the new occasion registry; SEO admin + dashboard extended.
+  3. **Header/OG imagery.** Occasions have no service-module row, so the header/OG source is the CMS header upload with home-hero fallback (OG = hero rule, DEC-059).
+  4. **Differentiation honesty.** Same structure, distinct substance required: wedding (run-sheet timing, styling, guest flow) vs corporate (branding, activations, invoicing). Templated copy with swapped nouns is a doorway-pattern risk — flagged for the CMS copy pass, not solved in code. Birthday/private stays a section, not a page; no suburb doorways.
+- **Alternatives considered:** New bespoke occasion content model (rejected: duplicates the booth shape for identical sections); one dynamic `[occasion].astro` route (rejected: public pages are explicit files); four occasion pages incl. birthday/private (rejected: thin intent, doorway risk).
+- **Rationale:** Highest-value `PHASE-1` gap closed at minimal marginal cost on proven pieces; user-approved scope expansion under REQ-SEO-021.
+- **Consequences:** Publish gate is client-confirmed CMS copy + real photos for both blobs (seed shapes are empty; sections omit until saved). Production DB needs `migration-occasion-pages.sql` run once. GBP/review wiring untouched (deferred).
+- **Related documents:** `docs/seo/PHASE-1.md` (§§3, 8–9, 16), DEC-055/058 (pattern), DEC-059 (OG/sitemap registries).
+- **Supersedes / Superseded by:** — Extends DEC-058.
+- **Open questions or follow-up:** CMS copy + photography for both pages; GSC monitoring for cannibalization vs `/services`; GBP review URL handoff later.
 
 ## 22. Related Documentation
 

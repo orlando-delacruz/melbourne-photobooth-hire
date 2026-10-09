@@ -61,3 +61,49 @@ export function serviceDetailHref(serviceId: string): string | undefined {
 export function serviceDetailPages(): ServiceDetailPage[] {
   return Object.values(SERVICE_DETAIL_PAGES);
 }
+
+/**
+ * Occasion pages (Phase 1 occasion strategy, SEO Track 2). High commercial
+ * value with distinct intent (wedding run-sheets, corporate branding), each
+ * with unique client-confirmed copy — never templated doorway duplicates.
+ * Footer and sitemap read this registry; extend only when a new occasion
+ * page is approved and published.
+ */
+export interface OccasionPage {
+  href: string;
+  label: string;
+}
+
+const OCCASION_PAGES: Record<string, OccasionPage> = {
+  wedding: { href: "/wedding-photobooth-melbourne", label: "Weddings" },
+  corporate: { href: "/corporate-photobooth-melbourne", label: "Corporate Events" },
+};
+
+/** Occasion pages in registry order, for footer/IA listings. */
+export function occasionPages(): OccasionPage[] {
+  return Object.values(OCCASION_PAGES);
+}
+
+/**
+ * Canonical public route paths (single shared registry for IA + sitemap).
+ * Every indexable public page must be listed here exactly once. Admin/API
+ * routes are never listed. `astro.config.mjs` builds the sitemap `customPages`
+ * from this registry so new pages cannot silently miss the sitemap (SEO plan
+ * Track 1). Legal pages are included: they are indexable public content.
+ */
+export const PUBLIC_ROUTE_PATHS: string[] = [
+  "/",
+  "/services",
+  "/premium-photobooth-melbourne",
+  "/roaming-photobooth-melbourne",
+  "/360-video-booth-melbourne",
+  "/wedding-photobooth-melbourne",
+  "/corporate-photobooth-melbourne",
+  "/packages",
+  "/gallery",
+  "/about",
+  "/faq",
+  "/contact",
+  "/privacy",
+  "/terms",
+];

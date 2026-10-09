@@ -57,8 +57,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Enquire about photobooth hire in Melbourne. Send your event date, venue and guest numbers and we'll confirm availability and put together a clear quote."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

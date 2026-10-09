@@ -19,6 +19,9 @@ export interface LivePageHeaderCrumb {
 export interface LivePageHeaderProps {
   pageKey: string;
   initial: Pick<PageHeaderContent, "title" | "eyebrow" | "lede">;
+  /** Descriptive H1 used when the CMS title is still empty (SEO Track 1:
+      booth/legal blobs seed empty so no empty H1 is ever published). */
+  fallbackTitle?: string;
   imageSrc?: string;
   imageAlt?: string;
   /** Responsive `srcset` for the header/LCP image; omitted for legacy images. */
@@ -34,6 +37,7 @@ export interface LivePageHeaderProps {
 export default function LivePageHeader({
   pageKey,
   initial,
+  fallbackTitle,
   imageSrc,
   imageAlt,
   imageSrcSet,
@@ -47,6 +51,7 @@ export default function LivePageHeader({
     const next = await fetchPageHeader(pageKey);
     return next ?? initial;
   });
+  const title = header.title.trim() || fallbackTitle || "";
 
   return (
     <header className="page-header bleed">
@@ -93,7 +98,7 @@ export default function LivePageHeader({
         {header.eyebrow ? (
           <p className={`eyebrow${rule ? " eyebrow--rule" : ""}`}>{header.eyebrow}</p>
         ) : null}
-        <h1>{header.title}</h1>
+        <h1>{title}</h1>
         {header.lede ? <p className="lede">{header.lede}</p> : null}
         {children}
       </div>

@@ -62,8 +62,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Compare Melbourne photobooth hire services: open-air, roaming and 360 video booths for weddings, birthdays and corporate events, each styled and staffed."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

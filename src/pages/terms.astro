@@ -3,12 +3,18 @@ export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { buildBreadcrumbList } from "../lib/seo";
 import LiveLegalPage from "../components/islands/LiveLegalPage";
-import { loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
+import { loadPublicContent, loadPublicPages, loadPublicSeo } from "../lib/supabase/public";
 import { setPublicCache } from "../lib/http-cache";
 
-const seo = await loadPublicSeo("terms");
-const { legal } = await loadPublicPages();
+const [seo, { legal }, { heroBackgroundImage }] = await Promise.all([
+  loadPublicSeo("terms"),
+  loadPublicPages(),
+  loadPublicContent(),
+]);
 const page = legal.terms;
+// Legal pages have no photographic header; the home hero is the brand-level
+// OG fallback (OG = hero rule) so shares still render a real brand image.
+const ogFallback = heroBackgroundImage;
 setPublicCache(Astro.response.headers);
 const siteOrigin = (Astro.site ?? new URL("https://www.melbournephotoboothhire.com.au")).origin;
 const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
@@ -24,8 +30,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "The terms and conditions that apply to photobooth hire with Melbourne Photobooth Hire, including bookings, deposits, rescheduling and venue requirements."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || ogFallback?.src || undefined}
+  ogImageAlt={seo.ogImage.alt || ogFallback?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : ogFallback?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : ogFallback?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

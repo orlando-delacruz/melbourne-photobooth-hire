@@ -70,8 +70,10 @@ const jumpItems = [
     seo.seoDescription ||
     "Compare photobooth hire packages in Melbourne: 2, 3 and 4 hour options with full inclusions, add-ons and booking policies. Enquire for a clear quote."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImage?.src || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

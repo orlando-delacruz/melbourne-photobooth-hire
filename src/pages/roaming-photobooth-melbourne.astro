@@ -65,8 +65,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Hire a roaming photobooth in Melbourne for weddings, corporate events and birthdays: candid crowd photos with no fixed backdrop, perfect for cocktail hours."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}
@@ -81,6 +83,7 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     client:visible
     pageKey="roaming"
     initial={boothPage.header}
+    fallbackTitle="Hire a roaming photobooth in Melbourne"
     breadcrumbs={[{ href: "/", label: "Home" }, { href: "/roaming-photobooth-melbourne", label: "Roaming Photobooth" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}

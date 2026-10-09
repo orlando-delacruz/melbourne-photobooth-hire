@@ -63,8 +63,10 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     seo.seoDescription ||
     "Hire a 360 video booth in Melbourne for weddings, corporate events and birthdays: slow-motion platform, instant QR clips and styled setup."
   }
-  ogImage={seo.ogImage.src || undefined}
-  ogImageAlt={seo.ogImage.alt || undefined}
+  ogImage={seo.ogImage.src || headerImageSrc || undefined}
+  ogImageAlt={seo.ogImage.alt || headerImage?.alt || undefined}
+  ogImageWidth={seo.ogImage.src ? undefined : headerImage?.width}
+  ogImageHeight={seo.ogImage.src ? undefined : headerImage?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}
@@ -79,6 +81,7 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     client:visible
     pageKey="360"
     initial={boothPage.header}
+    fallbackTitle="Hire a 360 video booth in Melbourne"
     breadcrumbs={[{ href: "/", label: "Home" }, { href: "/360-video-booth-melbourne", label: "360 Video Booth" }]}
     imageSrc={headerImageSrc}
     imageAlt={headerImage?.alt}

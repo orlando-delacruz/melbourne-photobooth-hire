@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
+import { PUBLIC_ROUTE_PATHS } from "./src/lib/seo.ts";
 
 // The production domain is confirmed as the www host (Phase 0 remediation,
 // DEC-052); `site` is the single source for canonical URLs, Open Graph URLs
@@ -13,22 +14,12 @@ import vercel from "@astrojs/vercel";
 //
 // Public pages are server-rendered (DEC-028), so they are listed explicitly:
 // the sitemap integration only discovers prerendered routes on its own.
-const PUBLIC_SITEMAP_URLS = [
-  "https://www.melbournephotoboothhire.com.au/",
-  "https://www.melbournephotoboothhire.com.au/services",
-  "https://www.melbournephotoboothhire.com.au/premium-photobooth-melbourne",
-  "https://www.melbournephotoboothhire.com.au/roaming-photobooth-melbourne",
-  "https://www.melbournephotoboothhire.com.au/360-video-booth-melbourne",
-  "https://www.melbournephotoboothhire.com.au/packages",
-  "https://www.melbournephotoboothhire.com.au/gallery",
-  "https://www.melbournephotoboothhire.com.au/about",
-  "https://www.melbournephotoboothhire.com.au/faq",
-  "https://www.melbournephotoboothhire.com.au/contact",
-  "https://www.melbournephotoboothhire.com.au/privacy",
-  "https://www.melbournephotoboothhire.com.au/terms",
-];
+// URLs derive from the shared PUBLIC_ROUTE_PATHS registry (SEO Track 1) so
+// a new public page cannot silently miss the sitemap.
+const SITE_ORIGIN = "https://www.melbournephotoboothhire.com.au";
+const PUBLIC_SITEMAP_URLS = PUBLIC_ROUTE_PATHS.map((path) => `${SITE_ORIGIN}${path}`);
 export default defineConfig({
-  site: "https://www.melbournephotoboothhire.com.au",
+  site: SITE_ORIGIN,
   trailingSlash: "never",
   // Server-rendered on Vercel (DEC-028): public pages read live Supabase data
   // per request with edge SWR caching; admin/API routes are also server-side.
