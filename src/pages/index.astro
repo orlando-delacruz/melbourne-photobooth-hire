@@ -51,9 +51,10 @@ const heroPreloadSrc = home.hero.background?.src || heroBackgroundImage?.src;
 const ogHero = home.hero.background?.src ? home.hero.background : heroBackgroundImage;
 const ogImageSrc = seo.ogImage.src || ogHero?.src || undefined;
 const ogImageAltText = seo.ogImage.alt || ogHero?.alt || undefined;
-// Dimensions are known only for the hero fallback (SEO rows store no dims).
-const ogImageWidth = seo.ogImage.src ? undefined : ogHero?.width;
-const ogImageHeight = seo.ogImage.src ? undefined : ogHero?.height;
+// Dimensions describe the resolved image: stored SEO dims win, else the
+// hero fallback dims (SEO rows previously stored no dims).
+const ogImageWidth = seo.ogImage.src ? seo.ogImage.width : ogHero?.width;
+const ogImageHeight = seo.ogImage.src ? seo.ogImage.height : ogHero?.height;
 // Derived hero stat values resolved at render (the hero is static markup).
 const heroStats = home.hero.stats.map((stat) => ({
   ...stat,

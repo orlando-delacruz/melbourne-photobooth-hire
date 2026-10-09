@@ -132,10 +132,10 @@ insert into public.page_contents (page_key, content) values (
       "src": "https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900",
       "alt": "Guests celebrating on a dance floor beneath festival lights"
     },
-    "keywords": "",
+    "keywords": "corporate photobooth melbourne, corporate event photo booth, brand activation booth melbourne",
     "canonicalUrl": "",
-    "ogTitle": "",
-    "ogDescription": "",
+    "ogTitle": "Corporate Photobooth Hire — Branded Booths & 360 Video",
+    "ogDescription": "Branded overlays, 360 clips and instant sharing for launches, EOFY parties and conferences. Invoice-friendly bookings.",
     "noindex": false,
     "nofollow": false
   }
@@ -151,7 +151,7 @@ values (
   'corporate',
   'Corporate Photobooth Melbourne | Event & Brand Activations',
   'Photobooth hire for Melbourne corporate events: branded overlays, 360 video, instant sharing and invoice-friendly bookings for launches and EOFY parties. Enquire for a clear quote.',
-  '', '', '', '',
+  'corporate photobooth melbourne, corporate event photo booth, brand activation booth melbourne', '', 'Corporate Photobooth Hire — Branded Booths & 360 Video', 'Branded overlays, 360 clips and instant sharing for launches, EOFY parties and conferences. Invoice-friendly bookings.',
   null,
   'https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900',
   'Guests celebrating on a dance floor beneath festival lights',

@@ -245,8 +245,10 @@ export type Database = {
           noindex: boolean;
           og_description: string;
           og_image_alt: string;
+          og_image_height: number | null;
           og_image_key: string | null;
           og_image_src: string;
+          og_image_width: number | null;
           og_title: string;
           page_key: string;
           seo_description: string;
@@ -260,8 +262,10 @@ export type Database = {
           noindex?: boolean;
           og_description?: string;
           og_image_alt?: string;
+          og_image_height?: number | null;
           og_image_key?: string | null;
           og_image_src?: string;
+          og_image_width?: number | null;
           og_title?: string;
           page_key: string;
           seo_description: string;
@@ -275,8 +279,10 @@ export type Database = {
           noindex?: boolean;
           og_description?: string;
           og_image_alt?: string;
+          og_image_height?: number | null;
           og_image_key?: string | null;
           og_image_src?: string;
+          og_image_width?: number | null;
           og_title?: string;
           page_key?: string;
           seo_description?: string;

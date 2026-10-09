@@ -153,6 +153,8 @@ create table if not exists public.page_seo (
   og_image_key text,
   og_image_src text not null default '',
   og_image_alt text not null default '',
+  og_image_width integer,
+  og_image_height integer,
   noindex boolean not null default false,
   nofollow boolean not null default false,
   updated_at timestamptz not null default now()

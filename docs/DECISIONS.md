@@ -251,7 +251,7 @@ Choices not ready to be made are documented as unresolved — never as accepted 
 
 ## 21. Current Decision Register
 
-Sixty decision records exist (DEC-001 through DEC-060). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
+Sixty-one decision records exist (DEC-001 through DEC-061). Existing selections, requirements, and architectural directions stated in `docs/TECH-STACK.md`, `docs/REQUIREMENTS.md`, `docs/ARCHITECTURE.md`, and the other owning documents remain **documented choices**, not decision records, and are not retroactively treated as entries here. The repository remains the source of what is actually implemented.
 
 | ID      | Title                                                    | Status     | Date       |
 | ------- | -------------------------------------------------------- | ---------- | ---------- |
@@ -315,6 +315,7 @@ Sixty decision records exist (DEC-001 through DEC-060). Existing selections, req
 | DEC-058 | Premium + Roaming booth pages by generalizing the booth pattern | Accepted | 2026-10-06 |
 | DEC-059 | OG image equals hero image per page; shared sitemap registry; heading/H1/404 hygiene | Accepted | 2026-10-09 |
 | DEC-060 | Wedding + Corporate occasion pages on the booth content shape | Accepted | 2026-10-09 |
+| DEC-061 | Persisted OG image dimensions; per-page OG/keyword variants in seeders | Accepted | 2026-10-09 |
 
 ### DEC-001 — Phase 1 Astro skeleton and tooling baseline
 
@@ -1374,6 +1375,23 @@ Future records are appended here in ID order with status and date kept current.
 - **Related documents:** `docs/seo/PHASE-1.md` (§§3, 8–9, 16), DEC-055/058 (pattern), DEC-059 (OG/sitemap registries).
 - **Supersedes / Superseded by:** — Extends DEC-058.
 - **Open questions or follow-up:** CMS copy + photography for both pages; GSC monitoring for cannibalization vs `/services`; GBP review URL handoff later.
+
+### DEC-061 — Persisted OG image dimensions; per-page OG/keyword variants in seeders
+
+- **ID:** DEC-061
+- **Title:** Persisted OG image dimensions; per-page OG/keyword variants in seeders
+- **Status:** Accepted
+- **Date:** 2026-10-09
+- **Context:** DEC-059 made `BaseLayout` emit `og:image:width/height`, but `page_seo` had no columns for them (upload path already captured dims into the draft object, then dropped them on save), so stored OG images never emitted dimensions. Separately, all five booth/occasion seeders shipped blank `ogTitle`/`ogDescription`/`keywords`, leaving OG tags as plain copies of title/description.
+- **Decision:**
+  1. Nullable `og_image_width/height` columns (`migration-seo-og-dims.sql`, `schema.sql` + `database.types.ts` aligned); `normalizeSeo`/`rowToSeo`/`saveSeo` persist and return them; all 14 templates prefer stored dims, hero fallback otherwise (same-image rule: never attach hero dims to a CMS image).
+  2. Distinct social-optimized `ogTitle`/`ogDescription` (≤120/≤400 chars, CTA-led) plus planning-only `keywords` from the Phase-1 map added to all five seeders (`page_contents` SEO block + `page_seo` row each). `twitter:site` stays omitted (no handle confirmed); canonical overrides stay blank (self-canonical correct); meta-keywords tag stays unrendered.
+- **Alternatives considered:** Deriving dims at render by downloading images (rejected: slow, fragile); rendering meta keywords (rejected: ignored by Google, against convention).
+- **Rationale:** Completes the DEC-059 OG contract with zero new dependencies; seeder values are CMS-editable planning defaults, never ranking claims.
+- **Consequences:** Existing `page_seo` rows predate the variants (`on conflict do nothing` never overwrites) — live rows need admin edits in `/admin/seo` or delete + re-seed to pick them up; dimensions appear only after the migration runs and an OG image is (re-)saved.
+- **Related documents:** DEC-059, DEC-060, `docs/seo/PHASE-1.md` (§3 keyword map).
+- **Supersedes / Superseded by:** — Extends DEC-059.
+- **Open questions or follow-up:** Run `migration-seo-og-dims.sql` on production; GSC/social-debugger spot check post-deploy.
 
 ## 22. Related Documentation
 

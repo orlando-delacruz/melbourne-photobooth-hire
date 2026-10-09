@@ -31,6 +31,8 @@ export function normalizeSeo(value: unknown): PageMeta {
       src: typeof image.src === "string" ? image.src : "",
       alt: typeof image.alt === "string" ? image.alt : "",
       caption: typeof image.caption === "string" ? image.caption : undefined,
+      width: typeof image.width === "number" ? image.width : undefined,
+      height: typeof image.height === "number" ? image.height : undefined,
     },
     keywords: base.keywords ?? PAGE_META_DEFAULTS.keywords,
     canonicalUrl: base.canonicalUrl ?? PAGE_META_DEFAULTS.canonicalUrl,
@@ -51,13 +53,21 @@ function rowToSeo(row: {
   og_image_key: string | null;
   og_image_src: string;
   og_image_alt: string;
+  og_image_width: number | null;
+  og_image_height: number | null;
   noindex: boolean;
   nofollow: boolean;
 }): PageMeta {
   return {
     seoTitle: row.seo_title,
     seoDescription: row.seo_description,
-    ogImage: { key: row.og_image_key, src: row.og_image_src, alt: row.og_image_alt },
+    ogImage: {
+      key: row.og_image_key,
+      src: row.og_image_src,
+      alt: row.og_image_alt,
+      width: row.og_image_width ?? undefined,
+      height: row.og_image_height ?? undefined,
+    },
     keywords: row.keywords,
     canonicalUrl: row.canonical_url,
     ogTitle: row.og_title,
@@ -102,6 +112,8 @@ export async function saveSeo(key: SeoPageKey, seo: PageMeta): Promise<void> {
       og_image_key: seo.ogImage.key,
       og_image_src: seo.ogImage.src,
       og_image_alt: seo.ogImage.alt,
+      og_image_width: seo.ogImage.width ?? null,
+      og_image_height: seo.ogImage.height ?? null,
       noindex: seo.noindex ?? false,
       nofollow: seo.nofollow ?? false,
     },

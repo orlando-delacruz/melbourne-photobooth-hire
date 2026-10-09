@@ -32,8 +32,8 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
   }
   ogImage={seo.ogImage.src || ogFallback?.src || undefined}
   ogImageAlt={seo.ogImage.alt || ogFallback?.alt || undefined}
-  ogImageWidth={seo.ogImage.src ? undefined : ogFallback?.width}
-  ogImageHeight={seo.ogImage.src ? undefined : ogFallback?.height}
+  ogImageWidth={seo.ogImage.src ? seo.ogImage.width : ogFallback?.width}
+  ogImageHeight={seo.ogImage.src ? seo.ogImage.height : ogFallback?.height}
   canonicalUrl={seo.canonicalUrl || undefined}
   noindex={seo.noindex}
   nofollow={seo.nofollow}

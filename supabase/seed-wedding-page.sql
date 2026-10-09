@@ -132,10 +132,10 @@ insert into public.page_contents (page_key, content) values (
       "src": "https://images.pexels.com/photos/17641795/pexels-photo-17641795.jpeg?auto=compress&cs=tinysrgb&w=900",
       "alt": "A guest posing inside a curtained photo booth"
     },
-    "keywords": "",
+    "keywords": "wedding photobooth melbourne, wedding photo booth hire melbourne",
     "canonicalUrl": "",
-    "ogTitle": "",
-    "ogDescription": "",
+    "ogTitle": "Wedding Photobooth Hire Melbourne — Styled Setups, Instant Prints",
+    "ogDescription": "Open-air and 360 setups with a QR guest gallery and an attendant who works your run-sheet. Enquire for your date.",
     "noindex": false,
     "nofollow": false
   }
@@ -151,7 +151,7 @@ values (
   'wedding',
   'Wedding Photobooth Melbourne | Photobooth Hire for Weddings',
   'Hire a photobooth for your Melbourne wedding: styled open-air and 360 setups, instant prints, QR guest gallery and a team that runs the run-sheet with you. Enquire for a clear quote.',
-  '', '', '', '',
+  'wedding photobooth melbourne, wedding photo booth hire melbourne', '', 'Wedding Photobooth Hire Melbourne — Styled Setups, Instant Prints', 'Open-air and 360 setups with a QR guest gallery and an attendant who works your run-sheet. Enquire for your date.',
   null,
   'https://images.pexels.com/photos/17641795/pexels-photo-17641795.jpeg?auto=compress&cs=tinysrgb&w=900',
   'A guest posing inside a curtained photo booth',
