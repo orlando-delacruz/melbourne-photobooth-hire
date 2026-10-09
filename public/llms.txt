@@ -1,0 +1,42 @@
+# Melbourne Photobooth Hire
+
+> Photobooth hire for weddings, corporate events, birthdays and private celebrations across Melbourne and Victoria. Enquiry-based hire with packages, gallery, FAQs and contact details on this site.
+
+## About
+
+- Brand: Melbourne Photobooth Hire
+- Service area: Melbourne Wide / Victoria Wide (mobile service-area business)
+- Site: https://www.melbournephotoboothhire.com.au/
+- Enquiries: https://www.melbournephotoboothhire.com.au/contact
+- Sitemap: https://www.melbournephotoboothhire.com.au/sitemap-index.xml
+
+## Services
+
+- Premium Photobooth (open-air, studio-lit booth): https://www.melbournephotoboothhire.com.au/premium-photobooth-melbourne
+- Roaming Photobooth (portable booth that moves through guests): https://www.melbournephotoboothhire.com.au/roaming-photobooth-melbourne
+- 360 Video Booth (360 slow-motion share-ready clips): https://www.melbournephotoboothhire.com.au/360-video-booth-melbourne
+- All services: https://www.melbournephotoboothhire.com.au/services
+
+## Occasions
+
+- Weddings: https://www.melbournephotoboothhire.com.au/wedding-photobooth-melbourne
+- Corporate events: https://www.melbournephotoboothhire.com.au/corporate-photobooth-melbourne
+
+## Pages
+
+- Home: https://www.melbournephotoboothhire.com.au/
+- Services: https://www.melbournephotoboothhire.com.au/services
+- Packages, inclusions and policies: https://www.melbournephotoboothhire.com.au/packages
+- Gallery (client-approved event images): https://www.melbournephotoboothhire.com.au/gallery
+- About: https://www.melbournephotoboothhire.com.au/about
+- FAQs: https://www.melbournephotoboothhire.com.au/faq
+- Contact and event enquiry: https://www.melbournephotoboothhire.com.au/contact
+- Privacy: https://www.melbournephotoboothhire.com.au/privacy
+- Terms: https://www.melbournephotoboothhire.com.au/terms
+
+## Notes
+
+- Public page copy, services, packages, gallery images and FAQs are CMS-managed and rendered as crawlable HTML.
+- Canonical host is www. The non-www host redirects to www.
+- Admin (`/admin/`) and API (`/api/`) paths are not public content and are disallowed in robots.txt.
+- For availability and quotes, use the enquiry form on the contact page.

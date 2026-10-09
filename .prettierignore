@@ -6,3 +6,4 @@ docs/
 *.md
 .agents/
 opencode/
+public/llms.txt
