@@ -150,7 +150,7 @@ insert into public.page_seo
 values (
   'corporate',
   'Corporate Photobooth Melbourne | Event & Brand Activations',
-  'Photobooth hire for Melbourne corporate events: branded overlays, 360 video, instant sharing and invoice-friendly bookings for launches and EOFY parties. Enquire for a clear quote.',
+  'Photobooth hire for Melbourne corporate events: branded overlays, 360 video and instant sharing for launches, parties and conferences. Enquire today.',
   'corporate photobooth melbourne, corporate event photo booth, brand activation booth melbourne', '', 'Corporate Photobooth Hire — Branded Booths & 360 Video', 'Branded overlays, 360 clips and instant sharing for launches, EOFY parties and conferences. Invoice-friendly bookings.',
   null,
   'https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900',

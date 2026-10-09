@@ -147,7 +147,7 @@ insert into public.page_seo
 values (
   '360',
   '360 Video Booth Melbourne | 360 Booth Hire for Events',
-  'Hire a 360 video booth in Melbourne for weddings, corporate events and birthdays: slow-motion platform, instant QR clips and styled setup. Enquire for a clear quote.',
+  'Hire a 360 video booth in Melbourne for weddings, corporate events and birthdays: slow-motion platform, instant QR clips and styled setup. Enquire today.',
   '360 photobooth melbourne, 360 video booth melbourne, 360 booth hire melbourne', '', '360 Video Booth Melbourne — Slow-Motion Clips, Instant Sharing', 'Step on, strike a pose, share the clip by QR before you sit down. 360 booth hire for Melbourne weddings, corporate events and birthdays.',
   null,
   'https://images.pexels.com/photos/38661371/pexels-photo-38661371.jpeg?auto=compress&cs=tinysrgb&w=900',

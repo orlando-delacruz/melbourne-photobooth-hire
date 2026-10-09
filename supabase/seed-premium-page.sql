@@ -146,7 +146,7 @@ insert into public.page_seo
 values (
   'premium',
   'Premium Photobooth Melbourne | Open-Air Booth Hire for Events',
-  'Hire a premium open-air photobooth in Melbourne for weddings, corporate events and birthdays: studio lighting, styled setup and instant prints. Enquire for a clear quote.',
+  'Hire a premium open-air photobooth in Melbourne for weddings, corporate events and birthdays: studio lighting, styled setup and instant prints. Enquire today.',
   'premium photobooth melbourne, open-air photobooth melbourne, open air photo booth hire', '', 'Premium Open-Air Photobooth — Studio Light, Instant Prints', 'A styled studio-lit booth for your venue, with luxury backdrops, custom templates and unlimited instant prints.',
   null,
   'https://images.pexels.com/photos/17641795/pexels-photo-17641795.jpeg?auto=compress&cs=tinysrgb&w=900',

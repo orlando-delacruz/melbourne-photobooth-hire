@@ -152,15 +152,23 @@ export const cmsSeed: CmsContent = {
         },
       },
       seo: {
-        seoTitle: "Photobooth Hire Melbourne | Melbourne Photobooth Hire",
+        seoTitle: "Photobooth Hire Melbourne | Premium, Roaming & 360 Booths",
         seoDescription:
-          "Photobooth hire in Melbourne for weddings, birthdays, corporate and school events. Open-air, roaming and 360 booths with HD prints and instant QR downloads.",
+          "Photobooth hire in Melbourne for weddings, corporate events and birthdays. Premium, roaming and 360 booths with HD prints, QR downloads and packages from $350.",
         ogImage: {
           key: null,
           src: HERO_IMAGE?.src ?? "",
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Melbourne Photobooth Hire | Weddings, Events & 360 Booths",
+        ogDescription:
+          "Open-air, roaming and 360 booths styled for your venue with instant prints and QR sharing. Enquire for Melbourne and Victoria availability.",
+        keywords:
+          "photobooth hire melbourne, photo booth hire melbourne, 360 booth melbourne, wedding photobooth melbourne, corporate photobooth melbourne, roaming photobooth",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -199,6 +207,14 @@ export const cmsSeed: CmsContent = {
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Melbourne Photobooth Services | Open-Air, Roaming & 360",
+        ogDescription:
+          "Three styled and staffed booths for Melbourne events: premium open-air, roaming crowd booth and 360 video. Enquire for Melbourne and Victoria availability.",
+        keywords:
+          "photobooth hire services melbourne, premium photobooth melbourne, roaming photobooth melbourne, 360 video booth melbourne, open air photobooth melbourne",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -270,13 +286,21 @@ export const cmsSeed: CmsContent = {
       seo: {
         seoTitle: "Photobooth Hire Packages Melbourne | Prices & Inclusions",
         seoDescription:
-          "Compare photobooth hire packages in Melbourne: 2, 3 and 4 hour options with full inclusions, add-ons and booking policies. Enquire for a clear quote.",
+          "Compare Melbourne photobooth hire packages from $350: 2 to 5 hour options plus 360 video booth, with add-ons and booking policies. Enquire for a clear quote.",
         ogImage: {
           key: null,
           src: HERO_IMAGE?.src ?? "",
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Melbourne Photobooth Packages | 2-5 Hours + 360 Booth",
+        ogDescription:
+          "All-inclusive hire from $350 with red-carpet setup, add-ons and plain-language booking policies. Send your date for availability.",
+        keywords:
+          "photobooth hire packages melbourne, photobooth hire prices melbourne, 360 booth hire price melbourne, photobooth add ons, photobooth booking policies",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -320,6 +344,14 @@ export const cmsSeed: CmsContent = {
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Melbourne Photobooth Gallery | Booths & Event Moments",
+        ogDescription:
+          "Open-air, roaming and 360 setups, backdrops and real event moments across Melbourne. Enquire to stage your night next.",
+        keywords:
+          "photobooth gallery melbourne, wedding photobooth photos, 360 booth events melbourne, photobooth backdrops",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -373,6 +405,14 @@ export const cmsSeed: CmsContent = {
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "About Melbourne Photobooth Hire | Local Booth Team",
+        ogDescription:
+          "A local Melbourne team designing styled, staffed photobooth experiences for weddings, birthdays and corporate events.",
+        keywords:
+          "about melbourne photobooth hire, photobooth hire melbourne team, local photobooth hire",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -411,13 +451,21 @@ export const cmsSeed: CmsContent = {
       seo: {
         seoTitle: "Photobooth Hire FAQs Melbourne | Pricing, Setup & Policies",
         seoDescription:
-          "Answers to common Melbourne photobooth hire questions: pricing, what's included, travel, setup time, space requirements and booking policies.",
+          "Answers to common Melbourne photobooth hire questions: pricing from $350, inclusions, travel, setup, space and booking policies.",
         ogImage: {
           key: null,
           src: HERO_IMAGE?.src ?? "",
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Melbourne Photobooth FAQs | Pricing, Setup & Policies",
+        ogDescription:
+          "Pricing from $350, inclusions, travel, setup, space and booking policies answered. Still unsure? Ask us with your event details.",
+        keywords:
+          "photobooth hire faqs melbourne, photobooth hire cost, photobooth setup requirements, photobooth deposit policy",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
 
@@ -448,6 +496,14 @@ export const cmsSeed: CmsContent = {
           alt: HERO_IMAGE?.alt ?? "",
           caption: undefined,
         },
+        ogTitle: "Enquire Now | Melbourne Photobooth Hire",
+        ogDescription:
+          "Tell us your event date, venue and guest numbers for availability and a clear quote. Melbourne Wide and Victoria Wide, reply within one business day.",
+        keywords:
+          "contact photobooth hire melbourne, photobooth hire enquiry, photobooth availability melbourne",
+        canonicalUrl: "",
+        noindex: false,
+        nofollow: false,
       },
     },
   },

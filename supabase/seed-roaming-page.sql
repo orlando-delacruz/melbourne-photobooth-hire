@@ -146,7 +146,7 @@ insert into public.page_seo
 values (
   'roaming',
   'Roaming Photobooth Melbourne | Mingling Booth Hire for Events',
-  'Hire a roaming photobooth in Melbourne for weddings, corporate events and birthdays: candid crowd photos with no fixed backdrop, perfect for cocktail hours. Enquire for a clear quote.',
+  'Hire a roaming photobooth in Melbourne for weddings, corporate and birthdays: candid crowd photos, no backdrop, ideal for cocktail hours. Enquire today.',
   'roaming photobooth melbourne, mingling photobooth, cocktail hour photo booth', '', 'Roaming Photobooth — Candid Crowd Photos, No Backdrop Needed', 'The mingling booth moves through your crowd for candid photos. Perfect for cocktail hours and corporate mixers.',
   null,
   'https://images.pexels.com/photos/6224736/pexels-photo-6224736.jpeg?auto=compress&cs=tinysrgb&w=900',
