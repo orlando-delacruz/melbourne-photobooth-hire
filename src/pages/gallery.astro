@@ -73,7 +73,24 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
   />
 
   <p class="gallery-services-link">
-    Looking for a specific booth? <a href="/services">Explore our photobooth services</a>.
+    <span class="gallery-services-link-lead">Looking for a specific booth?</span>
+    <a href="/services">
+      <span>Explore our photobooth services</span>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.9"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h14" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    </a>
   </p>
 
   <LiveCtaBand
@@ -89,9 +106,74 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
 </BaseLayout>
 
 <style>
+  /* Quiet cross-link trail below the gallery grid. Mirrors the booth-page
+     cross-links: a champagne hairline, a soft lead line and one arrow link
+     in the accent colour — secondary navigation, not a competing CTA. */
   .gallery-services-link {
-    margin: var(--space-lg) 0 0;
+    position: relative;
+    max-width: 44rem;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
+    text-align: center;
     color: var(--color-ink-soft);
     font-size: var(--text-small);
+  }
+  .gallery-services-link::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-accent-line),
+      transparent
+    );
+    pointer-events: none;
+  }
+  .gallery-services-link-lead {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-lead);
+    color: var(--color-ink);
+  }
+  .gallery-services-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding-block: 0.35rem;
+    color: var(--color-accent-strong);
+    font-weight: 600;
+    font-size: var(--text-small);
+    text-decoration: none;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .gallery-services-link a svg {
+    transition: transform var(--motion-quick) var(--ease-default);
+  }
+  .gallery-services-link a:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .gallery-services-link a:hover svg {
+    transform: translateX(3px);
+  }
+  .gallery-services-link a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-services-link a,
+    .gallery-services-link a svg {
+      transition: none;
+    }
+    .gallery-services-link a:hover svg {
+      transform: none;
+    }
   }
 </style>

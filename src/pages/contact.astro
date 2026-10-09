@@ -117,10 +117,49 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
 
       <LiveContactAside client:visible initialPage={contactPage} initialSettings={siteSettings} />
     </div>
-    <p class="contact-links">
-      Not sure which booth fits? <a href="/services">Compare our photobooth services</a> or
-      <a href="/packages">view packages and pricing</a>.
-    </p>
+    <nav class="contact-links" aria-label="Related pages">
+      <p class="contact-links-lead">Not sure which booth fits?</p>
+      <ul>
+        <li>
+          <a href="/services">
+            <span>Compare our photobooth services</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+          </a>
+        </li>
+        <li>
+          <a href="/packages">
+            <span>View packages and pricing</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </nav>
   </section>
 </BaseLayout>
 
@@ -137,12 +176,81 @@ const breadcrumbSchema = buildBreadcrumbList(siteOrigin, [
     margin-inline: auto;
   }
 
+  /* Quiet cross-link trail below the enquiry form. Mirrors the gallery and
+     booth-page cross-links: a champagne hairline, a soft lead line and arrow
+     links in the accent colour — secondary navigation, not a competing CTA. */
   .contact-links {
-    max-width: 48rem;
-    margin: var(--space-lg) auto 0;
-    color: var(--color-ink-soft);
-    font-size: var(--text-small);
+    position: relative;
+    max-width: 44rem;
+    margin: var(--space-xl) auto 0;
+    padding-top: var(--space-lg);
     text-align: center;
+  }
+  .contact-links::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-accent-line),
+      transparent
+    );
+    pointer-events: none;
+  }
+  .contact-links-lead {
+    margin: 0 0 var(--space-sm);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-lead);
+    color: var(--color-ink);
+  }
+  .contact-links ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs) var(--space-lg);
+  }
+  .contact-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    padding-block: 0.35rem;
+    color: var(--color-accent-strong);
+    font-weight: 600;
+    font-size: var(--text-small);
+    text-decoration: none;
+    transition: color var(--motion-quick) var(--ease-default);
+  }
+  .contact-links a svg {
+    transition: transform var(--motion-quick) var(--ease-default);
+  }
+  .contact-links a:hover {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .contact-links a:hover svg {
+    transform: translateX(3px);
+  }
+  .contact-links a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .contact-links a,
+    .contact-links a svg {
+      transition: none;
+    }
+    .contact-links a:hover svg {
+      transform: none;
+    }
   }
 
   .form-card {
