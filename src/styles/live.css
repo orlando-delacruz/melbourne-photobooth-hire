@@ -261,6 +261,10 @@
   flex-direction: column;
   flex: 1;
 }
+.card-heading {
+  display: flex;
+  flex-direction: column;
+}
 .card-head {
   display: flex;
   align-items: center;
@@ -296,19 +300,23 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-/* Package card image badge (Best Seller / Top Rated): pinned to the card's
-   top-right corner, enlarged on phones so it stays prominent on narrow cards. */
+.card-badge-icon {
+  display: inline-flex;
+}
+/* Let long package names wrap beside the stamp. */
+.card-header:has(> .card-ribbon) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-xs);
+  overflow-wrap: anywhere;
+}
 .card-ribbon {
-  position: absolute;
-  top: var(--space-xs);
-  right: var(--space-xs);
   width: 5.25rem;
   height: 5.25rem;
   object-fit: contain;
-  z-index: 3;
-  pointer-events: none;
 }
-@media (max-width: 639px) {
+@media (width < 640px) {
   .card-ribbon {
     width: 7rem;
     height: 7rem;
@@ -603,8 +611,7 @@ body.page-home .card--light .card-title {
 /* Both package surfaces (homepage + /packages page) render white cards;
    every text role pins to black per client direction. :is() keeps the
    specificity above the featured/headliner overrides without !important.
-   Badge keeps its champagne fill; only its label goes black. CTA labels
-   stay white on coral via the primary rules. */
+   Package tier labels sit with the name and duration. */
 [aria-labelledby="packages-heading"] :is(.card--light, .card--featured.card--light),
 [aria-labelledby="packages-list"] :is(.card--light, .card--featured.card--light) {
   color: var(--color-black);
@@ -638,6 +645,27 @@ body.page-home .card--light .card-title {
     .card-badge
   ) {
   color: var(--color-black);
+}
+:is([aria-labelledby="packages-heading"], [aria-labelledby="packages-list"])
+  .card--light .card-head {
+  margin-bottom: var(--space-2xs);
+}
+:is([aria-labelledby="packages-heading"], [aria-labelledby="packages-list"])
+  .card--light .card-badge {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--text-small);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+:is([aria-labelledby="packages-heading"], [aria-labelledby="packages-list"])
+  .card--light .card-badge-icon {
+  display: none;
 }
 @media (min-width: 900px) {
   .card--featured {
@@ -2834,17 +2862,6 @@ body:has(.trust-strip) .hero {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
-}
-.footer-cta p {
-  margin: 0 0 var(--space-md);
-  max-width: 22rem;
-  color: var(--color-ink-soft);
-}
-.footer-cta h2,
-.footer-cta .footer-cta-title {
-  margin: 0 0 var(--space-2xs);
-  font-size: var(--text-h3);
-  color: var(--color-ink);
 }
 .footer-base p {
   margin: 0;

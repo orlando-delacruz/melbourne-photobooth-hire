@@ -119,7 +119,7 @@ export const cmsSeed: CmsContent = {
         title: "All-inclusive hire, priced up front",
         lede: "Packages start from $350. No hidden extras: every inclusion is listed. Final pricing is confirmed at enquiry.",
       },
-      packagesCompareLabel: "Compare all packages",
+      packagesCompareLabel: "View All Packages",
       processHeading: {
         eyebrow: "How it works",
         title: "From first enquiry to the first flash",

@@ -9,17 +9,16 @@ import type { CmsIconName } from "../../lib/cms/icons";
 
 export type LiveCardIcon = CmsIconName;
 
-/** Image badges overlaying the card's top-right corner.
+/** Image badges beside the package heading.
  * Right-sized WebP (rendered 84px desktop, 112px mobile) with 2x for retina.
  * PNG originals kept on disk unreferenced as fallback history. */
 const CARD_BADGE_IMAGES: Record<
   Exclude<PackageCardBadge, "none">,
-  { src: string; srcSet: string; sizes: string; width: number; height: number; alt: string }
+  { src: string; srcSet: string; width: number; height: number; alt: string }
 > = {
   "best-seller": {
     src: "/images/best-seller-224.webp",
     srcSet: "/images/best-seller-112.webp 112w, /images/best-seller-224.webp 224w",
-    sizes: "(max-width: 639px) 112px, 84px",
     width: 112,
     height: 112,
     alt: "Best seller",
@@ -27,7 +26,6 @@ const CARD_BADGE_IMAGES: Record<
   "top-rated": {
     src: "/images/top-rated-224.webp",
     srcSet: "/images/top-rated-112.webp 112w, /images/top-rated-224.webp 224w",
-    sizes: "(max-width: 639px) 112px, 84px",
     width: 112,
     height: 100,
     alt: "Top rated",
@@ -118,19 +116,6 @@ export default function LiveCard({
       className={`card card--${tone}${featured ? " card--featured" : ""}`}
       data-cms-id={cmsId}
     >
-      {cardBadge !== "none" ? (
-        <img
-          className="card-ribbon"
-          src={CARD_BADGE_IMAGES[cardBadge].src}
-          srcSet={CARD_BADGE_IMAGES[cardBadge].srcSet}
-          sizes={CARD_BADGE_IMAGES[cardBadge].sizes}
-          width={CARD_BADGE_IMAGES[cardBadge].width}
-          height={CARD_BADGE_IMAGES[cardBadge].height}
-          alt={CARD_BADGE_IMAGES[cardBadge].alt}
-          loading="lazy"
-          decoding="async"
-        />
-      ) : null}
       {imageSrc ? (
         <div className="card-media">
           <img
@@ -147,29 +132,47 @@ export default function LiveCard({
         </div>
       ) : null}
       <div className="card-body">
-        {icon || badge ? (
-          <div className="card-head">
-            {icon ? (
-              <span className="card-icon">
-                <CmsIcon name={icon} size={20} />
-              </span>
-            ) : null}
-            {badge ? (
-              <p className="card-badge">
-                {featured ? (
-                  <span
-                    dangerouslySetInnerHTML={{ __html: STAR_SVG }}
-                    style={{ display: "inline-flex" }}
-                  />
+        <div className="card-header">
+          <div className="card-heading">
+            {icon || badge ? (
+              <div className="card-head">
+                {icon ? (
+                  <span className="card-icon">
+                    <CmsIcon name={icon} size={20} />
+                  </span>
                 ) : null}
-                <span>{badge}</span>
-              </p>
+                {badge ? (
+                  <p className="card-badge">
+                    {featured ? (
+                      <span
+                        aria-hidden="true"
+                        className="card-badge-icon"
+                        dangerouslySetInnerHTML={{ __html: STAR_SVG }}
+                      />
+                    ) : null}
+                    <span>{badge}</span>
+                  </p>
+                ) : null}
+              </div>
             ) : null}
+            <h3 className="card-title">{title}</h3>
+            {tagline ? <p className="card-tagline">{tagline}</p> : null}
+            {meta ? <p className="card-meta">{meta}</p> : null}
           </div>
-        ) : null}
-        <h3 className="card-title">{title}</h3>
-        {tagline ? <p className="card-tagline">{tagline}</p> : null}
-        {meta ? <p className="card-meta">{meta}</p> : null}
+          {cardBadge !== "none" ? (
+            <img
+              className="card-ribbon"
+              src={CARD_BADGE_IMAGES[cardBadge].src}
+              srcSet={CARD_BADGE_IMAGES[cardBadge].srcSet}
+              sizes="(width < 640px) 112px, 84px"
+              width={CARD_BADGE_IMAGES[cardBadge].width}
+              height={CARD_BADGE_IMAGES[cardBadge].height}
+              alt={CARD_BADGE_IMAGES[cardBadge].alt}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : null}
+        </div>
         {price ? (
           <p className="card-price">
             <span className="card-price-amount">{priceAmount}</span>

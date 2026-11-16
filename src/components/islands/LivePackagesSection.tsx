@@ -22,7 +22,11 @@ export default function LivePackagesSection({ initial, initialHome }: LivePackag
   const packages = useLiveRows("packages", initial, fetchPackages);
   const home = useLiveHomeSlice(initialHome);
   const heading = home.packagesHeading;
-  const compareLabel = home.packagesCompareLabel;
+  // Older saved Home content still carries the previous default label.
+  const compareLabel =
+    home.packagesCompareLabel === "Compare all packages"
+      ? "View All Packages"
+      : home.packagesCompareLabel;
   const visible = packages.filter((pkg) => pkg.highlight !== false);
 
   return (
