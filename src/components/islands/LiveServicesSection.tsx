@@ -63,8 +63,7 @@ export default function LiveServicesSection({ initial, initialHome }: LiveServic
               secondaryHref={
                 serviceDetailHref(service.id) ?? `/services#${encodeURIComponent(service.id)}`
               }
-              secondaryLabel="Learn more"
-              secondaryAriaLabel={`Learn more about ${service.name}`}
+              secondaryLabel={`Explore ${service.name}`}
               cmsId={service.id}
             />
           </Reveal>

@@ -21,6 +21,9 @@ const PUBLIC_SITEMAP_URLS = PUBLIC_ROUTE_PATHS.map((path) => `${SITE_ORIGIN}${pa
 export default defineConfig({
   site: SITE_ORIGIN,
   trailingSlash: "never",
+  redirects: {
+    "/index.html": { destination: "/", status: 308 },
+  },
   // Server-rendered on Vercel (DEC-028): public pages read live Supabase data
   // per request with edge SWR caching; admin/API routes are also server-side.
   // No page is prerendered; function runs stay minimal via CDN caching.
